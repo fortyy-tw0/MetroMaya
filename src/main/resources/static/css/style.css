@@ -179,19 +179,29 @@ em { font-style: normal; }
 @media (max-width: 860px) { .features { grid-template-columns: 1fr; } }
 
 /* ---------- estimator ---------- */
-.estimate-wrap { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 3rem; align-items: start; }
+.estimate-wrap { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 3rem; align-items: stretch; }
+.estimate-wrap .estimator { align-self: stretch; display: flex; flex-direction: column; }
+.estimate-wrap .est-panels { flex: 1; }
 .estimate-intro p { color: var(--ink-soft); }
 .section-white { background: #fff; border-block: 1px solid var(--line); }
-/* Maya beside the estimator: winks every 5 seconds by swapping to a copy of the same drawing with one eye closed */
-.est-maya { position: relative; width: min(100%, 360px); margin-top: 2.25rem; }
-.est-maya img { width: 100%; height: auto; display: block; }
-.est-maya .est-maya-wink { position: absolute; inset: 0; opacity: 0; animation: wink 5s infinite; }
+/* Maya beside the estimator: flying, her raised wing swinging (16 frames bent from the drawing itself) */
+.wrap-wide { width: min(1320px, 100% - 2.5rem); }
+.est-maya { position: relative; width: min(100%, 360px); aspect-ratio: 383 / 365; margin-top: 2.25rem; }
+.est-maya-fly { position: absolute; inset: 0; animation: est-hover 2.4s ease-in-out infinite; }
+.est-maya-frames { position: absolute; left: -15.666%; top: -16.438%; width: 131.332%; height: 132.877%; overflow: hidden; }
+.est-maya-frames img { position: absolute; left: 0; top: 0; width: 1600%; height: 100%; max-width: none; display: block; animation: flap-strip .9s steps(16) infinite; }
+@keyframes est-hover { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-5%) rotate(1.5deg); } }
+/* "So Easy!" bounces word by word and sways along with her */
 .est-maya-say {
-  position: absolute; top: 4%; left: 58%; white-space: nowrap;
+  position: absolute; top: 2%; left: 58%; white-space: nowrap; z-index: 1;
   font-family: var(--display); font-weight: 600; font-size: clamp(1.2rem, 2.1vw, 1.75rem); line-height: 1;
   color: var(--ink); rotate: -10deg; transform-origin: 0% 100%;
+  animation: say-sway 2.4s ease-in-out infinite;
 }
-@keyframes wink { 0%, 90% { opacity: 0; } 91%, 95% { opacity: 1; } 96%, 100% { opacity: 0; } }
+.est-maya-say > span { display: inline-block; animation: say-bounce 2.4s ease-in-out infinite; }
+.est-maya-say > span + span { animation-delay: .15s; color: var(--navy); }
+@keyframes say-sway { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-6px) rotate(4deg); } }
+@keyframes say-bounce { 0%, 60%, 100% { transform: translateY(0) scale(1); } 70% { transform: translateY(-7px) scale(1.12); } 80% { transform: translateY(0) scale(.97); } }
 .estimate-note { font-size: .86rem; color: var(--muted); margin-top: 1rem; }
 @media (max-width: 960px) { .estimate-wrap { grid-template-columns: 1fr; gap: 1.5rem; } .est-maya { display: none; } }
 
@@ -411,7 +421,7 @@ em { font-style: normal; }
   * { transition: none !important; scroll-behavior: auto !important; animation: none !important; }
   .js-reveal .reveal, .js-reveal .reveal.reveal-left, .js-reveal .reveal.reveal-right, .js-reveal .reveal.reveal-zoom { transform: none !important; transition: opacity .45s ease !important; }
   .mf-frames img { animation: flap-strip 1.6s steps(16) infinite !important; }
-  .est-maya .est-maya-wink { animation: wink 5s infinite !important; }
+  .est-maya-frames img { animation: flap-strip 1.8s steps(16) infinite !important; }
   .maya-fly { animation: none !important; }
   .mf-look { transition: transform .12s linear !important; }
 }
@@ -440,3 +450,7 @@ em { font-style: normal; }
 @keyframes idle-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 @media (max-height: 760px) { .hero-band { padding-top: 1rem; } .perch { margin-top: .75rem; margin-bottom: 1rem; } }
 .hero-band { overflow-x: clip; }
+/* left column fills the card's height; Maya's feet line up with the card's bottom */
+.estimate-wrap .estimate-intro { display: flex; flex-direction: column; }
+.estimate-wrap .est-maya { width: min(100%, 440px); margin-top: auto; }
+.estimate-wrap .estimate-note { margin-bottom: 2.5rem; }
