@@ -1,6 +1,6 @@
-# BPLO Online – Business Permits and Licensing Office appointment system
+# Permitify – business permit appointment system
 
-A web app where business owners book slots for **new permit applications**, **annual renewals** and **inspection visits**. The backend is plain Java 21 (`com.sun.net.httpserver`, no dependencies). The front-end is static HTML, CSS and vanilla JS.
+Permitify is a web app where business owners book slots for **new permit applications**, **annual renewals** and **inspection visits**. The backend is plain Java 21 (`com.sun.net.httpserver`, no dependencies). The front-end is static HTML, CSS and vanilla JS.
 
 Fees are sample rates for a course project, not official LGU fees.
 

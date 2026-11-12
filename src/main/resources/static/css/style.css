@@ -1,4 +1,4 @@
-/* BPLO Online, guided by Maya the mail-carrier sparrow.
+/* Permitify, guided by Maya the mail-carrier sparrow.
    Palette is taken from the mascot: navy uniform, gold piping, cream chest feathers, brown outline.
    Layout: one white rounded hero canvas, then calm sections on a cream ground. */
 
@@ -381,3 +381,17 @@ em { font-style: normal; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; scroll-behavior: auto !important; animation: none !important; }
 }
+
+/* ---------- centered hero with Maya resting on the bottom edge ---------- */
+.hero-center { grid-template-columns: 1fr; justify-items: center; text-align: center; padding-bottom: 0; gap: 0; }
+.hero-center .hero-copy { display: flex; flex-direction: column; align-items: center; }
+.hero-center h1 { max-width: 13ch; margin-inline: auto; font-size: clamp(2.6rem, 6.4vw, 4.6rem); }
+.hero-center .lead { margin: 1.1rem auto 2rem; max-width: 46ch; }
+.hero-center .hero-actions { justify-content: center; }
+.hero-note { margin: 1.1rem 0 0; font-size: .9rem; color: var(--muted); }
+.hero-peek { width: min(78%, 420px); margin-top: 2.25rem; display: block; filter: drop-shadow(0 -6px 18px rgba(62, 36, 22, .08)); transform-origin: 50% 100%; }
+@media (prefers-reduced-motion: no-preference) {
+  .hero-peek { animation: peek .9s .35s cubic-bezier(.2, .8, .2, 1) both; }
+}
+@keyframes peek { from { transform: translateY(40%); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (max-width: 900px) { .hero-center .hero-copy { order: 0; } .hero-peek { width: min(88%, 340px); margin-top: 1.75rem; } }
