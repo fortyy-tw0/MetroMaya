@@ -1,0 +1,7 @@
+out/
+.vercel/
+*.class
+.idea/
+.vscode/
+*.iml
+.DS_Store

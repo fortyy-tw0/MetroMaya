@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Book an Appointment · Licensing &amp; Registration</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23e9a820'/%3E%3Cpath d='M9 22V10h7a4 4 0 010 8h-4' fill='none' stroke='%2314213d' stroke-width='3'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">LR</span> Licensing &amp; Registration</a>
+      <nav class="nav" aria-label="Main">
+        <a href="/">Home</a>
+        <a href="/book.html" aria-current="page">Book</a>
+        <a href="/manage.html">My appointment</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="wrap" style="max-width: 760px;">
+      <div class="page-title">
+        <h1 style="font-size: clamp(1.8rem, 4vw, 2.6rem);">Book an appointment</h1>
+        <p>Takes about two minutes. You'll get a reference number at the end.</p>
+      </div>
+
+      <ol class="progress" id="progress" aria-label="Booking steps"></ol>
+
+      <div class="card">
+        <!-- Step 1 -->
+        <section class="panel" id="panel-service" data-step="0">
+          <h2>What do you need?</h2>
+          <div class="choices" id="service-choices"></div>
+          <div class="nav-row"><span></span><button class="btn btn-dark" data-next disabled>Continue</button></div>
+        </section>
+
+        <!-- Step 2 -->
+        <section class="panel" id="panel-office" data-step="1" hidden>
+          <h2>Where would you like to go?</h2>
+          <p class="hint">Only offices that offer your service are shown.</p>
+          <div class="choices" id="office-choices"></div>
+          <div class="nav-row"><button class="btn btn-outline" data-back>Back</button><button class="btn btn-dark" data-next disabled>Continue</button></div>
+        </section>
+
+        <!-- Step 3 -->
+        <section class="panel" id="panel-when" data-step="2" hidden>
+          <h2>Pick a date and time</h2>
+          <p class="hint" id="date-hint">Weekdays only.</p>
+          <div class="field" style="max-width: 280px;">
+            <label for="date">Date</label>
+            <input type="date" id="date">
+          </div>
+          <div class="slots" id="slots" role="group" aria-label="Available times"></div>
+          <div class="alert alert-error" id="slot-alert" hidden role="alert"></div>
+          <div class="nav-row"><button class="btn btn-outline" data-back>Back</button><button class="btn btn-dark" data-next disabled>Continue</button></div>
+        </section>
+
+        <!-- Step 4 -->
+        <section class="panel" id="panel-details" data-step="3" hidden>
+          <h2>Your details</h2>
+          <form id="details-form" novalidate>
+            <div class="field"><label for="fullName">Full name</label><input id="fullName" name="fullName" autocomplete="name" required></div>
+            <div class="grid-2">
+              <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" required></div>
+              <div class="field"><label for="phone">Mobile number</label><input id="phone" name="phone" type="tel" autocomplete="tel" required></div>
+            </div>
+            <div class="field" style="max-width: 280px;"><label for="birthDate">Date of birth</label><input id="birthDate" name="birthDate" type="date" autocomplete="bday" required></div>
+            <div class="alert alert-error" id="details-alert" hidden role="alert"></div>
+            <div class="nav-row"><button type="button" class="btn btn-outline" data-back>Back</button><button type="submit" class="btn btn-dark">Review</button></div>
+          </form>
+        </section>
+
+        <!-- Step 5 -->
+        <section class="panel" id="panel-review" data-step="4" hidden>
+          <h2>Review and confirm</h2>
+          <dl class="summary" id="review-summary"></dl>
+          <h3>What to bring</h3>
+          <div id="review-requirements"></div>
+          <div class="alert alert-error" id="submit-alert" hidden role="alert"></div>
+          <div class="nav-row"><button class="btn btn-outline" data-back>Back</button><button class="btn btn-primary" id="confirm-btn">Confirm appointment</button></div>
+        </section>
+
+        <!-- Done -->
+        <section class="panel" id="panel-done" hidden>
+          <div class="alert alert-ok">You're booked. See you there!</div>
+          <div class="ticket">
+            <div class="label">Reference number</div>
+            <div class="ref" id="done-ref"></div>
+          </div>
+          <dl class="summary" id="done-summary"></dl>
+          <h3>What to bring</h3>
+          <div id="done-requirements"></div>
+          <p class="hint">Save your reference number. You need it to view, reschedule or cancel this appointment.</p>
+          <div class="nav-row no-print">
+            <a class="btn btn-outline" id="done-manage" href="/manage.html">Manage appointment</a>
+            <div style="display:flex; gap:.75rem; flex-wrap:wrap;">
+              <button class="btn btn-outline" onclick="window.print()">Print</button>
+              <a class="btn btn-dark" href="/book.html">Book another</a>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap"><span>Licensing &amp; Registration Appointment System</span><span>OOP course project</span></div>
+  </footer>
+
+  <script src="/js/common.js"></script>
+  <script src="/js/book.js"></script>
+</body>
+</html>

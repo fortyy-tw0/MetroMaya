@@ -1,0 +1,5 @@
+out/
+.git/
+.vercel/
+*.md
+run.sh
