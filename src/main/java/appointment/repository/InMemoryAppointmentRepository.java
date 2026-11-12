@@ -40,7 +40,7 @@ public class InMemoryAppointmentRepository implements AppointmentRepository {
     public List<Appointment> findActiveByEmail(String email) {
         return byReference.values().stream()
                 .filter(Appointment::isActive)
-                .filter(a -> a.getCitizen().getEmail().equalsIgnoreCase(email))
+                .filter(a -> a.getApplicant().getEmail().equalsIgnoreCase(email))
                 .toList();
     }
 }

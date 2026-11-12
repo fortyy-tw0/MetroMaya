@@ -3,36 +3,42 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>My Appointment · Licensing &amp; Registration</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23e9a820'/%3E%3Cpath d='M9 22V10h7a4 4 0 010 8h-4' fill='none' stroke='%2314213d' stroke-width='3'/%3E%3C/svg%3E">
+  <title>Track a booking · BPLO Online</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23e9368f'/%3E%3Ctext x='16' y='23' font-family='Georgia' font-size='20' text-anchor='middle' fill='white'%3EB%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap">
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
-  <header class="site-header">
-    <div class="wrap">
-      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">LR</span> Licensing &amp; Registration</a>
-      <nav class="nav" aria-label="Main">
+<body class="page-bg">
+  <div class="nav-wrap">
+    <header class="nav">
+      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">B</span> BPLO Online</a>
+      <nav class="nav-links" aria-label="Main">
         <a href="/">Home</a>
-        <a href="/book.html">Book</a>
-        <a href="/manage.html" aria-current="page">My appointment</a>
+        <a href="/book.html">Book a slot</a>
+        <a href="/manage.html" aria-current="page">Track a booking</a>
       </nav>
-    </div>
-  </header>
+      <div class="nav-actions">
+        <a class="btn btn-ink btn-small" href="/book.html">Book a slot</a>
+      </div>
+    </header>
+  </div>
 
   <main class="page">
-    <div class="wrap" style="max-width: 760px;">
+    <div class="page-narrow">
       <div class="page-title">
-        <h1 style="font-size: clamp(1.8rem, 4vw, 2.6rem);">My appointment</h1>
-        <p>Enter the reference number from your confirmation to view, reschedule or cancel.</p>
+        <h1>Track a <em>booking</em></h1>
+        <p>Enter the reference number from your confirmation to view, move or cancel your slot.</p>
       </div>
 
       <div class="card">
         <form class="lookup" id="lookup-form">
           <div class="field">
             <label for="ref">Reference number</label>
-            <input id="ref" name="ref" placeholder="APT-20261120-ABCDE" autocomplete="off" autocapitalize="characters" required>
+            <input id="ref" name="ref" placeholder="BPL-20261120-ABCDE" autocomplete="off" autocapitalize="characters" required>
           </div>
-          <button class="btn btn-dark" type="submit">Find appointment</button>
+          <button class="btn btn-ink" type="submit">Find booking</button>
         </form>
         <div class="alert alert-error" id="lookup-alert" hidden role="alert"></div>
       </div>
@@ -43,17 +49,23 @@
           <span class="badge" id="result-status"></span>
         </div>
         <dl class="summary" id="result-summary"></dl>
-        <h3>What to bring</h3>
-        <div id="result-requirements"></div>
+        <div class="review-cols">
+          <div class="box"><h4>Fee breakdown</h4><div id="result-fee"></div></div>
+          <div class="box">
+            <h4>Inspections</h4>
+            <ul class="insp-list" id="result-insp"></ul>
+            <details class="docs" open><summary>Documents to bring</summary><ul class="doc-list" id="result-docs"></ul></details>
+          </div>
+        </div>
         <div class="alert alert-ok" id="result-alert" hidden role="status"></div>
 
         <div id="actions" class="no-print">
           <div class="nav-row" style="justify-content:flex-start;">
-            <button class="btn btn-outline" id="reschedule-toggle">Reschedule</button>
-            <button class="btn btn-danger" id="cancel-btn">Cancel appointment</button>
+            <button class="btn btn-soft" id="reschedule-toggle">Move to another time</button>
+            <button class="btn btn-danger" id="cancel-btn">Cancel booking</button>
           </div>
 
-          <div id="reschedule-box" hidden style="margin-top:1.25rem; padding-top:1.25rem; border-top:1px solid var(--line);">
+          <div id="reschedule-box" hidden style="margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid var(--line);">
             <h3>Choose a new date and time</h3>
             <div class="field" style="max-width:280px;">
               <label for="new-date">New date</label>
@@ -62,7 +74,7 @@
             <div class="slots" id="new-slots" role="group" aria-label="Available times"></div>
             <div class="alert alert-error" id="new-slot-alert" hidden role="alert"></div>
             <div class="nav-row" style="justify-content:flex-start;">
-              <button class="btn btn-primary" id="reschedule-confirm" disabled>Confirm new time</button>
+              <button class="btn btn-grad" id="reschedule-confirm" disabled>Confirm new time</button>
             </div>
           </div>
         </div>
@@ -70,8 +82,11 @@
     </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="wrap"><span>Licensing &amp; Registration Appointment System</span><span>OOP course project</span></div>
+  <footer class="footer">
+    <div class="wrap">
+      <span>BPLO Online, an OOP course project</span>
+      <span>Fees shown are samples, not official rates.</span>
+    </div>
   </footer>
 
   <script src="/js/common.js"></script>

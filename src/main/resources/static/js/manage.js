@@ -1,6 +1,6 @@
 (function () {
   const $ = (id) => document.getElementById(id);
-  let current = null;       // the appointment currently shown
+  let current = null;       // the booking currently shown
   let config = null;        // today's date and booking window
   let newDate = '';
   let newTime = '';
@@ -14,17 +14,20 @@
     $('result').hidden = false;
     $('result-ref').textContent = a.referenceNo;
     const badge = $('result-status');
-    badge.textContent = a.status;
+    badge.textContent = a.status === 'CONFIRMED' ? 'Confirmed' : 'Cancelled';
     badge.className = 'badge badge-' + a.status;
 
     const dl = clear($('result-summary'));
     addRow(dl, 'Service', a.serviceName);
-    addRow(dl, 'Fee (pay at office)', money(a.fee));
+    addRow(dl, 'Business', a.businessName + ' (' + a.industryName.toLowerCase() + ', ' + a.quote.size.label.toLowerCase() + ')');
+    addRow(dl, 'Address', a.businessAddress);
     addRow(dl, 'Office', a.officeName + ', ' + a.officeAddress);
     addRow(dl, 'Date', formatDate(a.date));
     addRow(dl, 'Time', formatTime(a.time));
-    addRow(dl, 'Name', a.fullName);
-    clear($('result-requirements')).append(requirementsList(a.requirements));
+    addRow(dl, 'Owner', a.ownerName);
+    renderFee($('result-fee'), a.quote.fee);
+    renderInspections($('result-insp'), a.quote.inspections);
+    renderDocs($('result-docs'), a.quote.requirements);
 
     $('actions').hidden = a.status !== 'CONFIRMED';
     $('reschedule-box').hidden = true;
@@ -51,13 +54,13 @@
   // ---------- cancel ----------
 
   $('cancel-btn').addEventListener('click', async () => {
-    if (!current || !window.confirm('Cancel this appointment? This cannot be undone.')) return;
+    if (!current || !window.confirm('Cancel this booking? This cannot be undone.')) return;
     const btn = $('cancel-btn');
     btn.disabled = true;
     try {
       const { appointment } = await api.post('/api/appointments/' + encodeURIComponent(current.referenceNo) + '/cancel');
       render(appointment);
-      showAlert($('result-alert'), 'Your appointment has been cancelled.', 'ok');
+      showAlert($('result-alert'), 'Your booking has been cancelled.', 'ok');
     } catch (e) {
       showAlert($('result-alert'), e.message, 'error');
     } finally {
@@ -65,7 +68,7 @@
     }
   });
 
-  // ---------- reschedule ----------
+  // ---------- move to another time ----------
 
   $('reschedule-toggle').addEventListener('click', async () => {
     const box = $('reschedule-box');
@@ -93,7 +96,7 @@
     if (!newDate) { clear($('new-slots')); return; }
     if (isWeekend(newDate)) {
       clear($('new-slots'));
-      showAlert($('new-slot-alert'), 'Offices are closed on weekends. Please choose a weekday.', 'error');
+      showAlert($('new-slot-alert'), 'Offices are closed on weekends. Choose a weekday.', 'error');
       return;
     }
     await loadSlots($('new-slots'), $('new-slot-alert'), current.officeId, newDate, newTime, (time) => {
@@ -110,7 +113,7 @@
         '/api/appointments/' + encodeURIComponent(current.referenceNo) + '/reschedule',
         { date: newDate, time: newTime });
       render(appointment);
-      showAlert($('result-alert'), 'Your appointment has been moved.', 'ok');
+      showAlert($('result-alert'), 'Your booking has moved to the new time.', 'ok');
     } catch (e) {
       showAlert($('new-slot-alert'), e.message, 'error');
       btn.disabled = false;

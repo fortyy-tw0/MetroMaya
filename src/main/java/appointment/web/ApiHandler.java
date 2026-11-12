@@ -1,9 +1,15 @@
 package appointment.web;
 
+import appointment.model.Applicant;
 import appointment.model.Appointment;
-import appointment.model.Citizen;
-import appointment.model.GovService;
+import appointment.model.Business;
+import appointment.model.BusinessSize;
+import appointment.model.FeeLine;
+import appointment.model.Industry;
+import appointment.model.InspectionType;
 import appointment.model.Office;
+import appointment.model.PermitService;
+import appointment.model.Quote;
 import appointment.service.AppointmentService;
 import appointment.service.BookingException;
 import appointment.service.NotFoundException;
@@ -26,11 +32,13 @@ import java.util.Map;
 /**
  * JSON API:
  *   GET  /api/health
- *   GET  /api/config                       (today's date and booking window)
- *   GET  /api/services
+ *   GET  /api/config                        today's date and the booking window
+ *   GET  /api/services                      new permit, renewal, inspection visit
+ *   GET  /api/industries                    types of business and what each one requires
  *   GET  /api/offices
- *   GET  /api/slots?officeId=..&date=YYYY-MM-DD
- *   POST /api/appointments                 (form-encoded body)
+ *   GET  /api/quote?serviceId=&industryId=&employees=
+ *   GET  /api/slots?officeId=&date=YYYY-MM-DD
+ *   POST /api/appointments                  (form-encoded body)
  *   GET  /api/appointments/{ref}
  *   POST /api/appointments/{ref}/cancel
  *   POST /api/appointments/{ref}/reschedule (date, time)
@@ -72,15 +80,11 @@ class ApiHandler implements HttpHandler {
         if (method.equals("GET") && parts.length == 1) {
             switch (head) {
                 case "health" -> { respond(exchange, 200, Map.of("status", "ok")); return; }
-                case "config" -> {
-                    Map<String, Object> cfg = new LinkedHashMap<>();
-                    cfg.put("today", appointments.today().toString());
-                    cfg.put("maxDaysAhead", AppointmentService.MAX_DAYS_AHEAD);
-                    respond(exchange, 200, cfg);
-                    return;
-                }
+                case "config" -> { respond(exchange, 200, configJson()); return; }
                 case "services" -> { respond(exchange, 200, servicesJson()); return; }
+                case "industries" -> { respond(exchange, 200, industriesJson()); return; }
                 case "offices" -> { respond(exchange, 200, officesJson()); return; }
+                case "quote" -> { respond(exchange, 200, quoteResponse(exchange)); return; }
                 case "slots" -> { respond(exchange, 200, slotsJson(exchange)); return; }
                 default -> { }
             }
@@ -112,37 +116,78 @@ class ApiHandler implements HttpHandler {
     }
 
     private Appointment book(Map<String, String> form) {
-        Citizen citizen = new Citizen(
-                form.get("fullName"),
-                form.get("email"),
-                form.get("phone"),
-                LocalDate.parse(form.getOrDefault("birthDate", "")));
+        Industry industry = appointments.getCatalog().getIndustry(form.get("industryId"));
+        Business business = new Business(
+                form.get("businessName"),
+                form.get("businessAddress"),
+                industry,
+                parseEmployees(form.get("employees")));
+        Applicant applicant = new Applicant(form.get("ownerName"), form.get("email"), form.get("phone"));
         return appointments.book(
                 form.get("serviceId"),
                 form.get("officeId"),
                 LocalDate.parse(form.getOrDefault("date", "")),
                 LocalTime.parse(form.getOrDefault("time", "")),
-                citizen);
+                applicant, business);
+    }
+
+    private static int parseEmployees(String raw) {
+        try {
+            return Integer.parseInt(raw == null ? "" : raw.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Number of employees must be a whole number.");
+        }
     }
 
     // ---- JSON mapping ----
 
+    private Map<String, Object> configJson() {
+        Map<String, Object> cfg = new LinkedHashMap<>();
+        cfg.put("today", appointments.today().toString());
+        cfg.put("maxDaysAhead", AppointmentService.MAX_DAYS_AHEAD);
+        List<Map<String, Object>> sizes = new ArrayList<>();
+        for (BusinessSize size : BusinessSize.values()) {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("id", size.name());
+            m.put("label", size.getLabel());
+            m.put("range", size.getRange());
+            m.put("feeMultiplier", size.getFeeMultiplier());
+            m.put("inspectionFactor", size.getInspectionFactor());
+            m.put("extraInspections", size.extraInspections().stream().map(InspectionType::getLabel).toList());
+            m.put("extraDocuments", size.extraDocuments());
+            sizes.add(m);
+        }
+        cfg.put("sizes", sizes);
+        return cfg;
+    }
+
     private Map<String, Object> servicesJson() {
         List<Map<String, Object>> list = new ArrayList<>();
-        for (GovService s : appointments.getCatalog().getServices()) {
+        for (PermitService s : appointments.getCatalog().getServices()) {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("id", s.getId());
             m.put("name", s.getName());
             m.put("description", s.getDescription());
-            m.put("category", s.getCategory().name());
-            m.put("categoryLabel", s.getCategory().getLabel());
-            m.put("fee", s.getFee());
-            m.put("durationMinutes", s.getDurationMinutes());
-            m.put("minimumAge", s.getMinimumAge());
-            m.put("requirements", s.getRequirements());
+            m.put("baseDocuments", s.baseDocuments());
             list.add(m);
         }
         return Map.of("services", list);
+    }
+
+    private Map<String, Object> industriesJson() {
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (Industry i : appointments.getCatalog().getIndustries()) {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("id", i.getId());
+            m.put("name", i.getName());
+            m.put("description", i.getDescription());
+            m.put("baseFee", i.getBaseFee());
+            m.put("inspections", i.requiredInspections().stream().map(InspectionType::getLabel).toList());
+            m.put("documents", i.requiredDocuments());
+            m.put("surcharges", feeLines(i.surcharges()));
+            list.add(m);
+        }
+        return Map.of("industries", list);
     }
 
     private Map<String, Object> officesJson() {
@@ -153,9 +198,56 @@ class ApiHandler implements HttpHandler {
             m.put("name", o.getName());
             m.put("address", o.getAddress());
             m.put("serviceIds", o.getServiceIds().stream().sorted().toList());
+            m.put("sizesServed", java.util.Arrays.stream(BusinessSize.values())
+                    .filter(o::serves).map(Enum::name).toList());
             list.add(m);
         }
         return Map.of("offices", list);
+    }
+
+    private Map<String, Object> quoteResponse(HttpExchange exchange) {
+        Map<String, String> q = parseQuery(exchange.getRequestURI().getRawQuery());
+        Quote quote = appointments.quote(q.get("serviceId"), q.get("industryId"), parseEmployees(q.get("employees")));
+        return Map.of("quote", quoteJson(quote));
+    }
+
+    private Map<String, Object> quoteJson(Quote quote) {
+        BusinessSize size = quote.size();
+        Map<String, Object> m = new LinkedHashMap<>();
+        Map<String, Object> sizeJson = new LinkedHashMap<>();
+        sizeJson.put("id", size.name());
+        sizeJson.put("label", size.getLabel());
+        sizeJson.put("range", size.getRange());
+        m.put("size", sizeJson);
+
+        Map<String, Object> fee = new LinkedHashMap<>();
+        fee.put("lines", feeLines(quote.fee().getLines()));
+        fee.put("total", quote.fee().getTotal());
+        m.put("fee", fee);
+
+        List<Map<String, Object>> inspections = new ArrayList<>();
+        for (InspectionType type : quote.inspections()) {
+            Map<String, Object> i = new LinkedHashMap<>();
+            i.put("label", type.getLabel());
+            i.put("fee", Math.round(type.getFee() * size.getInspectionFactor() * 100.0) / 100.0);
+            i.put("minutes", (int) Math.round(type.getMinutes() * size.getInspectionFactor()));
+            inspections.add(i);
+        }
+        m.put("inspections", inspections);
+        m.put("requirements", quote.requirements());
+        m.put("estimatedMinutes", quote.estimatedMinutes());
+        return m;
+    }
+
+    private List<Map<String, Object>> feeLines(List<FeeLine> lines) {
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (FeeLine line : lines) {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("label", line.label());
+            m.put("amount", line.amount());
+            out.add(m);
+        }
+        return out;
     }
 
     private Map<String, Object> slotsJson(HttpExchange exchange) {
@@ -185,13 +277,16 @@ class ApiHandler implements HttpHandler {
         m.put("time", a.getTime().toString());
         m.put("serviceId", a.getService().getId());
         m.put("serviceName", a.getService().getName());
-        m.put("fee", a.getService().getFee());
-        m.put("requirements", a.getService().getRequirements());
         m.put("officeId", a.getOffice().getId());
         m.put("officeName", a.getOffice().getName());
         m.put("officeAddress", a.getOffice().getAddress());
-        m.put("fullName", a.getCitizen().getFullName());
-        m.put("email", a.getCitizen().getEmail());
+        m.put("businessName", a.getBusiness().getName());
+        m.put("businessAddress", a.getBusiness().getAddress());
+        m.put("industryName", a.getBusiness().getIndustry().getName());
+        m.put("employees", a.getBusiness().getEmployeeCount());
+        m.put("ownerName", a.getApplicant().getFullName());
+        m.put("email", a.getApplicant().getEmail());
+        m.put("quote", quoteJson(a.getQuote()));
         return Map.of("appointment", m);
     }
 

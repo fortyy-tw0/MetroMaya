@@ -1,63 +1,35 @@
-# Licensing & Registration Appointment System
+# BPLO Online – Business Permits and Licensing Office appointment system
 
-A web app for booking **driver's license** and **vehicle registration** appointments.
-Java backend (JDK only, no libraries) plus a plain HTML/CSS/JavaScript front-end.
+A web app where business owners book slots for **new permit applications**, **annual renewals** and **inspection visits**. The backend is plain Java 21 (`com.sun.net.httpserver`, no dependencies). The front-end is static HTML, CSS and vanilla JS.
 
-**Flow:** landing page → *Book an Appointment* → service → office → date & time → your details → review → reference number.
-Citizens can look up, reschedule or cancel with that reference number.
+Fees are sample rates for a course project, not official LGU fees.
 
-## Run it locally
-
-Needs JDK 17 or newer.
+## Run
 
 ```bash
-./run.sh            # then open http://localhost:8080
-./run.sh 3000       # or pick another port
-./run-tests.sh      # runs the booking-rule checks
+./run.sh            # http://localhost:8080  (set PORT to change)
+./run-tests.sh      # 18 plain-Java checks
 ```
 
-## OOP design
+## Polymorphism
 
-| Class | Role |
-|---|---|
-| `GovService` (abstract) | A bookable service: name, fee, duration, minimum age, requirements |
-| `LicenseService`, `RegistrationService` | Subclasses. Each sets its category and its own always-required documents (polymorphism) |
-| `Office` | A branch, with the services it offers and a per-slot capacity |
-| `Citizen` | Validates its own name, email, phone and birth date |
-| `Appointment` | One booking. Knows how to `cancel()` and `moveTo()` |
-| `AppointmentRepository` (interface) | Storage contract |
-| `InMemoryAppointmentRepository` | Current implementation. Swap for a database one without touching the service |
-| `CatalogService` | The seeded list of services and offices |
-| `AppointmentService` | All booking rules (see below) |
-| `ApiHandler`, `StaticHandler`, `WebServer` | Thin HTTP layer on the JDK's built-in server |
+| Varies by | Design | Classes |
+|---|---|---|
+| Industry | abstract class, one subclass each | `Industry` → `RetailIndustry`, `FoodIndustry`, `ManufacturingIndustry`, `ProfessionalServicesIndustry`, `HealthcareIndustry` (base fee, required inspections, documents, surcharges) |
+| Business size | enum with constant-specific method bodies | `BusinessSize` MICRO / SMALL / MEDIUM / LARGE (fee multiplier, inspection cost factor, extra inspections and documents) |
+| Service type | abstract class with a final template method `quote()` | `PermitService` → `NewPermitService`, `RenewalService`, `InspectionVisitService` |
 
-### Booking rules
-- Weekdays only, from today up to 30 days ahead
-- Hourly slots 8:00 to 16:00, no 12:00 (lunch)
-- Each office has a capacity per slot; full slots can't be booked
-- Each service has a minimum age
-- An office can only be booked for services it offers
-- One active appointment per person per service
+Other pieces: `Office` (offers some services, serves some sizes, per-slot capacity), `Appointment` (stores a quote snapshot), `AppointmentRepository` interface with an in-memory implementation, and `AppointmentService` holding the booking rules.
+
+## Booking rules
+
+Weekdays only, up to 30 days ahead, hourly slots 8:00–16:00 (no 12:00), per-office capacity, one active booking per email + business + service. References look like `BPL-20261116-ABCDE`.
 
 ## API
 
-| Method | Path | Purpose |
-|---|---|---|
-| GET | `/api/config` | Today's date and booking window |
-| GET | `/api/services` | All services and required documents |
-| GET | `/api/offices` | All offices |
-| GET | `/api/slots?officeId=&date=` | Slot availability for a day |
-| POST | `/api/appointments` | Book (form-encoded) |
-| GET | `/api/appointments/{ref}` | Look up |
-| POST | `/api/appointments/{ref}/cancel` | Cancel |
-| POST | `/api/appointments/{ref}/reschedule` | Move to a new `date` and `time` |
+`GET /api/health`, `/api/config`, `/api/services`, `/api/industries`, `/api/offices`, `/api/quote?serviceId=&industryId=&employees=`, `/api/slots?officeId=&date=`
+`POST /api/appointments`, `GET /api/appointments/{ref}`, `POST /api/appointments/{ref}/cancel`, `POST /api/appointments/{ref}/reschedule`
 
 ## Deploy on Vercel
 
-Vercel has no native Java runtime, so this project uses its **Container runtime** (Beta): the root `Dockerfile`
-builds the Java app and Vercel serves it. Import this repository in Vercel and deploy; no extra settings are needed.
-
-The `PORT` environment variable defaults to `80` in the Dockerfile. Set `APP_TIMEZONE` (default `Asia/Manila`) to change the time zone used for "today".
-
-> **Note:** bookings are stored in memory, so they reset whenever the container restarts or scales down after idling.
-> To keep them, implement `AppointmentRepository` against a database.
+Vercel has no Java runtime, so the project uses the Container runtime with the root `Dockerfile` (`Dockerfile.vercel` is a copy). The Vercel project name must not contain underscores. Bookings are kept in memory and reset when the container scales down; swap in a database-backed `AppointmentRepository` to persist them.

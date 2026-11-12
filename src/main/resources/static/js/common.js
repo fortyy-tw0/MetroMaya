@@ -6,7 +6,7 @@ async function request(path, options) {
   try {
     res = await fetch(path, options);
   } catch (e) {
-    throw new Error('Could not reach the server. Please check your connection and try again.');
+    throw new Error('Could not reach the server. Check your connection and try again.');
   }
   let data = null;
   try { data = await res.json(); } catch (e) { /* non-JSON body */ }
@@ -43,8 +43,18 @@ function el(tag, props, ...children) {
 
 function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); return node; }
 
-function money(n) {
-  return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function peso(n) {
+  return '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function pesoShort(n) {
+  return '₱' + Number(n).toLocaleString('en-PH', { maximumFractionDigits: 0 });
+}
+
+function minutesText(m) {
+  if (m < 60) return m + ' min';
+  const h = Math.floor(m / 60), r = m % 60;
+  return h + ' hr' + (r ? ' ' + r + ' min' : '');
 }
 
 function formatDate(iso) {
@@ -79,8 +89,43 @@ function showAlert(node, message, kind) {
 
 function hideAlert(node) { node.hidden = true; node.textContent = ''; }
 
-function requirementsList(items) {
-  return el('ul', { class: 'checklist' }, items.map((r) => el('li', { text: r })));
+// "Sanitary & health inspection" -> "Sanitary"
+function shortInspection(label) {
+  return label.replace(/ inspection$/, '').split(' & ')[0];
+}
+
+// ---- quote rendering, shared by the landing page, booking wizard and manage page ----
+
+function renderFee(container, fee) {
+  clear(container);
+  const max = Math.max(...fee.lines.map((l) => l.amount), 1);
+  fee.lines.forEach((line) => {
+    container.append(el('div', { class: 'fee-row' },
+      el('span', { text: line.label }),
+      el('span', { class: 'amt', text: peso(line.amount) }),
+      el('span', { class: 'bar' }, el('i', { style: 'width:' + Math.max(4, Math.round(line.amount / max * 100)) + '%' }))));
+  });
+  container.append(el('div', { class: 'fee-total' },
+    el('span', { text: 'Estimated total' }),
+    el('span', { text: peso(fee.total) })));
+}
+
+function renderInspections(list, inspections) {
+  clear(list);
+  if (!inspections.length) {
+    list.append(el('li', null, el('span', { text: 'No inspection needed for this service.' })));
+    return;
+  }
+  inspections.forEach((i) => {
+    list.append(el('li', null,
+      el('span', { text: i.label }),
+      el('span', { class: 'meta', text: minutesText(i.minutes) + ' · ' + peso(i.fee) })));
+  });
+}
+
+function renderDocs(list, requirements) {
+  clear(list);
+  requirements.forEach((r) => list.append(el('li', { text: r })));
 }
 
 // Renders the time-slot buttons for a date at an office into `container`.
@@ -108,9 +153,14 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
       container.append(btn);
     });
     if (!data.slots.some((s) => s.available)) {
-      showAlert(alertNode, 'No free slots on that day. Please try another date.', 'error');
+      showAlert(alertNode, 'No free slots on that day. Try another date.', 'error');
     }
   } catch (e) {
     showAlert(alertNode, e.message, 'error');
   }
+}
+
+function debounce(fn, ms) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
 }

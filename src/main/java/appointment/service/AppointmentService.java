@@ -1,9 +1,11 @@
 package appointment.service;
 
+import appointment.model.Applicant;
 import appointment.model.Appointment;
-import appointment.model.Citizen;
-import appointment.model.GovService;
+import appointment.model.Business;
 import appointment.model.Office;
+import appointment.model.PermitService;
+import appointment.model.Quote;
 import appointment.repository.AppointmentRepository;
 
 import java.security.SecureRandom;
@@ -19,7 +21,8 @@ import java.util.List;
 /**
  * All booking rules live here:
  * weekdays only, within the next 30 days, fixed hourly slots, per-slot capacity,
- * minimum age per service, and one active appointment per person per service.
+ * offices that only offer some services and serve some business sizes,
+ * and one active booking per business per service.
  */
 public class AppointmentService {
 
@@ -51,6 +54,12 @@ public class AppointmentService {
         return LocalDate.now(clock);
     }
 
+    /** Prices a service for a type of business and head count, without booking anything. */
+    public Quote quote(String serviceId, String industryId, int employees) {
+        PermitService service = catalog.getService(serviceId);
+        return service.quote(Business.forEstimate(catalog.getIndustry(industryId), employees));
+    }
+
     public List<SlotInfo> getSlots(String officeId, LocalDate date) {
         Office office = catalog.getOffice(officeId);
         validateDate(date);
@@ -64,36 +73,39 @@ public class AppointmentService {
         return slots;
     }
 
-    public synchronized Appointment book(String serviceId, String officeId,
-                                         LocalDate date, LocalTime time, Citizen citizen) {
-        GovService service = catalog.getService(serviceId);
+    public synchronized Appointment book(String serviceId, String officeId, LocalDate date, LocalTime time,
+                                         Applicant applicant, Business business) {
+        PermitService service = catalog.getService(serviceId);
         Office office = catalog.getOffice(officeId);
 
         if (!office.offers(service.getId())) {
-            throw new BookingException(office.getName() + " does not offer " + service.getName() + ".");
+            throw new BookingException(office.getName() + " does not offer " + service.getName().toLowerCase()
+                    + ". Please choose another office.");
+        }
+        if (!office.serves(business.getSize())) {
+            throw new BookingException(office.getName() + " does not serve "
+                    + business.getSize().getLabel().toLowerCase() + " businesses. Please choose the main office.");
         }
         validateSlot(office, date, time);
 
-        if (citizen.ageOn(date) < service.getMinimumAge()) {
-            throw new BookingException("You must be at least " + service.getMinimumAge()
-                    + " years old for " + service.getName() + ".");
-        }
-        boolean alreadyBooked = repository.findActiveByEmail(citizen.getEmail()).stream()
-                .anyMatch(a -> a.getService().getId().equals(service.getId()));
+        String businessKey = business.getName().toLowerCase();
+        boolean alreadyBooked = repository.findActiveByEmail(applicant.getEmail()).stream()
+                .anyMatch(a -> a.getService().getId().equals(service.getId())
+                        && a.getBusiness().getName().equalsIgnoreCase(businessKey));
         if (alreadyBooked) {
-            throw new BookingException("You already have an active appointment for "
-                    + service.getName() + ". Cancel it first to book a new one.");
+            throw new BookingException("You already have an active booking for " + service.getName().toLowerCase()
+                    + " for " + business.getName() + ". Cancel it first to book a new one.");
         }
 
-        Appointment appointment = new Appointment(newReference(date), citizen, service, office,
-                date, time, Instant.now(clock));
+        Appointment appointment = new Appointment(newReference(date), applicant, business, service, office,
+                date, time, service.quote(business), Instant.now(clock));
         repository.save(appointment);
         return appointment;
     }
 
     public Appointment find(String referenceNo) {
         return repository.findByReference(referenceNo)
-                .orElseThrow(() -> new NotFoundException("No appointment found for that reference number."));
+                .orElseThrow(() -> new NotFoundException("No booking found for that reference number."));
     }
 
     public synchronized Appointment cancel(String referenceNo) {
@@ -106,7 +118,7 @@ public class AppointmentService {
     public synchronized Appointment reschedule(String referenceNo, LocalDate date, LocalTime time) {
         Appointment appointment = find(referenceNo);
         if (!appointment.isActive()) {
-            throw new BookingException("A cancelled appointment cannot be rescheduled.");
+            throw new BookingException("A cancelled booking cannot be moved.");
         }
         if (date.equals(appointment.getDate()) && time.equals(appointment.getTime())) {
             throw new BookingException("Please choose a different date or time.");
@@ -128,7 +140,7 @@ public class AppointmentService {
             throw new BookingException("That date has already passed.");
         }
         if (date.isAfter(today.plusDays(MAX_DAYS_AHEAD))) {
-            throw new BookingException("Appointments open up to " + MAX_DAYS_AHEAD + " days in advance.");
+            throw new BookingException("Slots open up to " + MAX_DAYS_AHEAD + " days in advance.");
         }
         DayOfWeek day = date.getDayOfWeek();
         if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
@@ -153,7 +165,7 @@ public class AppointmentService {
     private String newReference(LocalDate date) {
         String ref;
         do {
-            StringBuilder sb = new StringBuilder("APT-")
+            StringBuilder sb = new StringBuilder("BPL-")
                     .append(date.toString().replace("-", "")).append('-');
             for (int i = 0; i < 5; i++) {
                 sb.append(REF_ALPHABET.charAt(random.nextInt(REF_ALPHABET.length())));

@@ -3,90 +3,158 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Licensing &amp; Registration Appointments</title>
-  <meta name="description" content="Book a driver's license or vehicle registration appointment online, pick your office, date and time, and skip the long line.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23e9a820'/%3E%3Cpath d='M9 22V10h7a4 4 0 010 8h-4' fill='none' stroke='%2314213d' stroke-width='3'/%3E%3C/svg%3E">
+  <title>BPLO Online · Business permits, booked on your schedule</title>
+  <meta name="description" content="Book a slot for a new business permit, an annual renewal or an inspection. See your fees, inspections and documents before you go.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23e9368f'/%3E%3Ctext x='16' y='23' font-family='Georgia' font-size='20' text-anchor='middle' fill='white'%3EB%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <header class="site-header">
-    <div class="wrap">
-      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">LR</span> Licensing &amp; Registration</a>
-      <nav class="nav" aria-label="Main">
-        <a href="#services">Services</a>
+  <div class="nav-wrap">
+    <header class="nav">
+      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">B</span> BPLO Online</a>
+      <nav class="nav-links" aria-label="Main">
+        <a href="/" aria-current="page">Home</a>
+        <a href="#estimate">Estimate fees</a>
+        <a href="#industries">Industries</a>
         <a href="#offices">Offices</a>
-        <a href="/manage.html">My appointment</a>
       </nav>
-    </div>
-  </header>
+      <div class="nav-actions">
+        <a class="btn btn-soft btn-small" href="/manage.html">Track a booking</a>
+        <a class="btn btn-ink btn-small" href="/book.html">Book a slot</a>
+      </div>
+    </header>
+  </div>
 
   <main>
-    <section class="hero">
+    <section class="hero dusk">
       <div class="wrap">
-        <span class="eyebrow">Online appointments</span>
-        <h1>Skip the line.<br>Book your visit in minutes.</h1>
-        <p class="lead">Driver's license and vehicle registration services, scheduled at the office and time that suits you. No account needed, just pick a slot and bring your documents.</p>
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="/book.html">Book an Appointment</a>
-          <a class="btn btn-ghost" href="/manage.html">Check or cancel a booking</a>
-        </div>
-        <div class="hero-facts">
-          <div><strong>7 services</strong>licenses and registration</div>
-          <div><strong>3 offices</strong>choose the closest</div>
-          <div><strong>30 days</strong>booking window, weekdays</div>
-        </div>
+        <span class="tag">Business Permits and Licensing Office</span>
+        <h1>Business permits, <em>booked on your schedule</em></h1>
+        <p class="lead">Book a slot to apply for a new permit, renew for the year, or schedule an inspection. See your fees and documents before you go.</p>
+
+        <form class="hero-form" id="hero-form">
+          <input id="hero-name" name="businessName" placeholder="Your business name" autocomplete="organization" aria-label="Your business name">
+          <button class="btn btn-grad" type="submit">Book a slot</button>
+        </form>
+        <p class="hero-note">No account needed. Open weekdays, 8:00 AM to 5:00 PM.</p>
+
+        <section class="estimator" id="estimate" aria-labelledby="est-title">
+          <aside class="est-side">
+            <div class="est-brand"><span class="brand-mark" aria-hidden="true">B</span> BPLO Online</div>
+            <div>
+              <p class="est-side-title">Choose a service</p>
+              <div class="est-tabs" id="est-tabs" role="tablist" aria-label="Service"></div>
+            </div>
+            <p class="est-foot">Sample rates for a course project. Not official LGU fees.</p>
+          </aside>
+
+          <div class="est-main">
+            <div class="est-head">
+              <div>
+                <h3 id="est-title">Fee and inspection estimator</h3>
+                <p>Change the business to see what it pays and what inspectors check.</p>
+              </div>
+              <div class="est-controls">
+                <label class="control">Type of business
+                  <select id="est-industry"></select>
+                </label>
+                <label class="control">Employees
+                  <input id="est-employees" type="number" min="1" max="100000" value="12" inputmode="numeric">
+                </label>
+              </div>
+            </div>
+
+            <div class="tiles" id="est-tiles" aria-live="polite"></div>
+
+            <div class="est-panels">
+              <div class="box">
+                <h4>Fee breakdown</h4>
+                <div id="est-fee"></div>
+              </div>
+              <div class="box">
+                <h4>Inspections</h4>
+                <ul class="insp-list" id="est-insp"></ul>
+                <details class="docs">
+                  <summary>Documents to bring</summary>
+                  <ul class="doc-list" id="est-docs"></ul>
+                </details>
+              </div>
+            </div>
+
+            <div class="est-cta">
+              <a class="btn btn-grad" id="est-book" href="/book.html">Book this service</a>
+            </div>
+          </div>
+        </section>
       </div>
     </section>
 
-    <section class="block alt" id="how">
-      <div class="wrap">
-        <div class="section-head">
-          <h2>How it works</h2>
-          <p>Four quick steps, then you get a reference number to show at the counter.</p>
+    <section class="section band" id="how">
+      <div class="wrap split">
+        <div class="split-head">
+          <h2>Four steps to a confirmed slot</h2>
+          <p>Booking takes about three minutes. You get a reference number straight away to change or cancel later.</p>
         </div>
-        <ol class="steps">
-          <li><h3>Choose a service</h3><p>Pick the license or registration transaction you need.</p></li>
-          <li><h3>Pick an office</h3><p>Only offices that offer your service are shown.</p></li>
-          <li><h3>Select date &amp; time</h3><p>See live availability for each hourly slot.</p></li>
-          <li><h3>Confirm</h3><p>Enter your details and receive your reference number.</p></li>
+        <ol class="sequence">
+          <li>
+            <h4>Choose a service</h4>
+            <p>New permit, annual renewal, or an inspection visit.</p>
+          </li>
+          <li>
+            <h4>Describe your business</h4>
+            <p>Your type of business and number of employees set your fees, inspections and documents.</p>
+          </li>
+          <li>
+            <h4>Pick an office, date and time</h4>
+            <p>Weekdays, up to 30 days ahead. Every slot shows how many places are left.</p>
+          </li>
+          <li>
+            <h4>Bring your documents</h4>
+            <p>Your confirmation lists exactly what to bring and what you will pay.</p>
+          </li>
         </ol>
       </div>
     </section>
 
-    <section class="block" id="services">
+    <section class="section" id="industries">
       <div class="wrap">
-        <div class="section-head">
-          <h2>Services you can book</h2>
-          <p>Open "What to bring" on any service to see the documents you need. Fees are paid at the office.</p>
+        <div class="split">
+          <div class="split-head">
+            <h2>What you pay depends on what you run</h2>
+            <p>Your type of business sets the base fee and the inspections. Your size then scales the fee and can add more checks.</p>
+          </div>
+          <div class="rows" id="industry-rows" aria-live="polite"></div>
         </div>
-        <div class="service-groups" id="service-groups" aria-live="polite">
-          <p class="hint">Loading services…</p>
-        </div>
+        <div class="size-grid" id="size-grid"></div>
       </div>
     </section>
 
-    <section class="block alt" id="offices">
-      <div class="wrap">
-        <div class="section-head">
-          <h2>Our offices</h2>
-          <p>Open weekdays, 8:00 AM to 5:00 PM, with a lunch break at 12:00 NN.</p>
+    <section class="section band" id="offices">
+      <div class="wrap split">
+        <div class="split-head">
+          <h2>Where to go</h2>
+          <p>Not every desk handles every service. The booking form only offers the desks that can serve your business.</p>
         </div>
-        <div class="offices" id="office-list" aria-live="polite"></div>
+        <div class="rows" id="office-rows" aria-live="polite"></div>
       </div>
     </section>
 
-    <section class="cta-band">
-      <div class="wrap">
-        <h2>Ready to get it done?</h2>
-        <a class="btn btn-primary" href="/book.html">Book an Appointment</a>
+    <section class="cta">
+      <div class="cta-card dusk">
+        <h2>Ready to book your slot?</h2>
+        <p>Pick a service and get your reference number in minutes.</p>
+        <a class="btn btn-grad" href="/book.html">Book a slot</a>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer">
+  <footer class="footer">
     <div class="wrap">
-      <span>Licensing &amp; Registration Appointment System</span>
-      <span>OOP course project</span>
+      <span>BPLO Online, an OOP course project</span>
+      <span>Fees shown are samples, not official rates.</span>
     </div>
   </footer>
 
