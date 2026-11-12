@@ -65,10 +65,10 @@ em { font-style: normal; }
 }
 .btn:hover { transform: translateY(-1px); }
 .btn[disabled] { opacity: .45; cursor: not-allowed; transform: none; }
-.btn-primary, .btn-grad, .btn-ink { background: var(--navy); color: #fff; }
-.btn-primary:hover, .btn-grad:hover, .btn-ink:hover { background: var(--navy-deep); }
-.btn-outline, .btn-soft { background: #fff; color: var(--navy); border-color: rgba(44, 58, 114, .35); }
-.btn-outline:hover, .btn-soft:hover { border-color: var(--navy); background: var(--navy-soft); }
+.btn-primary { background: var(--navy); color: #fff; }
+.btn-primary:hover { background: var(--navy-deep); }
+.btn-outline { background: #fff; color: var(--navy); border-color: rgba(44, 58, 114, .35); }
+.btn-outline:hover { border-color: var(--navy); background: var(--navy-soft); }
 .btn-gold { background: var(--gold); color: var(--navy-deep); }
 .btn-gold:hover { background: #F3C164; }
 .btn-danger { background: #fff; color: var(--bad); border-color: rgba(163, 50, 42, .4); }
