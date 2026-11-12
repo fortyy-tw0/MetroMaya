@@ -181,9 +181,19 @@ em { font-style: normal; }
 /* ---------- estimator ---------- */
 .estimate-wrap { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 3rem; align-items: start; }
 .estimate-intro p { color: var(--ink-soft); }
-.estimate-intro img { width: min(100%, 300px); margin-top: 2rem; }
+.section-white { background: #fff; border-block: 1px solid var(--line); }
+/* Maya beside the estimator: winks every 5 seconds by swapping to a copy of the same drawing with one eye closed */
+.est-maya { position: relative; width: min(100%, 360px); margin-top: 2.25rem; }
+.est-maya img { width: 100%; height: auto; display: block; }
+.est-maya .est-maya-wink { position: absolute; inset: 0; opacity: 0; animation: wink 5s infinite; }
+.est-maya-say {
+  position: absolute; top: 4%; left: 58%; white-space: nowrap;
+  font-family: var(--display); font-weight: 600; font-size: clamp(1.2rem, 2.1vw, 1.75rem); line-height: 1;
+  color: var(--ink); rotate: -10deg; transform-origin: 0% 100%;
+}
+@keyframes wink { 0%, 90% { opacity: 0; } 91%, 95% { opacity: 1; } 96%, 100% { opacity: 0; } }
 .estimate-note { font-size: .86rem; color: var(--muted); margin-top: 1rem; }
-@media (max-width: 960px) { .estimate-wrap { grid-template-columns: 1fr; gap: 1.5rem; } .estimate-intro img { display: none; } }
+@media (max-width: 960px) { .estimate-wrap { grid-template-columns: 1fr; gap: 1.5rem; } .est-maya { display: none; } }
 
 .estimator { background: #fff; border: 1px solid var(--line); border-radius: 24px; box-shadow: var(--shadow-sm); padding: clamp(1.25rem, 3vw, 2rem); min-width: 0; }
 .est-tabs { display: flex; flex-wrap: wrap; gap: .25rem; padding: .3rem; background: var(--cream); border-radius: 14px; margin-bottom: 1.25rem; }
@@ -401,6 +411,7 @@ em { font-style: normal; }
   * { transition: none !important; scroll-behavior: auto !important; animation: none !important; }
   .js-reveal .reveal, .js-reveal .reveal.reveal-left, .js-reveal .reveal.reveal-right, .js-reveal .reveal.reveal-zoom { transform: none !important; transition: opacity .45s ease !important; }
   .mf-frames img { animation: flap-strip 1.6s steps(16) infinite !important; }
+  .est-maya .est-maya-wink { animation: wink 5s infinite !important; }
   .maya-fly { animation: none !important; }
   .mf-look { transition: transform .12s linear !important; }
 }
