@@ -111,7 +111,7 @@ em { font-style: normal; }
 
 /* Maya peeks out from behind the card: a clip box ends exactly at the card's top edge. */
 .perch { --mw: min(600px, 92vw, 58vh); position: relative; width: min(880px, 100% - 2rem); margin: clamp(1rem, 3vh, 2rem) auto clamp(1.25rem, 4vh, 2.5rem); z-index: 2; }
-.perch-clip { width: var(--mw); aspect-ratio: 450 / 206; margin: 0 auto; overflow: hidden; position: relative; z-index: 1; }
+.perch-clip { width: var(--mw); aspect-ratio: 450 / 206; margin: 0 auto; overflow: visible; clip-path: inset(-40% -25% 0 -25%); position: relative; z-index: 1; }
 /* Maya flies: a 16-frame flap rendered from the drawing itself (body untouched, wings bend),
    with drawn eyes on top whose pupils follow the pointer. */
 .maya-fly { position: absolute; inset: 0; animation: hover .8s ease-in-out infinite; }
@@ -120,7 +120,8 @@ em { font-style: normal; }
 .js .perch-clip.ready { opacity: 1; }
 .js .perch-hi { visibility: hidden; }
 .js .perch.maya-ready .perch-hi { visibility: visible; }
-.mf-frames { position: absolute; inset: 0; overflow: hidden; }
+/* the frames have 80px of room on each side and 30px on top, so wing tips never hit an edge */
+.mf-frames { position: absolute; left: -17.778%; top: -14.563%; width: 135.556%; height: 114.563%; overflow: hidden; }
 .mf-frames img { position: absolute; left: 0; top: 0; width: 1600%; height: 100%; max-width: none; display: block; animation: flap-strip .8s steps(16) infinite; }
 .mf-eyes, .mf-beak { position: absolute; left: 0; top: 0; width: 100%; height: 100%; max-width: none; display: block; }
 .mf-look { transition: transform .12s linear; }
@@ -427,3 +428,4 @@ em { font-style: normal; }
 @keyframes pop { 0% { transform: scale(.92); opacity: .4; } 100% { transform: none; opacity: 1; } }
 @keyframes idle-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 @media (max-height: 760px) { .hero-band { padding-top: 1rem; } .perch { margin-top: .75rem; margin-bottom: 1rem; } }
+.hero-band { overflow-x: clip; }
