@@ -115,9 +115,9 @@ em { font-style: normal; }
 .perch-clip img { width: 100%; height: auto; display: block; }
 /* "Hi!" written next to Maya's head */
 .perch-hi {
-  position: absolute; z-index: 3; top: calc(var(--mw) * .02);
-  left: calc(50% + var(--mw) * .19);
-  font-family: var(--display); font-weight: 600; font-size: clamp(1.4rem, calc(var(--mw) * .075), 2.4rem); line-height: 1;
+  position: absolute; z-index: 3; top: calc(var(--mw) * .11);
+  left: calc(50% + var(--mw) * .2);
+  font-family: var(--display); font-weight: 600; font-size: clamp(1.15rem, calc(var(--mw) * .06), 2rem); line-height: 1;
   color: var(--navy); transform-origin: 0% 100%;
 }
 @media (prefers-reduced-motion: no-preference) {
