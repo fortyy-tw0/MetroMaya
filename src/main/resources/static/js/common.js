@@ -229,6 +229,30 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
 
 })();
 
+// ---- Maya's eyes follow the pointer ----
+(function () {
+  const irises = Array.prototype.slice.call(document.querySelectorAll('#maya .mf-iris'));
+  if (!irises.length) return;
+  const MAX = 9; // how far a pupil can travel, as a % of its eye box
+  let px = null, py = null, raf = 0;
+  function look() {
+    raf = 0;
+    irises.forEach((iris) => {
+      if (px === null) { iris.style.transform = ''; return; }
+      const r = iris.parentElement.getBoundingClientRect();
+      const dx = px - (r.left + r.width / 2), dy = py - (r.top + r.height / 2);
+      const d = Math.hypot(dx, dy) || 1;
+      const reach = Math.min(1, d / 160);
+      iris.style.transform = 'translate(' + (dx / d * reach * MAX).toFixed(2) + '%, ' + (dy / d * reach * MAX).toFixed(2) + '%)';
+    });
+  }
+  function aim(x, y) { px = x; py = y; if (!raf) raf = requestAnimationFrame(look); }
+  window.addEventListener('pointermove', (e) => aim(e.clientX, e.clientY), { passive: true });
+  window.addEventListener('pointerdown', (e) => aim(e.clientX, e.clientY), { passive: true });
+  document.addEventListener('mouseleave', () => aim(null, null));
+  window.addEventListener('scroll', () => { if (px !== null) aim(px, py); }, { passive: true });
+})();
+
 function debounce(fn, ms) {
   let t;
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };

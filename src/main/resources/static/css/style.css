@@ -109,10 +109,22 @@ em { font-style: normal; }
 .icon-chip { width: 32px; height: 32px; border-radius: 10px; background: var(--gold-soft); color: var(--navy); display: grid; place-items: center; flex: none; }
 .icon-chip svg { width: 18px; height: 18px; }
 
-/* Maya stays still, peeking out: a clip box ends exactly at the card's top edge. */
+/* Maya peeks out from behind the card: a clip box ends exactly at the card's top edge. */
 .perch { --mw: min(600px, 92vw, 58vh); position: relative; width: min(880px, 100% - 2rem); margin: clamp(1rem, 3vh, 2rem) auto clamp(1.25rem, 4vh, 2.5rem); z-index: 2; }
 .perch-clip { width: var(--mw); aspect-ratio: 450 / 206; margin: 0 auto; overflow: hidden; position: relative; z-index: 1; }
-.perch-clip img { width: 100%; height: auto; display: block; }
+/* Maya is built from layers so she can fly: shoulder filler, two wings, body, and a pupil in each eye. */
+.maya-fly { position: absolute; inset: 0; }
+.maya-fly img { position: absolute; left: 0; top: 0; width: 100%; height: auto; display: block; max-width: none; }
+.mf-wing-l { transform-origin: 40.00% 65.38%; }
+.mf-wing-r { transform-origin: 67.78% 61.54%; }
+.mf-eye { position: absolute; overflow: hidden; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+.mf-eye .mf-iris { width: 100%; height: 100%; transition: transform .12s linear; will-change: transform; }
+.maya-fly { animation: hover .8s ease-in-out infinite; }
+.mf-wing-l { animation: flap-l .8s ease-in-out infinite; }
+.mf-wing-r { animation: flap-r .8s ease-in-out infinite; }
+@keyframes flap-l { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(9deg); } }
+@keyframes flap-r { 0%, 100% { transform: rotate(5deg); } 50% { transform: rotate(-9deg); } }
+@keyframes hover { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(2.5%); } }
 /* "Hi!" written next to Maya's head */
 .perch-hi {
   position: absolute; z-index: 3; top: calc(var(--mw) * .11);
@@ -386,7 +398,12 @@ em { font-style: normal; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; scroll-behavior: auto !important; animation: none !important; }
   .js-reveal .reveal, .js-reveal .reveal.reveal-left, .js-reveal .reveal.reveal-right, .js-reveal .reveal.reveal-zoom { transform: none !important; transition: opacity .45s ease !important; }
+  .mf-wing-l { animation: flap-l-soft 1.6s ease-in-out infinite !important; }
+  .mf-wing-r { animation: flap-r-soft 1.6s ease-in-out infinite !important; }
+  .mf-eye .mf-iris { transition: transform .12s linear !important; }
 }
+@keyframes flap-l-soft { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(4deg); } }
+@keyframes flap-r-soft { 0%, 100% { transform: rotate(2deg); } 50% { transform: rotate(-4deg); } }
 
 /* ---------- scroll reveal (only when JS is running and motion is allowed) ---------- */
 .js-reveal .reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s cubic-bezier(.2, .7, .2, 1), transform .7s cubic-bezier(.2, .7, .2, 1); transition-delay: var(--d, 0ms); }
