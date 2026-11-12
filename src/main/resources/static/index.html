@@ -5,98 +5,147 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BPLO Online · Business permits, booked on your schedule</title>
   <meta name="description" content="Book a slot for a new business permit, an annual renewal or an inspection. See your fees, inspections and documents before you go.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23e9368f'/%3E%3Ctext x='16' y='23' font-family='Georgia' font-size='20' text-anchor='middle' fill='white'%3EB%3C/text%3E%3C/svg%3E">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Lexend:wght@500;600&family=JetBrains+Mono:wght@500;600&display=swap">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <div class="nav-wrap">
-    <header class="nav">
-      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">B</span> BPLO Online</a>
+  <header class="site-header">
+    <div class="nav">
+      <a class="brand" href="/"><img src="/img/maya-mark.png" alt="" width="40" height="40"><span>BPLO<b>.</b>Online</span></a>
       <nav class="nav-links" aria-label="Main">
         <a href="/" aria-current="page">Home</a>
-        <a href="#estimate">Estimate fees</a>
-        <a href="#industries">Industries</a>
+        <a href="#estimate">Fees</a>
+        <a href="#how">How it works</a>
         <a href="#offices">Offices</a>
       </nav>
       <div class="nav-actions">
-        <a class="btn btn-soft btn-small" href="/manage.html">Track a booking</a>
-        <a class="btn btn-ink btn-small" href="/book.html">Book a slot</a>
+        <a class="link" href="/manage.html">Track a booking</a>
+        <a class="btn btn-outline btn-small" href="/book.html">Book a slot</a>
       </div>
-    </header>
-  </div>
+    </div>
+  </header>
 
   <main>
-    <section class="hero dusk">
-      <div class="wrap">
-        <span class="tag">Business Permits and Licensing Office</span>
-        <h1>Business permits, <em>booked on your schedule</em></h1>
-        <p class="lead">Book a slot to apply for a new permit, renew for the year, or schedule an inspection. See your fees and documents before you go.</p>
-
-        <form class="hero-form" id="hero-form">
-          <input id="hero-name" name="businessName" placeholder="Your business name" autocomplete="organization" aria-label="Your business name">
-          <button class="btn btn-grad" type="submit">Book a slot</button>
-        </form>
-        <p class="hero-note">No account needed. Open weekdays, 8:00 AM to 5:00 PM.</p>
-
-        <section class="estimator" id="estimate" aria-labelledby="est-title">
-          <aside class="est-side">
-            <div class="est-brand"><span class="brand-mark" aria-hidden="true">B</span> BPLO Online</div>
-            <div>
-              <p class="est-side-title">Choose a service</p>
-              <div class="est-tabs" id="est-tabs" role="tablist" aria-label="Service"></div>
-            </div>
-            <p class="est-foot">Sample rates for a course project. Not official LGU fees.</p>
-          </aside>
-
-          <div class="est-main">
-            <div class="est-head">
-              <div>
-                <h3 id="est-title">Fee and inspection estimator</h3>
-                <p>Change the business to see what it pays and what inspectors check.</p>
-              </div>
-              <div class="est-controls">
-                <label class="control">Type of business
-                  <select id="est-industry"></select>
-                </label>
-                <label class="control">Employees
-                  <input id="est-employees" type="number" min="1" max="100000" value="12" inputmode="numeric">
-                </label>
-              </div>
-            </div>
-
-            <div class="tiles" id="est-tiles" aria-live="polite"></div>
-
-            <div class="est-panels">
-              <div class="box">
-                <h4>Fee breakdown</h4>
-                <div id="est-fee"></div>
-              </div>
-              <div class="box">
-                <h4>Inspections</h4>
-                <ul class="insp-list" id="est-insp"></ul>
-                <details class="docs">
-                  <summary>Documents to bring</summary>
-                  <ul class="doc-list" id="est-docs"></ul>
-                </details>
-              </div>
-            </div>
-
-            <div class="est-cta">
-              <a class="btn btn-grad" id="est-book" href="/book.html">Book this service</a>
-            </div>
+    <!-- Hero: one white canvas, copy on the left, Maya on the right -->
+    <div class="hero-shell">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <span class="eyebrow">Business Permits and Licensing Office</span>
+          <h1 id="hero-title">Business permits, <span class="mark">booked</span> on your schedule</h1>
+          <p class="lead">Apply for a new permit, renew for the year, or schedule an inspection. See your fees and documents before you go.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="/book.html">Book a slot</a>
+            <a class="btn btn-outline" href="#estimate">Estimate my fees</a>
           </div>
-        </section>
+          <ul class="hero-points">
+            <li>
+              <span class="icon-chip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>
+              New permits and renewals
+            </li>
+            <li>
+              <span class="icon-chip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.2-4.2"/><path d="m8.5 11 1.7 1.7 3.3-3.4"/></svg></span>
+              Inspection visits
+            </li>
+          </ul>
+        </div>
+
+        <div class="hero-art">
+          <img src="/img/maya-ta-da.png" alt="Maya, a sparrow in a navy mail-carrier cap and satchel, greeting you with open wings" width="450" height="375">
+          <div class="hero-badge">
+            <span class="icon-chip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+            <div><b>No account needed</b><span>Weekdays, 8:00 AM to 5:00 PM</span></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Why book online -->
+    <section class="section" id="why" aria-labelledby="why-title">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Why book online</span>
+            <h2 id="why-title">Skip the queue, not the paperwork</h2>
+          </div>
+          <p>Maya carries everything you need to know to the office before you do, so your visit is one trip, not three.</p>
+        </div>
+        <div class="features">
+          <article class="feature">
+            <span class="icon-chip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg></span>
+            <h3>Know your fees first</h3>
+            <p>Your type of business and number of employees set the fees, inspections and documents. You see all three before you book.</p>
+          </article>
+          <article class="feature">
+            <span class="icon-chip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>
+            <h3>Pick a time that suits you</h3>
+            <p>Weekdays up to 30 days ahead, at the desk that handles your service. Every slot shows how many places are left.</p>
+          </article>
+          <article class="feature">
+            <span class="icon-chip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 9"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15"/><path d="M4 20v-5h5"/></svg></span>
+            <h3>Change it anytime</h3>
+            <p>Your reference number lets you look up, move or cancel the booking yourself. No calls, no forms.</p>
+          </article>
+        </div>
       </div>
     </section>
 
-    <section class="section band" id="how">
-      <div class="wrap split">
-        <div class="split-head">
-          <h2>Four steps to a confirmed slot</h2>
-          <p>Booking takes about three minutes. You get a reference number straight away to change or cancel later.</p>
+    <!-- Estimator -->
+    <section class="section" id="estimate" aria-labelledby="est-title" style="padding-top: 0;">
+      <div class="wrap estimate-wrap">
+        <div class="estimate-intro">
+          <span class="eyebrow">Fee estimator</span>
+          <h2 id="est-title">What will my permit cost?</h2>
+          <p>Choose a service and describe the business. The estimate updates as you type.</p>
+          <p class="estimate-note">Sample rates for a course project. Not official LGU fees.</p>
+          <img src="/img/maya-hey-you.png" alt="" width="383" height="365" loading="lazy">
+        </div>
+
+        <div class="estimator">
+          <div class="est-tabs" id="est-tabs" role="tablist" aria-label="Service"></div>
+          <div class="est-controls">
+            <label class="control">Type of business
+              <select id="est-industry"></select>
+            </label>
+            <label class="control">Employees
+              <input id="est-employees" type="number" min="1" max="100000" value="12" inputmode="numeric">
+            </label>
+          </div>
+
+          <div class="tiles" id="est-tiles" aria-live="polite"></div>
+
+          <div class="est-panels">
+            <div class="box">
+              <h4>Fee breakdown</h4>
+              <div id="est-fee"></div>
+            </div>
+            <div class="box">
+              <h4>Inspections</h4>
+              <ul class="insp-list" id="est-insp"></ul>
+              <details class="docs">
+                <summary>Documents to bring</summary>
+                <ul class="doc-list" id="est-docs"></ul>
+              </details>
+            </div>
+          </div>
+
+          <div class="est-cta">
+            <a class="btn btn-primary" id="est-book" href="/book.html">Book this service</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="band" id="how" aria-labelledby="how-title">
+      <div class="wrap">
+        <div class="band-art">
+          <span class="eyebrow">How it works</span>
+          <h2 id="how-title">Four steps to a confirmed slot</h2>
+          <p>Booking takes about three minutes. You get a reference number straight away.</p>
+          <img src="/img/maya-lets-go.png" alt="" width="432" height="357" loading="lazy">
         </div>
         <ol class="sequence">
           <li>
@@ -105,11 +154,11 @@
           </li>
           <li>
             <h4>Describe your business</h4>
-            <p>Your type of business and number of employees set your fees, inspections and documents.</p>
+            <p>Your type of business and number of employees set your fees and documents.</p>
           </li>
           <li>
             <h4>Pick an office, date and time</h4>
-            <p>Weekdays, up to 30 days ahead. Every slot shows how many places are left.</p>
+            <p>Weekdays, up to 30 days ahead, at a desk that serves your business.</p>
           </li>
           <li>
             <h4>Bring your documents</h4>
@@ -119,42 +168,83 @@
       </div>
     </section>
 
-    <section class="section" id="industries">
+    <!-- What you pay -->
+    <section class="section" id="industries" aria-labelledby="ind-title">
       <div class="wrap">
-        <div class="split">
-          <div class="split-head">
-            <h2>What you pay depends on what you run</h2>
-            <p>Your type of business sets the base fee and the inspections. Your size then scales the fee and can add more checks.</p>
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">What you pay</span>
+            <h2 id="ind-title">Fees depend on what you run</h2>
           </div>
+          <p>Your type of business sets the base fee and the inspections. Your size then scales the fee and can add more checks.</p>
+        </div>
+        <div class="fees-wrap">
           <div class="rows" id="industry-rows" aria-live="polite"></div>
+          <div>
+            <h3 class="sizes-title">Business size</h3>
+            <div class="size-grid" id="size-grid"></div>
+          </div>
         </div>
-        <div class="size-grid" id="size-grid"></div>
       </div>
     </section>
 
-    <section class="section band" id="offices">
-      <div class="wrap split">
+    <!-- Offices -->
+    <section class="section" id="offices" aria-labelledby="off-title" style="padding-top: 0;">
+      <div class="wrap offices-wrap">
         <div class="split-head">
-          <h2>Where to go</h2>
+          <span class="eyebrow">Offices</span>
+          <h2 id="off-title">Where to go</h2>
           <p>Not every desk handles every service. The booking form only offers the desks that can serve your business.</p>
+          <ul class="hours">
+            <li><span class="icon-chip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>Weekdays, 8:00 AM to 5:00 PM</li>
+            <li><span class="icon-chip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>Book up to 30 days ahead</li>
+          </ul>
         </div>
-        <div class="rows" id="office-rows" aria-live="polite"></div>
+        <div class="office-card">
+          <div class="rows" id="office-rows" aria-live="polite"></div>
+        </div>
       </div>
     </section>
 
-    <section class="cta">
-      <div class="cta-card dusk">
-        <h2>Ready to book your slot?</h2>
+    <!-- Closing call to action -->
+    <section class="cta" aria-labelledby="cta-title">
+      <div>
+        <h2 id="cta-title">Ready to book your slot?</h2>
         <p>Pick a service and get your reference number in minutes.</p>
-        <a class="btn btn-grad" href="/book.html">Book a slot</a>
+        <a class="btn btn-primary" href="/book.html">Book a slot</a>
       </div>
+      <img src="/img/maya-hehehe.png" alt="" width="344" height="356" loading="lazy">
     </section>
   </main>
 
   <footer class="footer">
     <div class="wrap">
-      <span>BPLO Online, an OOP course project</span>
-      <span>Fees shown are samples, not official rates.</span>
+      <div class="footer-grid">
+        <div>
+          <a class="brand" href="/"><img src="/img/maya-mark.png" alt="" width="40" height="40"><span>BPLO<b>.</b>Online</span></a>
+          <p class="footer-note">Book business permit appointments with Maya, your permit guide.</p>
+        </div>
+        <div>
+          <h4>Services</h4>
+          <ul>
+            <li><a href="/book.html?service=new-permit">New permit</a></li>
+            <li><a href="/book.html?service=renewal">Annual renewal</a></li>
+            <li><a href="/book.html?service=inspection">Inspection visit</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Help</h4>
+          <ul>
+            <li><a href="#estimate">Estimate fees</a></li>
+            <li><a href="/manage.html">Track a booking</a></li>
+            <li><a href="#offices">Offices</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-base">
+        <span>BPLO Online, an OOP course project</span>
+        <span>Fees shown are samples, not official rates.</span>
+      </div>
     </div>
   </footer>
 

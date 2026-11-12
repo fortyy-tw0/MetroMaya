@@ -1,13 +1,16 @@
 (async function () {
   const $ = (id) => document.getElementById(id);
 
-  // ---- hero form: remember the business name for the booking page ----
-  $('hero-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const name = $('hero-name').value.trim();
-    try { if (name) sessionStorage.setItem('bplo.businessName', name); } catch (err) { /* storage unavailable */ }
-    window.location.href = '/book.html';
-  });
+  // ---- optional hero form: remember the business name for the booking page ----
+  const heroForm = $('hero-form');
+  if (heroForm) {
+    heroForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = $('hero-name').value.trim();
+      try { if (name) sessionStorage.setItem('bplo.businessName', name); } catch (err) { /* storage unavailable */ }
+      window.location.href = '/book.html';
+    });
+  }
 
   let config, services, industries, offices;
   try {

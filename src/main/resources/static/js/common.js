@@ -160,6 +160,15 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
   }
 }
 
+// Give the sticky header a hairline once the page scrolls under it.
+(function () {
+  const header = document.querySelector('.site-header');
+  if (!header) return;
+  const update = () => header.classList.toggle('scrolled', window.scrollY > 8);
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+})();
+
 function debounce(fn, ms) {
   let t;
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };

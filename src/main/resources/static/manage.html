@@ -4,32 +4,36 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Track a booking · BPLO Online</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23e9368f'/%3E%3Ctext x='16' y='23' font-family='Georgia' font-size='20' text-anchor='middle' fill='white'%3EB%3C/text%3E%3C/svg%3E">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Lexend:wght@500;600&family=JetBrains+Mono:wght@500;600&display=swap">
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="page-bg">
-  <div class="nav-wrap">
-    <header class="nav">
-      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">B</span> BPLO Online</a>
+<body>
+  <header class="site-header">
+    <div class="nav">
+      <a class="brand" href="/"><img src="/img/maya-mark.png" alt="" width="40" height="40"><span>BPLO<b>.</b>Online</span></a>
       <nav class="nav-links" aria-label="Main">
         <a href="/">Home</a>
         <a href="/book.html">Book a slot</a>
         <a href="/manage.html" aria-current="page">Track a booking</a>
       </nav>
       <div class="nav-actions">
-        <a class="btn btn-ink btn-small" href="/book.html">Book a slot</a>
+        <a class="btn btn-outline btn-small" href="/book.html">Book a slot</a>
       </div>
-    </header>
-  </div>
+    </div>
+  </header>
 
   <main class="page">
     <div class="page-narrow">
       <div class="page-title">
-        <h1>Track a <em>booking</em></h1>
-        <p>Enter the reference number from your confirmation to view, move or cancel your slot.</p>
+        <div>
+          <span class="eyebrow">Your booking</span>
+          <h1>Track a booking</h1>
+          <p>Enter the reference number from your confirmation to view, move or cancel your slot.</p>
+        </div>
+        <img src="/img/maya-hey-you.png" alt="" width="383" height="365">
       </div>
 
       <div class="card">
@@ -38,14 +42,14 @@
             <label for="ref">Reference number</label>
             <input id="ref" name="ref" placeholder="BPL-20261120-ABCDE" autocomplete="off" autocapitalize="characters" required>
           </div>
-          <button class="btn btn-ink" type="submit">Find booking</button>
+          <button class="btn btn-primary" type="submit">Find booking</button>
         </form>
         <div class="alert alert-error" id="lookup-alert" hidden role="alert"></div>
       </div>
 
       <div class="card" id="result" style="margin-top: 1.5rem;" hidden>
         <div style="display:flex; justify-content:space-between; gap:1rem; align-items:center; flex-wrap:wrap;">
-          <h2 style="margin:0;" id="result-ref"></h2>
+          <h2 style="margin:0; font-family: var(--mono); font-weight:600; letter-spacing:.02em; overflow-wrap:anywhere;" id="result-ref"></h2>
           <span class="badge" id="result-status"></span>
         </div>
         <dl class="summary" id="result-summary"></dl>
@@ -61,7 +65,7 @@
 
         <div id="actions" class="no-print">
           <div class="nav-row" style="justify-content:flex-start;">
-            <button class="btn btn-soft" id="reschedule-toggle">Move to another time</button>
+            <button class="btn btn-outline" id="reschedule-toggle">Move to another time</button>
             <button class="btn btn-danger" id="cancel-btn">Cancel booking</button>
           </div>
 
@@ -74,7 +78,7 @@
             <div class="slots" id="new-slots" role="group" aria-label="Available times"></div>
             <div class="alert alert-error" id="new-slot-alert" hidden role="alert"></div>
             <div class="nav-row" style="justify-content:flex-start;">
-              <button class="btn btn-grad" id="reschedule-confirm" disabled>Confirm new time</button>
+              <button class="btn btn-primary" id="reschedule-confirm" disabled>Confirm new time</button>
             </div>
           </div>
         </div>
@@ -84,8 +88,10 @@
 
   <footer class="footer">
     <div class="wrap">
-      <span>BPLO Online, an OOP course project</span>
-      <span>Fees shown are samples, not official rates.</span>
+      <div class="footer-base" style="border-top:0; margin-top:0; padding-top:0;">
+        <span>BPLO Online, an OOP course project</span>
+        <span>Fees shown are samples, not official rates.</span>
+      </div>
     </div>
   </footer>
 
