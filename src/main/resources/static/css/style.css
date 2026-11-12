@@ -113,13 +113,12 @@ em { font-style: normal; }
 .perch { --mw: min(600px, 92vw, 58vh); position: relative; width: min(880px, 100% - 2rem); margin: clamp(1rem, 3vh, 2rem) auto clamp(1.25rem, 4vh, 2.5rem); z-index: 2; }
 .perch-clip { width: var(--mw); aspect-ratio: 450 / 206; margin: 0 auto; overflow: hidden; position: relative; z-index: 1; }
 .perch-clip img { width: 100%; height: auto; display: block; }
-/* Speech bubble next to Maya's head */
+/* "Hi!" written next to Maya's head */
 .perch-hi {
   position: absolute; z-index: 3; top: calc(var(--mw) * .02);
-  left: calc(50% + var(--mw) * .2);
-  font-family: var(--display); font-weight: 600; font-size: clamp(1rem, calc(var(--mw) * .05), 1.6rem); line-height: 1;
-  color: var(--navy); background: #fff; border: 2px solid var(--navy); border-radius: 16px 16px 16px 4px;
-  padding: .45em .7em; box-shadow: 0 6px 14px rgba(44, 58, 114, .12); transform-origin: 0% 100%;
+  left: calc(50% + var(--mw) * .19);
+  font-family: var(--display); font-weight: 600; font-size: clamp(1.4rem, calc(var(--mw) * .075), 2.4rem); line-height: 1;
+  color: var(--navy); transform-origin: 0% 100%;
 }
 @media (prefers-reduced-motion: no-preference) {
   .perch-hi { animation: hi-pop .5s 1s cubic-bezier(.2, .9, .3, 1.4) both; }
