@@ -115,6 +115,11 @@ em { font-style: normal; }
 /* Maya flies: a 16-frame flap rendered from the drawing itself (body untouched, wings bend),
    with drawn eyes on top whose pupils follow the pointer. */
 .maya-fly { position: absolute; inset: 0; animation: hover .8s ease-in-out infinite; }
+/* Maya stays hidden until her drawing has loaded, then appears all at once (eyes never show on their own). */
+.js .perch-clip { opacity: 0; transition: opacity .45s ease; }
+.js .perch-clip.ready { opacity: 1; }
+.js .perch-hi { visibility: hidden; }
+.js .perch.maya-ready .perch-hi { visibility: visible; }
 .mf-frames { position: absolute; inset: 0; overflow: hidden; }
 .mf-frames img { position: absolute; left: 0; top: 0; width: 1600%; height: 100%; max-width: none; display: block; animation: flap-strip .8s steps(16) infinite; }
 .mf-eyes, .mf-beak { position: absolute; left: 0; top: 0; width: 100%; height: 100%; max-width: none; display: block; }
@@ -129,7 +134,7 @@ em { font-style: normal; }
   color: var(--navy); transform-origin: 0% 100%;
 }
 @media (prefers-reduced-motion: no-preference) {
-  .perch-hi { animation: hi-pop .5s 1s cubic-bezier(.2, .9, .3, 1.4) both; }
+  .perch.maya-ready .perch-hi, html:not(.js) .perch-hi { animation: hi-pop .5s .35s cubic-bezier(.2, .9, .3, 1.4) both; }
 }
 @keyframes hi-pop { from { opacity: 0; transform: scale(.4) rotate(-12deg); } to { opacity: 1; transform: scale(1) rotate(-4deg); } }
 .perch-hi { rotate: -4deg; }

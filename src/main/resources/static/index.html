@@ -9,7 +9,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Lexend:wght@500;600&family=JetBrains+Mono:wght@500;600&display=swap">
+  <link rel="preload" as="image" href="/img/maya-fly-frames.webp" type="image/webp">
   <link rel="stylesheet" href="/css/style.css">
+  <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
   <header class="site-header">
@@ -44,7 +46,7 @@
         <div class="perch-hi" aria-hidden="true">Hi!</div>
         <div class="perch-clip">
           <div class="maya-fly" id="maya" role="img" aria-label="Maya, a sparrow in a navy mail-carrier cap, flapping her wings as she peeks over the card">
-            <div class="mf-frames"><img src="/img/maya-fly-frames.webp" alt="" width="7200" height="206"></div>
+            <div class="mf-frames"><img id="maya-frames" src="/img/maya-fly-frames.webp" alt="" width="7200" height="206" fetchpriority="high"></div>
             <svg class="mf-eyes" viewBox="0 0 450 206" aria-hidden="true" focusable="false">
               <defs>
         <clipPath id="mf-sc-n"><ellipse cx="221.4" cy="114.4" rx="15.0" ry="15.4"/></clipPath>
@@ -76,7 +78,7 @@
         </g>
       </g>
             </svg>
-            <img class="mf-beak" src="/img/maya-fly-beak.png" alt="" width="450" height="206">
+            <img class="mf-beak" id="maya-beak" src="/img/maya-fly-beak.png" alt="" width="450" height="206" fetchpriority="high">
           </div>
         </div>
         <div class="perch-card">

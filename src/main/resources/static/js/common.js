@@ -229,6 +229,23 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
 
 })();
 
+// ---- show Maya only once her drawing (and beak layer) have loaded ----
+(function () {
+  const clip = document.querySelector('.perch-clip');
+  const perch = document.getElementById('perch');
+  const imgs = ['maya-frames', 'maya-beak'].map((id) => document.getElementById(id)).filter(Boolean);
+  if (!clip || !imgs.length) return;
+  let left = imgs.length;
+  function done() {
+    if (--left > 0) return;
+    requestAnimationFrame(() => { clip.classList.add('ready'); if (perch) perch.classList.add('maya-ready'); });
+  }
+  imgs.forEach((img) => {
+    if (img.complete && img.naturalWidth) done();
+    else img.addEventListener('load', done, { once: true });
+  });
+})();
+
 // ---- Maya's eyes follow the pointer ----
 (function () {
   const pupils = Array.prototype.slice.call(document.querySelectorAll('#maya .mf-look'));
