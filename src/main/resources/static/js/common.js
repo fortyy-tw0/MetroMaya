@@ -169,6 +169,78 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
   update();
 })();
 
+// ---- motion: scroll reveal, and Maya peeking over the hero card ----
+(function () {
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce || !('IntersectionObserver' in window)) return;
+
+  // What fades in, and from which side. Lists of siblings are staggered.
+  const RULES = [
+    ['.section-head, .estimate-intro, .offices-wrap .split-head, .page-title, .stepper', ''],
+    ['.feature, .sequence li, .size-card, .rows > .row', 'stagger'],
+    ['.estimator, .office-card, .card, .fees-wrap .sizes-title', ''],
+    ['.band', 'reveal-zoom'],
+    ['.band-art', 'reveal-left'],
+    ['.cta', 'reveal-zoom'],
+    ['.footer-grid > *', 'stagger'],
+  ];
+  document.documentElement.classList.add('js-reveal');
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+
+  function scan(root) {
+    RULES.forEach(([sel, mode]) => {
+      (root || document).querySelectorAll(sel).forEach((node) => {
+        if (node.classList.contains('reveal') || node.closest('.hero-band')) return;
+        node.classList.add('reveal');
+        if (mode && mode !== 'stagger') node.classList.add(mode);
+        if (mode === 'stagger') {
+          const i = Array.prototype.indexOf.call(node.parentElement.children, node);
+          node.style.setProperty('--d', Math.min(i, 6) * 80 + 'ms');
+        }
+        io.observe(node);
+      });
+    });
+  }
+  scan();
+  // Industry rows, office rows, size cards and tiles arrive from the API after load.
+  new MutationObserver(() => scan()).observe(document.body, { childList: true, subtree: true });
+
+  // Maya ducks behind the card as the hero scrolls away, and leans toward the pointer.
+  const perch = document.getElementById('perch');
+  const duck = document.getElementById('perch-duck');
+  if (!perch || !duck) return;
+  let lean = 0, target = 0, sink = 0, raf = 0;
+  function frame() {
+    raf = 0;
+    lean += (target - lean) * 0.12;
+    duck.style.transform = 'translateY(' + (sink * 70).toFixed(2) + '%) rotate(' + lean.toFixed(2) + 'deg)';
+    perch.style.setProperty('--duck', sink.toFixed(3));
+    if (Math.abs(target - lean) > 0.05) raf = requestAnimationFrame(frame);
+  }
+  function kick() { if (!raf) raf = requestAnimationFrame(frame); }
+  function onScroll() {
+    const r = perch.getBoundingClientRect();
+    // 0 while the card is in the top 70% of the screen, 1 once it nears the top edge
+    const start = window.innerHeight * 0.7, end = 40;
+    sink = Math.max(0, Math.min(1, (start - r.top) / (start - end)));
+    kick();
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  if (window.matchMedia('(hover: hover)').matches) {
+    window.addEventListener('pointermove', (e) => {
+      target = ((e.clientX / window.innerWidth) - 0.5) * 7;
+      kick();
+    }, { passive: true });
+  }
+  onScroll();
+})();
+
 function debounce(fn, ms) {
   let t;
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
