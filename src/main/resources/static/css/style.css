@@ -94,9 +94,14 @@ em { font-style: normal; }
 @media (max-width: 520px) { .nav-actions .link { display: none; } .brand span { display: none; } }
 
 /* ---------- hero: full-width white band, Maya peeking over a card ---------- */
-.hero-band { background: #fff; border-bottom: 1px solid var(--line); padding-top: clamp(2.25rem, 5vw, 3.75rem); position: relative; }
-.hero-inner { text-align: center; display: flex; flex-direction: column; align-items: center; }
-.hero-inner h1 { max-width: 13ch; font-size: clamp(2.5rem, 6vw, 4.4rem); margin-bottom: .15em; }
+.hero-band {
+  background: #fff; border-bottom: 1px solid var(--line); position: relative;
+  /* The slogan fills the whole first screen, below the 72px header. */
+  min-height: calc(100vh - 72px); min-height: calc(100svh - 72px);
+  display: flex; flex-direction: column; padding-top: clamp(1.5rem, 4vh, 3rem);
+}
+.hero-inner { flex: 1; justify-content: center; text-align: center; display: flex; flex-direction: column; align-items: center; }
+.hero-inner h1 { max-width: 13ch; font-size: clamp(2.6rem, min(6.4vw, 9vh), 5.4rem); margin-bottom: .15em; }
 .mark { position: relative; white-space: nowrap; z-index: 0; }
 .mark::after { content: ""; position: absolute; left: -2px; right: -2px; bottom: .04em; height: .22em; background: var(--gold); border-radius: 4px; z-index: -1; transform-origin: left center; }
 .lead { font-size: 1.12rem; color: var(--ink-soft); max-width: 46ch; margin: .9rem auto 1.6rem; text-wrap: pretty; }
@@ -105,7 +110,7 @@ em { font-style: normal; }
 .icon-chip svg { width: 18px; height: 18px; }
 
 /* Maya stays still, peeking out: a clip box ends exactly at the card's top edge. */
-.perch { --mw: min(460px, 86vw); position: relative; width: min(880px, 100% - 2rem); margin: clamp(1.25rem, 3vw, 2rem) auto 0; margin-bottom: -3.25rem; z-index: 2; }
+.perch { --mw: min(460px, 86vw, 56vh); position: relative; width: min(880px, 100% - 2rem); margin: clamp(1rem, 3vh, 2rem) auto clamp(1.25rem, 4vh, 2.5rem); z-index: 2; }
 .perch-clip { width: var(--mw); aspect-ratio: 450 / 206; margin: 0 auto; overflow: hidden; position: relative; z-index: 1; }
 .perch-clip img { width: 100%; height: auto; display: block; }
 .perch-card {
@@ -120,8 +125,6 @@ em { font-style: normal; }
 @media (max-width: 760px) {
   .perch-card { grid-template-columns: 1fr; padding: 1.4rem 1.25rem 1.25rem; gap: .85rem; }
 }
-.hero-band + .section { padding-top: calc(3.25rem + 5rem); }
-@media (max-width: 860px) { .hero-band + .section { padding-top: calc(3.25rem + 3.5rem); } }
 
 @media (prefers-reduced-motion: no-preference) {
   .hero-inner > * { animation: rise .7s cubic-bezier(.2, .7, .2, 1) both; }
@@ -370,6 +373,7 @@ em { font-style: normal; }
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; scroll-behavior: auto !important; animation: none !important; }
+  .js-reveal .reveal, .js-reveal .reveal.reveal-left, .js-reveal .reveal.reveal-right, .js-reveal .reveal.reveal-zoom { transform: none !important; transition: opacity .45s ease !important; }
 }
 
 /* ---------- scroll reveal (only when JS is running and motion is allowed) ---------- */

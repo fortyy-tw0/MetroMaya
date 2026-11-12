@@ -171,8 +171,8 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
 
 // ---- motion: sections appear as the visitor scrolls to them ----
 (function () {
-  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduce || !('IntersectionObserver' in window)) return;
+  // Runs for everyone; with reduced motion the CSS turns the slide into a plain fade.
+  if (!('IntersectionObserver' in window)) return;
 
   // What fades in, and from which side. Lists of siblings are staggered.
   const RULES = [
