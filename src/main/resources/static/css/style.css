@@ -301,7 +301,7 @@ em { font-style: normal; }
 @media (max-width: 860px) { .offices-wrap { grid-template-columns: 1fr; gap: 1.75rem; } }
 
 /* ---------- closing call to action ---------- */
-.cta { width: min(1120px, 100% - 2.5rem); margin: 7rem auto 5rem; background: var(--sand); border-radius: 28px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2rem; padding: 2.5rem clamp(1.5rem, 4vw, 3.5rem); overflow: hidden; }
+.cta { width: min(1120px, 100% - 2.5rem); margin: 3rem auto 5rem; background: var(--sand); border-radius: 28px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2rem; padding: 2.5rem clamp(1.5rem, 4vw, 3.5rem); overflow: hidden; }
 .cta h2 { margin: 0 0 .35rem; }
 .cta p { margin: 0 0 1.5rem; color: var(--ink-soft); }
 .cta-maya { position: relative; margin: -5.5rem -.5rem -3.25rem 0; }
@@ -530,7 +530,7 @@ em { font-style: normal; }
 }
 
 /* closing banner: standing Maya takes off and flies while Book a slot is hovered */
-.cta-maya { width: 290px; aspect-ratio: 344 / 356; }
+.cta-maya { width: 290px; aspect-ratio: 344 / 356; pointer-events: none; } /* Maya never blocks taps on Book a slot */
 .cta-lift { position: absolute; inset: 0; transition: transform .6s cubic-bezier(.3, .8, .3, 1); }
 .cta-rest { position: absolute; left: -15.41%; bottom: 0; width: 130.81% !important; max-width: none; transition: opacity .25s ease; filter: drop-shadow(0 18px 20px rgba(62, 36, 22, .22)); }
 .cta-fly { position: absolute; left: -17.442%; top: -16.854%; width: 134.884%; height: 133.708%; overflow: hidden; opacity: 0; scale: 1.12; transform-origin: 50% 62%; transition: opacity .25s ease; filter: drop-shadow(0 26px 22px rgba(62, 36, 22, .18)); }

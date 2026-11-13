@@ -163,6 +163,8 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
    - No floor or room numbers are given, because they weren't verified.
    - The "Change your city" link points to `#estimate`.
 7. **CTA ("Ready to book your slot?"):** a sand card with Maya standing (`maya-ta-da.png`).
+   - `margin-top: 3rem` (was 7rem). It can't go much higher: on hover Maya's cap clears the Offices card by only about 24px.
+   - `.cta-maya` has `pointer-events: none`, so her invisible fly layer never blocks taps on **Book a slot** (it did on phones).
    - On hover or focus of **Book a slot** (or touch, via the `.cta-maya.jump` class), she lifts 42px, crossfades into a **flying** strip (`maya-hehe-fly.webp`, eyes closed). There is **no speech bubble**; the "Let's Go!" bubble was removed on request.
    - The fly layer is scaled by `1.12` so her flying size matches her standing size; the user complained she shrank.
 
