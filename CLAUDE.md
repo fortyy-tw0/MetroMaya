@@ -4,7 +4,7 @@ This is a business-permit appointment system for an OOP course project. It has a
 
 - **Repo:** `fortyy-tw0/OOP_AppointmentSystem` (GitHub). Work on `main`. This file is `CLAUDE.md` at the repo root, so Claude Code loads it automatically.
 - **Live:** https://oopappointmentsys.vercel.app. Vercel auto-deploys from `main` using its Container runtime with the root `Dockerfile`.
-- **Brand:** **MetroMaya**. The slogan is **"Skip the line, get on business."** with a gold **highlighter stroke** behind the lower half of "get on business." (`.mark::before`). It sweeps in left to right (scaleX, about 0.9s) each time the hero comes into view; `common.js` toggles `.mark.hl`. Under reduced motion it shows without the sweep. There is no solid underline any more.
+- **Brand:** **MetroMaya**. The slogan is **"Skip the line, get on business."** with a **thin gold line** (`.mark::before`, 0.07em tall, rounded) under "get on business.". It draws in left to right (scaleX, about 0.9s) each time the hero comes into view; `common.js` toggles `.mark.hl`. Under reduced motion it shows without the animation. The user rejected a thick highlighter band, so keep it thin.
 - **Disclaimer that must stay visible:** fees are *sample rates for a course project, not official LGU fees*.
 
 ---
