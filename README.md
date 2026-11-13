@@ -1,4 +1,4 @@
-# MetroMaya – business permit appointment system
+# MetroMaya – NCR's Centralized Business Permit Appointment System
 
 MetroMaya is a web app where business owners book slots for **new permit applications**, **annual renewals** and **inspection visits**. The backend is plain Java 21 (`com.sun.net.httpserver`, no dependencies). The front-end is static HTML, CSS and vanilla JS.
 
