@@ -30,6 +30,8 @@
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
+main section[id] { scroll-margin-top: 88px; }
+body { overflow-x: clip; }
 body {
   margin: 0;
   font-family: var(--sans);
@@ -133,16 +135,16 @@ em { font-style: normal; }
 @keyframes hover { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(2.5%); } }
 /* "Hi!" written next to Maya's head */
 .perch-hi {
-  position: absolute; z-index: 3; top: calc(var(--mw) * .03); white-space: nowrap;
-  left: calc(50% + var(--mw) * .17);
+  position: absolute; z-index: 3; top: calc(var(--mw) * .1); white-space: nowrap;
+  left: calc(50% + var(--mw) * .16);
   font-family: var(--display); font-weight: 600; font-size: clamp(1rem, calc(var(--mw) * .05), 1.7rem); line-height: 1;
   color: var(--navy); transform-origin: 0% 100%;
 }
 @media (prefers-reduced-motion: no-preference) {
   .perch.maya-ready .perch-hi, html:not(.js) .perch-hi { animation: hi-pop .5s .35s cubic-bezier(.2, .9, .3, 1.4) both; }
 }
-@keyframes hi-pop { from { opacity: 0; transform: scale(.4) rotate(-12deg); } to { opacity: 1; transform: scale(1) rotate(-4deg); } }
-.perch-hi { rotate: -4deg; }
+@keyframes hi-pop { from { opacity: 0; transform: scale(.4) rotate(-8deg); } to { opacity: 1; transform: scale(1); } }
+.perch-hi { rotate: -15deg; }
 .perch-card {
   position: relative; z-index: 2; background: #fff; border: 1px solid var(--line); border-radius: 22px;
   box-shadow: 0 1px 2px rgba(62, 36, 22, .05), 0 16px 40px rgba(62, 36, 22, .10);
@@ -243,10 +245,14 @@ em { font-style: normal; }
 .insp-list li:last-child { border-bottom: 0; }
 .insp-list .meta { color: var(--muted); font-size: .85rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .docs { margin-top: .85rem; font-size: .93rem; }
-.docs summary { cursor: pointer; font-weight: 700; color: var(--navy); }
-.doc-list { margin-top: .6rem; display: grid; gap: .45rem; }
-.doc-list li { position: relative; padding-left: 1.3rem; color: var(--ink-soft); }
-.doc-list li::before { content: ""; position: absolute; left: .35rem; top: .62em; width: 6px; height: 6px; border-radius: 50%; background: var(--navy); }
+.docs-title { margin: 0; font-size: .93rem; font-weight: 700; color: var(--navy); }
+.doc-list { margin-top: .6rem; display: grid; gap: .4rem; }
+.doc-list li { padding: .5rem .75rem; border-radius: 10px; background: var(--navy-soft, #eef0f8); color: var(--ink); line-height: 1.35; }
+/* documents slide in one after another (again whenever the list changes) */
+@keyframes doc-in { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: none; } }
+.doc-list li { animation: doc-in .45s cubic-bezier(.2, .7, .2, 1) both; animation-delay: calc(var(--i, 0) * 80ms); }
+.js-reveal .reveal:not(.in) .doc-list li { animation: none; opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .doc-list li { animation-duration: .01s !important; } }
 
 .est-cta { margin-top: 1.25rem; display: flex; justify-content: flex-end; }
 .est-error { color: var(--bad); font-weight: 600; padding: 1rem 0; grid-column: 1 / -1; }
@@ -325,8 +331,8 @@ em { font-style: normal; }
 .page-title { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 1.5rem; margin: 1rem 0 1.75rem; }
 .page-title h1 { font-size: clamp(2rem, 4.4vw, 2.9rem); margin-bottom: .25rem; }
 .page-title p { color: var(--ink-soft); max-width: 46ch; margin: 0; }
-.page-title img { width: 150px; margin-bottom: -1.9rem; position: relative; z-index: 1; }
-@media (max-width: 600px) { .page-title img { width: 104px; margin-bottom: -1.3rem; } }
+.page-title img { width: 200px; margin-bottom: -2.4rem; position: relative; z-index: 1; }
+@media (max-width: 600px) { .page-title img { width: 128px; margin-bottom: -1.5rem; } }
 
 .stepper { display: flex; gap: .4rem; list-style: none; padding: 0; margin: 0 0 1.25rem; counter-reset: st; overflow-x: auto; }
 .stepper li { counter-increment: st; display: flex; align-items: center; gap: .5rem; flex: 1 1 0; min-width: max-content; font-size: .88rem; font-weight: 600; color: var(--muted); padding: .6rem .8rem; border-radius: 12px; background: #fff; border: 1px solid var(--line); }
@@ -450,7 +456,7 @@ em { font-style: normal; }
 .hero-band { overflow-x: clip; }
 /* left column fills the card's height; Maya's feet line up with the card's bottom */
 .estimate-wrap .estimate-intro { display: flex; flex-direction: column; }
-.estimate-wrap .est-maya { width: min(100%, 440px); margin-top: auto; }
+.estimate-wrap .est-maya { width: min(100%, 440px); margin-top: 3rem; }  /* a fixed spot: she never moves when the card grows or shrinks */
 .estimate-wrap .estimate-note { margin-bottom: 2.5rem; }
 
 /* ---------- How it works: centered, information only ---------- */
@@ -493,35 +499,32 @@ em { font-style: normal; }
 
 /* closing banner: Maya jumps and shouts when "Book a slot" is hovered */
 .cta-say {
-  position: absolute; left: -2.5rem; top: 12%; z-index: 2; white-space: nowrap;
-  font-family: var(--display); font-weight: 600; font-size: 1.15rem; line-height: 1;
-  color: var(--navy); background: #fff; padding: .6rem .9rem; border-radius: 14px 14px 4px 14px;
+  position: absolute; right: -6rem; top: 14%; z-index: 2; white-space: nowrap;
+  font-family: var(--display); font-weight: 600; font-size: 1.45rem; line-height: 1;
+  color: var(--navy); background: #fff; padding: .65rem 1rem; border-radius: 14px 14px 14px 4px;
   box-shadow: 0 0 0 2px var(--navy), 0 8px 18px rgba(44, 58, 114, .18);
-  opacity: 0; transform: translateY(8px) scale(.6); transform-origin: 100% 100%;
+  opacity: 0; transform: translateY(8px) scale(.6); transform-origin: 0% 100%;
   transition: opacity .2s ease, transform .25s cubic-bezier(.2, .9, .3, 1.4);
   pointer-events: none;
 }
-.cta:has(.btn:hover) .cta-say, .cta:has(.btn:focus-visible) .cta-say, .cta-maya.jump .cta-say { opacity: 1; transform: translateY(0) scale(1) rotate(-4deg); }
+.cta:has(.btn:hover) .cta-say, .cta:has(.btn:focus-visible) .cta-say, .cta-maya.jump .cta-say { opacity: 1; transform: translateY(0) scale(1) rotate(4deg); }
 @media (prefers-reduced-motion: reduce) {
     .cta-say { transition: opacity .2s ease !important; }
 }
-@media (max-width: 680px) { .cta-say { left: -1.5rem; font-size: 1rem; } }
+@media (max-width: 680px) { .cta-say { right: -.5rem; font-size: 1.15rem; } }
 
 /* "Hi, I'm Maya!" types itself out, then each letter does a little wave */
 .perch-hi .ch { display: inline-block; opacity: 0; transform: translateY(.3em); }
 .perch.maya-ready .perch-hi .ch { animation: ch-in .18s ease-out forwards, ch-wave 3.2s ease-in-out infinite; animation-delay: calc(.5s + var(--i) * 70ms), calc(2s + var(--i) * 60ms); }
-.perch-hi .caret { display: inline-block; width: .08em; height: .9em; margin-left: .06em; background: currentColor; vertical-align: -.08em; opacity: 0; }
-.perch.maya-ready .perch-hi .caret { animation: caret 1s steps(1) infinite; animation-delay: .5s; }
 @keyframes ch-in { to { opacity: 1; transform: none; } }
 @keyframes ch-wave { 0%, 70%, 100% { transform: translateY(0); } 80% { transform: translateY(-.18em); } 90% { transform: translateY(0); } }
-@keyframes caret { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .perch.maya-ready .perch-hi .ch { animation: ch-in .01s linear forwards !important; } .perch-hi .caret { display: none; } }
+@media (prefers-reduced-motion: reduce) { .perch.maya-ready .perch-hi .ch { animation: ch-in .01s linear forwards !important; } }
 
 /* closing banner: standing Maya takes off and flies while Book a slot is hovered */
 .cta-maya { width: 290px; aspect-ratio: 344 / 356; }
 .cta-lift { position: absolute; inset: 0; transition: transform .6s cubic-bezier(.3, .8, .3, 1); }
 .cta-rest { position: absolute; left: -15.41%; bottom: 0; width: 130.81% !important; max-width: none; transition: opacity .25s ease; filter: drop-shadow(0 18px 20px rgba(62, 36, 22, .22)); }
-.cta-fly { position: absolute; left: -17.442%; top: -16.854%; width: 134.884%; height: 133.708%; overflow: hidden; opacity: 0; transition: opacity .25s ease; filter: drop-shadow(0 26px 22px rgba(62, 36, 22, .18)); }
+.cta-fly { position: absolute; left: -17.442%; top: -16.854%; width: 134.884%; height: 133.708%; overflow: hidden; opacity: 0; scale: 1.12; transform-origin: 50% 62%; transition: opacity .25s ease; filter: drop-shadow(0 26px 22px rgba(62, 36, 22, .18)); }
 .cta-fly img { position: absolute; left: 0; top: 0; width: 1600% !important; height: 100%; max-width: none; animation: flap-strip .45s steps(16) infinite; }
 .cta-maya.jump .cta-lift, .cta:has(.btn:hover) .cta-lift, .cta:has(.btn:focus-visible) .cta-lift { transform: translateY(-42px); }
 .cta-maya.jump .cta-rest, .cta:has(.btn:hover) .cta-rest, .cta:has(.btn:focus-visible) .cta-rest { opacity: 0; }

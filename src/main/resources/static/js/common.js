@@ -125,7 +125,9 @@ function renderInspections(list, inspections) {
 
 function renderDocs(list, requirements) {
   clear(list);
-  requirements.forEach((r) => list.append(el('li', { text: r })));
+  requirements.forEach((r, i) => {
+    const li = el('li', { text: r }); li.style.setProperty('--i', i); list.append(li);
+  });
 }
 
 // Renders the time-slot buttons for a date at an office into `container`.
@@ -229,23 +231,6 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
 
 })();
 
-// ---- estimator: keep Maya where she sits while "Documents to bring" is closed ----
-(function () {
-  const maya = document.querySelector('.estimate-wrap .est-maya');
-  const docs = document.querySelector('.estimate-wrap .docs');
-  if (!maya || !docs) return;
-  function pin() {
-    if (docs.open) return;                     // only measure the closed layout
-    maya.style.marginTop = '';                 // let her settle at the bottom of the closed card
-    const gap = maya.getBoundingClientRect().top - maya.previousElementSibling.getBoundingClientRect().bottom;
-    maya.style.marginTop = Math.max(0, gap) + 'px';
-  }
-  window.addEventListener('load', pin);
-  window.addEventListener('resize', () => { if (!docs.open) pin(); });
-  new MutationObserver(() => { if (!docs.open) pin(); }).observe(document.getElementById('est-tiles') || document.body, { childList: true, subtree: true });
-  pin();
-})();
-
 // ---- closing banner: Maya jumps while "Book a slot" is hovered or focused ----
 (function () {
   const cta = document.querySelector('.cta'); const maya = document.querySelector('.cta-maya');
@@ -257,7 +242,7 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
   btn.addEventListener('touchstart', on, { passive: true });
 })();
 
-// ---- split "Hi, I'm Maya!" into letters so it can type itself out ----
+// ---- split "Hi, I'm Maya!" into letters so they pop in and wave ----
 (function () {
   const hi = document.getElementById('perch-hi');
   if (!hi) return;
@@ -266,7 +251,6 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
     const s = document.createElement('span'); s.className = 'ch'; s.style.setProperty('--i', i);
     s.textContent = ch === ' ' ? '\u00a0' : ch; hi.appendChild(s);
   });
-  const caret = document.createElement('span'); caret.className = 'caret'; hi.appendChild(caret);
 })();
 
 // ---- nav: highlight the link for the section you're reading ----
@@ -291,6 +275,21 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
   window.addEventListener('scroll', update, { passive: true });
   window.addEventListener('resize', update);
   update();
+
+  // Jump links land the section just under the sticky header. The target's spot is measured from
+  // the layout (offsetTop), so a section still mid scroll-reveal (shifted or scaled) can't throw it off.
+  function layoutTop(node) { let y = 0; for (let n = node; n; n = n.offsetParent) y += n.offsetTop; return y; }
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+    const target = document.getElementById(a.getAttribute('href').slice(1));
+    if (!target) return;
+    e.preventDefault();
+    const header = document.querySelector('.site-header, header');
+    const gap = (header ? header.offsetHeight : 72) + 16;
+    window.scrollTo({ top: Math.max(0, layoutTop(target) - gap), behavior: 'smooth' });
+    history.replaceState(null, '', a.getAttribute('href'));
+  });
 })();
 
 // ---- show Maya only once her drawing (and beak layer) have loaded ----
