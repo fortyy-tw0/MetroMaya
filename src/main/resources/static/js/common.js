@@ -251,7 +251,10 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
   const home = links.find((a) => a.getAttribute('href') === '/');
   const sections = Object.keys(owner).map((id) => document.getElementById(id)).filter(Boolean);
   function update() {
-    const line = window.innerHeight * 0.35;
+    // the middle of the screen below the header: exactly where the jump links land a section
+    const header = document.querySelector('.site-header, header');
+    const headH = header ? header.offsetHeight : 72;
+    const line = headH + (window.innerHeight - headH) / 2;
     let current = null;
     sections.forEach((sec) => { const r = sec.getBoundingClientRect(); if (r.top <= line && r.bottom > line) current = owner[sec.id]; });
     links.forEach((a) => {
@@ -265,18 +268,28 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
   window.addEventListener('resize', update);
   update();
 
-  // Jump links land the section just under the sticky header. The target's spot is measured from
-  // the layout (offsetTop), so a section still mid scroll-reveal (shifted or scaled) can't throw it off.
+  // Jump links land a section's content (its .wrap, so the padding around it doesn't count) in the
+  // middle of the screen below the sticky header. Content taller than that space lines its top up
+  // just under the header instead, so the heading is never cut off. Spots are measured from the
+  // layout (offsetTop/offsetHeight), so a section still mid scroll-reveal can't throw it off.
   function layoutTop(node) { let y = 0; for (let n = node; n; n = n.offsetParent) y += n.offsetTop; return y; }
+  function jumpTop(target) {
+    const header = document.querySelector('.site-header, header');
+    const headH = header ? header.offsetHeight : 72;
+    const room = window.innerHeight - headH;
+    const box = target.querySelector(':scope > .wrap') || target;
+    const top = layoutTop(box), h = box.offsetHeight;
+    const y = h <= room - 32 ? top + h / 2 - headH - room / 2 : top - headH - 16;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    return Math.round(Math.max(0, Math.min(max, y)));
+  }
   document.addEventListener('click', (e) => {
     const a = e.target.closest && e.target.closest('a[href^="#"]');
     if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
     const target = document.getElementById(a.getAttribute('href').slice(1));
     if (!target) return;
     e.preventDefault();
-    const header = document.querySelector('.site-header, header');
-    const gap = (header ? header.offsetHeight : 72) + 16;
-    window.scrollTo({ top: Math.max(0, layoutTop(target) - gap), behavior: 'smooth' });
+    window.scrollTo({ top: jumpTop(target), behavior: 'smooth' });
     history.replaceState(null, '', a.getAttribute('href'));
   });
 })();

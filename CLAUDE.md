@@ -124,7 +124,8 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
 - **Nav:** Home, Why Permitify (`#why`), Fees (`#estimate`), How it works (`#how`), Offices (`#offices`).
   - Hover and active states use a **tab lift**: white background, 2px brown outline, `translateY(-2px)`. The user rejected pill shapes and glow.
   - A scrollspy (`common.js`) maps section ids to links; `#industries` counts as Fees. Home is active only while the hero is visible.
-  - Jump links are handled in JS. The code scrolls to `layoutTop(target) - headerHeight - 16`, using `offsetTop` so sections still mid-reveal (shifted or scaled) don't throw the position off. `main section[id] { scroll-margin-top: 88px }` is the fallback.
+  - Jump links are handled in JS (`jumpTop` in `common.js`). They **centre** the section's content (its direct `.wrap` child, so padding doesn't count) in the screen area below the header. If the content is taller than that area (the Fees estimator, and most sections on phones), its top lands 16px under the header instead. The result is clamped to the page's scroll range. Measuring uses `offsetTop`/`offsetHeight`, so sections still mid-reveal don't throw it off. `main section[id] { scroll-margin-top: 88px }` is the no-JS fallback.
+  - The scrollspy line is the centre of that same area, so the highlighted tab always matches where a jump lands.
 - `body { overflow-x: clip }` guards against horizontal scroll.
 
 ### Page sections (index.html)
@@ -246,7 +247,7 @@ tools/maya/apply_hat_piping.sh   # redo cap piping on every pose from src/before
 
 ## 7. Open questions / next steps
 
-1. **Fees jump link:** it lands at the top of `#estimate`, and the section's top padding leaves a large gap above the heading. The user only reported How it works and Offices, so this is optional. To tighten it, target `.estimate-intro` instead.
+1. **Fees jump link:** resolved. Jumps now centre each section (see §3, Nav).
 2. **Persistence:** bookings live in memory and reset on scale-down. A database-backed `AppointmentRepository` is the intended way to fix this.
 3. **Leftover asset:** `maya-mark.png` isn't used anywhere. Remove it or keep it for later.
 4. **Booking page:** Maya next to the title is now 200px (128px on phones). Confirm with the user that she matches the "Book a slot" heading.
