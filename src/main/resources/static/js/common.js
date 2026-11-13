@@ -257,12 +257,24 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
   btn.addEventListener('touchstart', on, { passive: true });
 })();
 
+// ---- split "Hi, I'm Maya!" into letters so it can type itself out ----
+(function () {
+  const hi = document.getElementById('perch-hi');
+  if (!hi) return;
+  const text = hi.textContent; hi.textContent = '';
+  Array.from(text).forEach((ch, i) => {
+    const s = document.createElement('span'); s.className = 'ch'; s.style.setProperty('--i', i);
+    s.textContent = ch === ' ' ? '\u00a0' : ch; hi.appendChild(s);
+  });
+  const caret = document.createElement('span'); caret.className = 'caret'; hi.appendChild(caret);
+})();
+
 // ---- nav: highlight the link for the section you're reading ----
 (function () {
   const links = Array.prototype.slice.call(document.querySelectorAll('.nav-links a'));
   if (!links.length || !document.querySelector('.hero-band')) return;
   // which nav link each part of the home page belongs to
-  const owner = { estimate: '#estimate', industries: '#estimate', how: '#how', offices: '#offices' };
+  const owner = { why: '#why', estimate: '#estimate', industries: '#estimate', how: '#how', offices: '#offices' };
   const home = links.find((a) => a.getAttribute('href') === '/');
   const sections = Object.keys(owner).map((id) => document.getElementById(id)).filter(Boolean);
   function update() {
