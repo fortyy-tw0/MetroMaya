@@ -140,6 +140,7 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
 2. **What is MetroMaya (`#why`):** why someone should use MetroMaya.
 3. **How It Works (`#how`):** a navy rounded band with a centred head and 4 step cards.
 4. **Fees / What you pay (`#industries`):** fees scale with the chosen city **and the business size picked on the right**.
+   - A **city select** (`#fees-city-select`) sits above the size cards. It and the estimator's `#city-select` share one `city` and always show the same value; changing either one re-renders Fees, Offices and the estimate.
    - The size cards form a radio group (click, tap, arrow keys). The choice is saved in `localStorage['metromaya.size']` and defaults to Micro.
    - Each industry row shows `baseFee × feeMultiplier × city rate` and the industry's inspections. Inspections the size adds appear as outlined `.chip-added` chips. Surcharges don't scale with size, matching `NewPermitService`.
    - Rows are built once and updated in place (`renderIndustries`), so a size or city change doesn't replay the scroll-reveal.

@@ -235,14 +235,17 @@
           el('p', { text: d.what })))));
   }
 
-  // ---------- city picker ----------
-  const citySelect = $('city-select');
-  CITIES.forEach((c) => citySelect.append(el('option', { value: c.id, text: c.municipality ? c.name + ' (municipality)' : cityPlace(c) })));
-  citySelect.value = city.id;
-  citySelect.addEventListener('change', () => {
-    city = CITIES.find((c) => c.id === citySelect.value) || city;
-    try { localStorage.setItem('metromaya.city', city.id); } catch (e) { /* no storage */ }
-    renderIndustries(); renderOffice(); refresh();
+  // ---------- city pickers: one in Fees, one in the estimator; they always agree ----------
+  const citySelects = [$('fees-city-select'), $('city-select')].filter(Boolean);
+  citySelects.forEach((sel) => {
+    CITIES.forEach((c) => sel.append(el('option', { value: c.id, text: c.municipality ? c.name + ' (municipality)' : cityPlace(c) })));
+    sel.value = city.id;
+    sel.addEventListener('change', () => {
+      city = CITIES.find((c) => c.id === sel.value) || city;
+      citySelects.forEach((other) => { other.value = city.id; });
+      try { localStorage.setItem('metromaya.city', city.id); } catch (e) { /* no storage */ }
+      renderIndustries(); renderOffice(); refresh();
+    });
   });
   pickSize(size);
   renderOffice();

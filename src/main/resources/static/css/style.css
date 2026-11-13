@@ -488,6 +488,7 @@ em { font-style: normal; }
 .size-grid .size-card.is-picked h4 { color: var(--navy); }
 .size-pick { position: absolute; top: .9rem; right: .9rem; padding: .15rem .55rem; border-radius: 6px; background: var(--navy); color: #fff; font-size: .72rem; font-weight: 700; letter-spacing: .02em; opacity: 0; transform: scale(.8); transition: opacity .2s ease, transform .2s ease; }
 .size-card.is-picked .size-pick { opacity: 1; transform: none; }
+.fees-city { margin-bottom: 1.5rem; }
 .sizes-hint { margin: -.7rem 0 1rem; color: var(--muted); font-size: .88rem; }
 .chip-added { background: #fff; box-shadow: inset 0 0 0 1.5px var(--navy); }
 .price .amount { display: inline-block; }
