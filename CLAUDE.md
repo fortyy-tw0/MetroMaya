@@ -9,11 +9,10 @@ This is a business-permit appointment system for an OOP course project. It has a
 
 ---
 
-## 1. Run, test, deploy
+## 1. Run and deploy
 
 ```bash
 ./run.sh                       # http://localhost:8080 (PORT env var changes it)
-./run-tests.sh                 # compiles src/main + src/test, runs appointment.SmokeTest (18 checks; all must pass)
 
 # manual build/run (what Dockerfile does)
 rm -rf out && mkdir out && javac -d out $(find src/main/java -name '*.java')
@@ -52,7 +51,6 @@ src/main/java/appointment/
   service/     AppointmentService (booking rules), CatalogService, SlotInfo,
                BookingException, NotFoundException
   web/         WebServer, ApiHandler (routes), StaticHandler (serves /static; has webp MIME), Json
-src/test/java/appointment/SmokeTest.java
 ```
 
 These three hierarchies are the course's polymorphism showcase, so keep them intact:
@@ -120,7 +118,7 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
 
 - **Fonts** (Google Fonts): Lexend for display text, Figtree for body text, JetBrains Mono for references.
 - **Style:** minimalist and easy to navigate.
-- **Header:** sticky, 72px tall, using the footer's brown/cream scheme. The logo is text only ("MetroMaya" with a gold dot). The old Maya logo mark (`maya-mark.png`) is no longer used.
+- **Header:** sticky, 72px tall, using the footer's brown/cream scheme. The logo is text only ("MetroMaya" with a gold dot). The old Maya logo mark was deleted.
 - **Nav (six tabs, in page order; keep this capitalization):** Home, What is MetroMaya (`#why`), How It Works (`#how`), Fees (`#industries`), Fees Estimator (`#estimate`), Offices (`#offices`). Tab padding is `.55rem .9rem` so all six fit in the 1120px header.
   - Below 1200px the tabs tighten. Below 1080px "Track a booking" leaves the header (it's still in the footer). Below 900px the tabs hide.
   - The header's **Book a slot** button uses the same tab-lift hover as the tabs.
@@ -201,7 +199,7 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
   - just above the band's bottom brown line
 
   This applies to every pose.
-- **Poses** (`static/img`): `maya-hello`, `maya-ta-da` (wings up, eyes open), `maya-whoa`, `maya-hey-you` (pointing; used in the estimator), `maya-hehehe` (eyes closed, laughing; used for CTA flying), `maya-lets-go`. There is **no favicon** (removed on request); each page has `<link rel="icon" href="data:,">` so browsers don't request `/favicon.ico`.
+- **Poses** (`static/img`): `maya-hello` (booking page), `maya-ta-da` (wings up, eyes open; CTA standing and hero source), `maya-hey-you` (pointing; used in the estimator), `maya-hehehe` (eyes closed, laughing; used for CTA flying). The unused `maya-whoa` and `maya-lets-go` poses were deleted along with their sources. There is **no favicon** (removed on request); each page has `<link rel="icon" href="data:,">` so browsers don't request `/favicon.ico`.
 - **Animation rules the user cares about:**
   - The animation must be seamless. Don't animate cut-out parts on top of the body. The flap is rendered by bending the whole drawing.
   - Her size must not change between states (wink, takeoff).
@@ -263,7 +261,7 @@ tools/maya/apply_hat_piping.sh   # redo cap piping on every pose from src/before
 
 1. **Fees jump link:** resolved. Jumps now centre each section (see §3, Nav).
 2. **Persistence:** bookings live in memory and reset on scale-down. A database-backed `AppointmentRepository` is the intended way to fix this.
-3. **Leftover asset:** `maya-mark.png` isn't used anywhere. Remove it or keep it for later.
+3. **Repo cleanup (done):** only `main` exists on GitHub; the old-UI branches are gone. Unused images (`maya-mark`, `maya-whoa`, `maya-lets-go`) were deleted. The user deleted `src/test/` (SmokeTest), so `run-tests.sh` was removed too. There's no automated test suite now; check changes by building and running the site.
 4. **Booking page:** Maya next to the title is now 200px (128px on phones). Confirm with the user that she matches the "Book a slot" heading.
 5. **Mobile pass:**
    - Check the docs list inside the narrow inspections box.

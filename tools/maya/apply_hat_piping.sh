@@ -5,7 +5,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 IMG=../../src/main/resources/static/img
-for p in hello ta-da whoa hey-you hehehe lets-go; do
+for p in hello ta-da hey-you hehehe; do
   python3 hat_piping.py "src/before-piping/maya-$p.png" "$IMG/maya-$p.png"
 done
 python3 hat_piping.py src/before-piping/maya-hey-you-wink.png src/maya-hey-you-wink.png
