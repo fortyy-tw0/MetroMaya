@@ -135,7 +135,7 @@
           <span class="eyebrow">Fee estimator</span>
           <h2 id="est-title">What will my permit cost?</h2>
           <p>Choose a service and describe the business. The estimate updates as you type.</p>
-          <p class="estimate-note">Sample rates for a course project. Not official LGU fees.</p>
+          <p class="estimate-note">Sample rates for a course project, not any city's official fees.</p>
           <div class="est-maya" aria-hidden="true">
             <div class="est-maya-fly">
               <div class="est-maya-frames"><img src="/img/maya-hey-fly.webp" alt="" width="8048" height="485" loading="lazy"></div>
@@ -152,6 +152,9 @@
             </label>
             <label class="control">Employees
               <input id="est-employees" type="number" min="1" max="100000" value="12" inputmode="numeric">
+            </label>
+            <label class="control" for="city-select">City (Metro Manila)
+              <select id="city-select"></select>
             </label>
           </div>
 
@@ -216,13 +219,7 @@
             <span class="eyebrow">What you pay</span>
             <h2 id="ind-title">Fees depend on what you run</h2>
           </div>
-          <div class="city-pick">
-            <p>Your city's revenue code sets the rates. Your type of business sets the base fee and inspections, and your size scales the fee.</p>
-            <label class="control city-control" for="city-select">Your city in Metro Manila
-              <select id="city-select"></select>
-            </label>
-            <p class="estimate-note" style="margin:0;">City rates are samples for this project, not each city's official schedule.</p>
-          </div>
+          <p>Your type of business sets the base fee and the inspections. Your size then scales the fee and can add more checks. Fees follow the city you pick in the estimator.</p>
         </div>
         <div class="fees-wrap">
           <div class="rows" id="industry-rows" aria-live="polite"></div>
@@ -240,7 +237,7 @@
         <div class="split-head">
           <span class="eyebrow">Offices</span>
           <h2 id="off-title">Where to go</h2>
-          <p>Apply at the Business Permits and Licensing Office in your city hall. <a href="#industries" id="office-city-change">Change your city</a></p>
+          <p>Apply at the Business Permits and Licensing Office in your city hall. <a href="#estimate" id="office-city-change">Change your city</a></p>
           <ul class="hours">
             <li><span class="icon-chip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>Weekdays, 8:00 AM to 5:00 PM</li>
             <li><span class="icon-chip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>Book up to 30 days ahead</li>

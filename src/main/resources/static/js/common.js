@@ -229,6 +229,23 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
 
 })();
 
+// ---- estimator: keep Maya where she sits while "Documents to bring" is closed ----
+(function () {
+  const maya = document.querySelector('.estimate-wrap .est-maya');
+  const docs = document.querySelector('.estimate-wrap .docs');
+  if (!maya || !docs) return;
+  function pin() {
+    if (docs.open) return;                     // only measure the closed layout
+    maya.style.marginTop = '';                 // let her settle at the bottom of the closed card
+    const gap = maya.getBoundingClientRect().top - maya.previousElementSibling.getBoundingClientRect().bottom;
+    maya.style.marginTop = Math.max(0, gap) + 'px';
+  }
+  window.addEventListener('load', pin);
+  window.addEventListener('resize', () => { if (!docs.open) pin(); });
+  new MutationObserver(() => { if (!docs.open) pin(); }).observe(document.getElementById('est-tiles') || document.body, { childList: true, subtree: true });
+  pin();
+})();
+
 // ---- nav: highlight the link for the section you're reading ----
 (function () {
   const links = Array.prototype.slice.call(document.querySelectorAll('.nav-links a'));
@@ -242,7 +259,8 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
     let current = null;
     sections.forEach((sec) => { const r = sec.getBoundingClientRect(); if (r.top <= line && r.bottom > line) current = owner[sec.id]; });
     links.forEach((a) => {
-      const on = current ? a.getAttribute('href') === current : a === home;
+      const heroVisible = document.querySelector('.hero-band').getBoundingClientRect().bottom > line;
+      const on = current ? a.getAttribute('href') === current : (a === home && heroVisible);
       a.classList.toggle('is-active', on);
       if (on) a.setAttribute('aria-current', current ? 'location' : 'page'); else a.removeAttribute('aria-current');
     });

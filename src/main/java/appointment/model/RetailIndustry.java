@@ -19,6 +19,6 @@ public class RetailIndustry extends Industry {
 
     @Override
     public List<String> requiredDocuments() {
-        return List.of("Weights and measures calibration certificate (if you use scales)");
+        return List.of();
     }
 }
