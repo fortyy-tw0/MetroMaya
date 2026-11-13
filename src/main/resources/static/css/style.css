@@ -314,7 +314,9 @@ em { font-style: normal; }
 .footer h4 { font-family: var(--sans); font-size: .82rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: .8rem; }
 .footer ul { list-style: none; padding: 0; margin: 0; display: grid; gap: .45rem; }
 .footer a { color: var(--ink-soft); text-decoration: none; }
-.footer a:hover { color: var(--navy); }
+/* Services and Help links: a thin gold underline draws in from the left on hover */
+.footer ul a { background: linear-gradient(var(--gold), var(--gold)) 0 100% / 0 2px no-repeat; padding-bottom: 3px; transition: background-size .3s ease, color .2s ease; }
+.footer ul a:hover, .footer ul a:focus-visible { color: var(--ink); background-size: 100% 2px; outline: none; }
 .footer .brand { margin-bottom: .8rem; }
 .footer-note { max-width: 36ch; margin: 0; }
 .footer-base { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1rem; border-top: 1px solid var(--line); margin-top: 2.5rem; padding-top: 1.25rem; font-size: .85rem; color: var(--muted); }
@@ -504,7 +506,19 @@ em { font-style: normal; }
 .desk .icon-chip svg { width: 19px; height: 19px; }
 .js-reveal .size-grid .size-card.reveal.in { transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease, opacity .22s ease; transition-delay: 0s; }
 
-.cta { overflow: visible; }
+.cta { overflow: visible; position: relative; }
+/* back to top: a round button just right of the closing card, level with its lower part */
+.to-top {
+  position: absolute; left: calc(100% + 1.75rem); top: 78%; width: 52px; height: 52px; border-radius: 50%;
+  display: grid; place-items: center; background: #fff; color: var(--ink-soft); text-decoration: none;
+  box-shadow: 0 0 0 1.5px rgba(107, 84, 70, .4); transition: color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+.to-top svg { width: 22px; height: 22px; }
+.to-top:hover, .to-top:focus-visible { color: var(--ink); outline: none; transform: translateY(-2px); box-shadow: 0 0 0 2px var(--ink-soft), 0 8px 18px rgba(62, 36, 22, .16); }
+.to-top:hover svg { animation: to-top-nudge .6s ease; }
+@keyframes to-top-nudge { 40% { transform: translateY(-3px); } }
+/* no room beside the card: tuck it under the card's right corner */
+@media (max-width: 1259px) { .to-top { left: auto; right: 0; top: calc(100% + 1rem); } }
 
 /* header "Book a slot" in the footer's browns */
 .nav-actions .btn-outline { color: var(--ink-soft); border-color: rgba(107, 84, 70, .4); }

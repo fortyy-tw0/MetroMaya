@@ -114,7 +114,7 @@
   }
 
   renderTabs();
-  refresh();
+  const firstQuote = refresh();
 
   // ---------- industries (fees follow the chosen city) ----------
   // ---------- what you pay: industry rows follow the business size picked on the right ----------
@@ -249,4 +249,6 @@
   });
   pickSize(size);
   renderOffice();
+  // everything on the page has its final size once the first estimate is in
+  firstQuote.finally(() => document.dispatchEvent(new Event('landing:ready')));
 })();

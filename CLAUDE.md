@@ -166,6 +166,11 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
    - On hover or focus of **Book a slot** (or touch, via the `.cta-maya.jump` class), she lifts 42px, crossfades into a **flying** strip (`maya-hehe-fly.webp`, eyes closed). There is **no speech bubble**; the "Let's Go!" bubble was removed on request.
    - The fly layer is scaled by `1.12` so her flying size matches her standing size; the user complained she shrank.
 
+8. **Footer:** the same full footer on every page (brand and note, Services, Help, then the base line with the sample-fee disclaimer). On book.html and manage.html the Help links point to `/#estimate` and `/#offices`.
+   - Services and Help links get a thin gold underline that draws in from the left on hover (`background-size` 0 → 100%).
+   - Arriving on the home page with a hash re-runs the centring jump once `landing.js` fires `landing:ready` (after the first quote) and again after `document.fonts.ready`, unless the visitor has already scrolled.
+9. **Back to top (`.to-top`):** a round 52px arrow button just right of the CTA card, at 78% of its height. It uses the tab-lift hover and links to `/`, so the Home handler smooth-scrolls to the top. Below 1260px it tucks under the card's right corner.
+
 ### Behaviours in common.js
 - Header scrolled state.
 - **Scroll reveal:** an IntersectionObserver adds `.in` when an element enters the viewport and **removes it when the element drops below**, so sections disappear again when scrolling up.

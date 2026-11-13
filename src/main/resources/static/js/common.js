@@ -294,6 +294,21 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
     const max = document.documentElement.scrollHeight - window.innerHeight;
     return Math.round(Math.max(0, Math.min(max, y)));
   }
+  // Arriving from another page with a #section (e.g. the footer's "Offices" link): the browser's own
+  // jump happens before the fees and offices finish loading, so land it again once they have.
+  if (location.hash.length > 1) {
+    let userScrolled = false;
+    const mark = () => { userScrolled = true; };
+    ['wheel', 'touchstart', 'keydown'].forEach((t) => window.addEventListener(t, mark, { once: true, passive: true }));
+    document.addEventListener('landing:ready', () => {
+      const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      if (!target) return;
+      const land = () => { if (!userScrolled) window.scrollTo({ top: jumpTop(target), behavior: 'auto' }); };
+      requestAnimationFrame(land);
+      // web fonts can still swap in and shift the page a little; land once more when they're ready
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => requestAnimationFrame(land));
+    }, { once: true });
+  }
   document.addEventListener('click', (e) => {
     const a = e.target.closest && e.target.closest('a[href^="#"], a[href="/"]');
     if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
