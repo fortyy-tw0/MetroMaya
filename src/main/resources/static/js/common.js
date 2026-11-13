@@ -242,17 +242,6 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
   btn.addEventListener('touchstart', on, { passive: true });
 })();
 
-// ---- split "Hi, I'm Maya!" into letters so they pop in and wave ----
-(function () {
-  const hi = document.getElementById('perch-hi');
-  if (!hi) return;
-  const text = hi.textContent; hi.textContent = '';
-  Array.from(text).forEach((ch, i) => {
-    const s = document.createElement('span'); s.className = 'ch'; s.style.setProperty('--i', i);
-    s.textContent = ch === ' ' ? '\u00a0' : ch; hi.appendChild(s);
-  });
-})();
-
 // ---- nav: highlight the link for the section you're reading ----
 (function () {
   const links = Array.prototype.slice.call(document.querySelectorAll('.nav-links a'));

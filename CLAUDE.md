@@ -125,14 +125,14 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
   - Hover and active states use a **tab lift**: white background, 2px brown outline, `translateY(-2px)`. The user rejected pill shapes and glow.
   - A scrollspy (`common.js`) maps section ids to links; `#industries` counts as Fees. Home is active only while the hero is visible.
   - Jump links are handled in JS. The code scrolls to `layoutTop(target) - headerHeight - 16`, using `offsetTop` so sections still mid-reveal (shifted or scaled) don't throw the position off. `main section[id] { scroll-margin-top: 88px }` is the fallback.
-- `body { overflow-x: clip }` stops horizontal scroll from the CTA bubble.
+- `body { overflow-x: clip }` guards against horizontal scroll.
 
 ### Page sections (index.html)
 1. **Hero (`.hero-band`)**
    - Full-screen white (`min-height: calc(100svh - 72px)`), with the slogan centred.
    - Maya **peeks out** above the fact card (`.perch` > `.perch-clip`, clipped at the card's top edge), showing half her body. She flies in place with a flapping strip, and her drawn SVG eyes follow the pointer.
-   - **"Hi, I'm Maya!"** sits right of her cap, rotated **−15°** and rising to the upper right. JS splits it into letters (`.ch`) that pop in and then wave (`ch-wave`). There is **no typing caret**; it was removed on request.
-   - Maya and the greeting stay hidden until her images load (`.perch-clip.ready`, `.perch.maya-ready`). The eyes must never appear before the body.
+   - There is **no greeting text** next to her; the "Hi, I'm Maya!" label was removed on request.
+   - Maya stays hidden until her images load (`.perch-clip.ready`, `.perch.maya-ready`). The eyes must never appear before the body.
 2. **Why Permitify (`#why`):** why someone should use Permitify.
 3. **Fee estimator (`#estimate`)**
    - White band containing an intro on the left plus Maya flying with a swinging wing and **winking every 5s**. The card is on the right.
@@ -150,7 +150,7 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
 5. **Industries (`#industries`):** fees scale with the chosen city.
 6. **Offices (`#offices`):** shows the chosen city's Business Permits and Licensing Office in this form: `"<hall>, <brgy>, <City>, Metro Manila"`. It includes a Google Maps directions link and a "Change your city" link to `#estimate`.
 7. **CTA ("Ready to book your slot?"):** a sand card with Maya standing (`maya-ta-da.png`).
-   - On hover or focus of **Book a slot** (or touch, via the `.cta-maya.jump` class), she lifts 42px, crossfades into a **flying** strip (`maya-hehe-fly.webp`, eyes closed), and a **"Let's Go!"** bubble appears **to her right** at 1.45rem.
+   - On hover or focus of **Book a slot** (or touch, via the `.cta-maya.jump` class), she lifts 42px, crossfades into a **flying** strip (`maya-hehe-fly.webp`, eyes closed). There is **no speech bubble**; the "Let's Go!" bubble was removed on request.
    - The fly layer is scaled by `1.12` so her flying size matches her standing size; the user complained she shrank.
 
 ### Behaviours in common.js
@@ -162,7 +162,6 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
 - Image load-gate for the hero Maya.
 - Hero eye tracking (the `.mf-look` pupils).
 - CTA jump class.
-- Greeting letter split.
 - Scrollspy and jump links.
 - **Helpers:** `el()`, `clear()`, `peso()`, `pesoShort()`, `renderFee`, `renderInspections`, `renderDocs(list, requirements)` (sets `--i` on each item), `loadSlots`, `debounce`, `api.get`.
 
@@ -252,12 +251,9 @@ tools/maya/apply_hat_piping.sh   # redo cap piping on every pose from src/before
 3. **Leftover asset:** `maya-mark.png` isn't used anywhere. Remove it or keep it for later.
 4. **Booking page:** Maya next to the title is now 200px (128px on phones). Confirm with the user that she matches the "Book a slot" heading.
 5. **Mobile pass:**
-   - On narrow phones, check that the hero greeting doesn't run off the right edge.
-   - Check the CTA bubble (at ≤680px it sits at `right: -.5rem`).
    - Check the docs list inside the narrow inspections box.
 6. **Waiting on the user's verdict** for the latest round:
-   - the tilted greeting
    - the piping alignment on every pose
-   - the CTA flying size and bubble
+   - the CTA flying size
    - the always-open documents list
 7. **Estimator wink source:** the closed-eye pose was made by painting a lid over an eye-removed base in the session scratchpad. That intermediate is not in the repo. To change the wink, edit `tools/maya/src/before-piping/maya-hey-you-wink.png` directly.

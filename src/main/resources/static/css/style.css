@@ -124,8 +124,6 @@ em { font-style: normal; }
 /* Maya stays hidden until her drawing has loaded, then appears all at once (eyes never show on their own). */
 .js .perch-clip { opacity: 0; transition: opacity .45s ease; }
 .js .perch-clip.ready { opacity: 1; }
-.js .perch-hi { visibility: hidden; }
-.js .perch.maya-ready .perch-hi { visibility: visible; }
 /* the frames have 80px of room on each side and 30px on top, so wing tips never hit an edge */
 .mf-frames { position: absolute; left: -17.778%; top: -14.563%; width: 135.556%; height: 114.563%; overflow: hidden; }
 .mf-frames img { position: absolute; left: 0; top: 0; width: 1600%; height: 100%; max-width: none; display: block; animation: flap-strip .8s steps(16) infinite; }
@@ -133,18 +131,6 @@ em { font-style: normal; }
 .mf-look { transition: transform .12s linear; }
 @keyframes flap-strip { to { transform: translateX(-100%); } }
 @keyframes hover { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(2.5%); } }
-/* "Hi!" written next to Maya's head */
-.perch-hi {
-  position: absolute; z-index: 3; top: calc(var(--mw) * .1); white-space: nowrap;
-  left: calc(50% + var(--mw) * .16);
-  font-family: var(--display); font-weight: 600; font-size: clamp(1rem, calc(var(--mw) * .05), 1.7rem); line-height: 1;
-  color: var(--navy); transform-origin: 0% 100%;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .perch.maya-ready .perch-hi, html:not(.js) .perch-hi { animation: hi-pop .5s .35s cubic-bezier(.2, .9, .3, 1.4) both; }
-}
-@keyframes hi-pop { from { opacity: 0; transform: scale(.4) rotate(-8deg); } to { opacity: 1; transform: scale(1); } }
-.perch-hi { rotate: -15deg; }
 .perch-card {
   position: relative; z-index: 2; background: #fff; border: 1px solid var(--line); border-radius: 22px;
   box-shadow: 0 1px 2px rgba(62, 36, 22, .05), 0 16px 40px rgba(62, 36, 22, .10);
@@ -496,29 +482,6 @@ em { font-style: normal; }
 /* header "Book a slot" in the footer's browns */
 .nav-actions .btn-outline { color: var(--ink-soft); border-color: rgba(107, 84, 70, .4); }
 .nav-actions .btn-outline:hover { color: var(--ink); border-color: var(--ink-soft); background: var(--gold-soft); }
-
-/* closing banner: Maya jumps and shouts when "Book a slot" is hovered */
-.cta-say {
-  position: absolute; right: -6rem; top: 14%; z-index: 2; white-space: nowrap;
-  font-family: var(--display); font-weight: 600; font-size: 1.45rem; line-height: 1;
-  color: var(--navy); background: #fff; padding: .65rem 1rem; border-radius: 14px 14px 14px 4px;
-  box-shadow: 0 0 0 2px var(--navy), 0 8px 18px rgba(44, 58, 114, .18);
-  opacity: 0; transform: translateY(8px) scale(.6); transform-origin: 0% 100%;
-  transition: opacity .2s ease, transform .25s cubic-bezier(.2, .9, .3, 1.4);
-  pointer-events: none;
-}
-.cta:has(.btn:hover) .cta-say, .cta:has(.btn:focus-visible) .cta-say, .cta-maya.jump .cta-say { opacity: 1; transform: translateY(0) scale(1) rotate(4deg); }
-@media (prefers-reduced-motion: reduce) {
-    .cta-say { transition: opacity .2s ease !important; }
-}
-@media (max-width: 680px) { .cta-say { right: -.5rem; font-size: 1.15rem; } }
-
-/* "Hi, I'm Maya!" types itself out, then each letter does a little wave */
-.perch-hi .ch { display: inline-block; opacity: 0; transform: translateY(.3em); }
-.perch.maya-ready .perch-hi .ch { animation: ch-in .18s ease-out forwards, ch-wave 3.2s ease-in-out infinite; animation-delay: calc(.5s + var(--i) * 70ms), calc(2s + var(--i) * 60ms); }
-@keyframes ch-in { to { opacity: 1; transform: none; } }
-@keyframes ch-wave { 0%, 70%, 100% { transform: translateY(0); } 80% { transform: translateY(-.18em); } 90% { transform: translateY(0); } }
-@media (prefers-reduced-motion: reduce) { .perch.maya-ready .perch-hi .ch { animation: ch-in .01s linear forwards !important; } }
 
 /* closing banner: standing Maya takes off and flies while Book a slot is hovered */
 .cta-maya { width: 290px; aspect-ratio: 344 / 356; }
