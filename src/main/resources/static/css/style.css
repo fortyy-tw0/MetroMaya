@@ -191,17 +191,9 @@ em { font-style: normal; }
 .est-maya-frames { position: absolute; left: -15.666%; top: -16.438%; width: 131.332%; height: 132.877%; overflow: hidden; }
 .est-maya-frames img { position: absolute; left: 0; top: 0; width: 1600%; height: 100%; max-width: none; display: block; animation: flap-strip .9s steps(16) infinite; }
 @keyframes est-hover { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-5%) rotate(1.5deg); } }
-/* "So Easy!" bounces word by word and sways along with her */
-.est-maya-say {
-  position: absolute; top: 2%; left: 58%; white-space: nowrap; z-index: 1;
-  font-family: var(--display); font-weight: 600; font-size: clamp(1.2rem, 2.1vw, 1.75rem); line-height: 1;
-  color: var(--ink); rotate: -10deg; transform-origin: 0% 100%;
-  animation: say-sway 2.4s ease-in-out infinite;
-}
-.est-maya-say > span { display: inline-block; animation: say-bounce 2.4s ease-in-out infinite; }
-.est-maya-say > span + span { animation-delay: .15s; color: var(--navy); }
-@keyframes say-sway { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-6px) rotate(4deg); } }
-@keyframes say-bounce { 0%, 60%, 100% { transform: translateY(0) scale(1); } 70% { transform: translateY(-7px) scale(1.12); } 80% { transform: translateY(0) scale(.97); } }
+/* Every 5 seconds she winks: a matching copy of the same flap with one eye closed shows for a moment */
+.est-maya-wink { opacity: 0; animation: est-wink 5s infinite; }
+@keyframes est-wink { 0%, 90% { opacity: 0; } 90.5%, 95.5% { opacity: 1; } 96%, 100% { opacity: 0; } }
 .estimate-note { font-size: .86rem; color: var(--muted); margin-top: 1rem; }
 @media (max-width: 960px) { .estimate-wrap { grid-template-columns: 1fr; gap: 1.5rem; } .est-maya { display: none; } }
 
@@ -422,6 +414,7 @@ em { font-style: normal; }
   .js-reveal .reveal, .js-reveal .reveal.reveal-left, .js-reveal .reveal.reveal-right, .js-reveal .reveal.reveal-zoom { transform: none !important; transition: opacity .45s ease !important; }
   .mf-frames img { animation: flap-strip 1.6s steps(16) infinite !important; }
   .est-maya-frames img { animation: flap-strip 1.8s steps(16) infinite !important; }
+  .est-maya-wink { animation: est-wink 5s infinite !important; }
   .maya-fly { animation: none !important; }
   .mf-look { transition: transform .12s linear !important; }
 }
