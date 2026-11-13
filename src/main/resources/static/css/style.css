@@ -360,6 +360,8 @@ em { font-style: normal; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
 .form-grid .full { grid-column: 1 / -1; }
 @media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .form-grid .field-spacer { display: none; } }
+.field select:disabled { background: var(--cream); color: var(--muted); cursor: not-allowed; }
 .form-group-title { font-family: var(--display); font-weight: 600; font-size: 1.05rem; margin: 1.25rem 0 .75rem; grid-column: 1 / -1; }
 .form-group-title:first-child { margin-top: .25rem; }
 

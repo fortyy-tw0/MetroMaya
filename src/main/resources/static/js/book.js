@@ -67,25 +67,92 @@
   const liveBody = $('live-body');
   let liveTicket = 0;
 
-  // City: picked from the list, or filled in automatically when the address names a Metro Manila city.
+  // Address: Line 1 is typed; City → Barangay → ZIP code are picked from lists that depend on each other.
+  // Barangays come from the PSA's PSGC list and ZIP codes from PHLPost's directory (see tools/places).
   const citySelect = $('cityId');
+  const brgySelect = $('barangay');
+  const zipSelect = $('zip');
   const cityNote = $('city-note');
+  const zipNote = $('zip-note');
   NCR_CITIES.forEach((c) => citySelect.append(el('option', { value: c.id, text: c.municipality ? c.name + ' (municipality)' : cityPlace(c) })));
+
+  const fold = (t) => String(t).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+    .replace(/\bsta\.?\s/g, 'santa ').replace(/\bsto\.?\s/g, 'santo ').replace(/\(pob\.\)/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+
+  function fillSelect(sel, placeholder, options) {
+    clear(sel).append(el('option', { value: '', selected: true, disabled: true, text: placeholder }));
+    options.forEach((o) => sel.append(o));
+    sel.disabled = !options.length;
+  }
+
+  function renderBarangays() {
+    const places = NCR_PLACES[citySelect.value];
+    zipNote.hidden = true;
+    if (!places) {
+      fillSelect(brgySelect, 'Choose a city first', []);
+      fillSelect(zipSelect, 'Choose a city first', []);
+      return;
+    }
+    if (citySelect.value === 'manila') {
+      // Manila's 897 barangays are numbered, so they're grouped by district
+      const groups = {};
+      places.barangays.forEach((b) => { (groups[b.district] = groups[b.district] || []).push(b); });
+      fillSelect(brgySelect, 'Choose your barangay', Object.keys(groups).map((d) => el('optgroup', { label: d },
+        groups[d].map((b) => el('option', { value: b.name, 'data-district': d, text: b.name })))));
+    } else {
+      fillSelect(brgySelect, 'Choose your barangay', places.barangays.map((b) => el('option', { value: b.name, text: b.name })));
+    }
+    renderZips();
+  }
+
+  // ZIP codes cover areas, not barangays, so all of the city's codes are offered. When the barangay
+  // (or, in Manila, its district) clearly matches one, it's picked for you.
+  function renderZips() {
+    const places = NCR_PLACES[citySelect.value];
+    if (!places) return;
+    let zips = places.zips;
+    let match = null;
+    const brgy = places.barangays.find((b) => b.name === brgySelect.value);
+    if (brgy && brgy.zips) {
+      zips = places.zips.filter((z) => brgy.zips.includes(z.code));
+      if (zips.length === 1) match = zips[0];
+    } else if (brgy) {
+      const name = fold(brgy.name);
+      match = places.zips.find((z) => fold(z.area).split(/\s*(?:,|&|\/|\+|-)\s*|\s+and\s+/).some((part) => part === name || part.split(' ').join(' ') === name))
+        || places.zips.find((z) => (' ' + fold(z.area) + ' ').includes(' ' + name + ' ')) || null;
+    }
+    fillSelect(zipSelect, brgySelect.value ? 'Choose your ZIP code' : 'Choose your ZIP code', zips.map((z) =>
+      el('option', { value: z.code, text: z.code + ' · ' + z.area })));
+    if (match) {
+      zipSelect.value = match.code;
+      zipNote.textContent = 'Matched to ' + brgySelect.value + '. Change it if your ZIP code is different.';
+      zipNote.hidden = false;
+    } else {
+      zipNote.hidden = true;
+    }
+  }
+
+  // Typing a city into Line 1 still picks it for you.
   let lastDetected = null;
   function detectFromAddress() {
-    const found = detectCity($('businessAddress').value);
+    const found = detectCity($('addressLine1').value);
     if (found && found.id !== lastDetected) {
       lastDetected = found.id;
-      citySelect.value = found.id;
-      cityNote.textContent = 'Found ' + cityPlace(found) + ' in your address.';
-      cityNote.hidden = false;
-      refreshLive();
+      if (citySelect.value !== found.id) {
+        citySelect.value = found.id;
+        renderBarangays();
+        cityNote.textContent = 'Found ' + cityPlace(found) + ' in your address.';
+        cityNote.hidden = false;
+        refreshLive();
+      }
     } else if (!found) {
       lastDetected = null;
     }
   }
-  $('businessAddress').addEventListener('input', debounce(detectFromAddress, 200));
-  citySelect.addEventListener('change', () => { cityNote.hidden = true; refreshLive(); });
+  $('addressLine1').addEventListener('input', debounce(detectFromAddress, 200));
+  citySelect.addEventListener('change', () => { cityNote.hidden = true; renderBarangays(); refreshLive(); });
+  brgySelect.addEventListener('change', renderZips);
+  zipSelect.addEventListener('change', () => { zipNote.hidden = true; });
 
   const employeesOk = (v) => /^\d+$/.test(v) && Number(v) >= 1;
 
@@ -149,13 +216,13 @@
     const form = Object.fromEntries(new FormData(e.target).entries());
     Object.keys(form).forEach((k) => { form[k] = String(form[k]).trim(); });
     const city = cityById(form.cityId || '');
-    const inAddress = detectCity(form.businessAddress);
 
     const problems = [];
     if (form.businessName.length < 2) problems.push('Enter your business name.');
-    else if (form.businessAddress.length < 5) problems.push('Enter the business address, including the barangay.');
-    else if (!city) problems.push('Choose the city your business is in, or type it in the address.');
-    else if (inAddress && inAddress.id !== city.id) problems.push('Your address says ' + cityPlace(inAddress) + ' but the city is set to ' + cityPlace(city) + '. Make them match.');
+    else if ((form.addressLine1 || '').length < 3) problems.push('Enter Address Line 1: unit or block number, street and subdivision.');
+    else if (!city) problems.push('Choose the city your business is in.');
+    else if (!form.barangay) problems.push('Choose your barangay.');
+    else if (!form.zip) problems.push('Choose your ZIP code.');
     else if (!form.industryId) problems.push('Choose your type of business.');
     else if (!employeesOk(form.employees)) problems.push('Enter the number of employees as a whole number, 1 or more.');
     else if (form.ownerName.length < 2) problems.push('Enter the owner’s full name.');
@@ -163,9 +230,11 @@
     else if (form.phone.replace(/\D/g, '').length < 7) problems.push('Enter a valid mobile number.');
     if (problems.length) { showAlert(alertNode, problems[0], 'error'); return; }
 
-    // the address carries the city, so the booking (and Track a booking) knows which rates apply
-    if (!inAddress) form.businessAddress += ', ' + cityPlace(city);
-    delete form.cityId;
+    // one address line for the booking, ending in the city and ZIP, e.g.
+    // "Unit 3 Ruby Bldg, 12 Rizal St, Kapitolyo, Pasig City 1603". Track a booking reads the city from it.
+    const brgyLabel = /^barangay\s/i.test(form.barangay) ? form.barangay : 'Brgy. ' + form.barangay;
+    form.businessAddress = [form.addressLine1, brgyLabel, cityPlace(city) + ' ' + form.zip].join(', ');
+    ['addressLine1', 'cityId', 'barangay', 'zip'].forEach((k) => delete form[k]);
 
     try {
       const qs = new URLSearchParams({ serviceId: state.serviceId, industryId: form.industryId, employees: form.employees });
