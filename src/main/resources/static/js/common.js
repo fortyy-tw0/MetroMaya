@@ -229,6 +229,29 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
 
 })();
 
+// ---- nav: highlight the link for the section you're reading ----
+(function () {
+  const links = Array.prototype.slice.call(document.querySelectorAll('.nav-links a'));
+  if (!links.length || !document.querySelector('.hero-band')) return;
+  // which nav link each part of the home page belongs to
+  const owner = { estimate: '#estimate', industries: '#estimate', how: '#how', offices: '#offices' };
+  const home = links.find((a) => a.getAttribute('href') === '/');
+  const sections = Object.keys(owner).map((id) => document.getElementById(id)).filter(Boolean);
+  function update() {
+    const line = window.innerHeight * 0.35;
+    let current = null;
+    sections.forEach((sec) => { const r = sec.getBoundingClientRect(); if (r.top <= line && r.bottom > line) current = owner[sec.id]; });
+    links.forEach((a) => {
+      const on = current ? a.getAttribute('href') === current : a === home;
+      a.classList.toggle('is-active', on);
+      if (on) a.setAttribute('aria-current', current ? 'location' : 'page'); else a.removeAttribute('aria-current');
+    });
+  }
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
+  update();
+})();
+
 // ---- show Maya only once her drawing (and beak layer) have loaded ----
 (function () {
   const clip = document.querySelector('.perch-clip');

@@ -16,7 +16,7 @@
 <body>
   <header class="site-header">
     <div class="nav">
-      <a class="brand" href="/"><img src="/img/maya-mark.png" alt="" width="40" height="40"><span>Permitify<b>.</b></span></a>
+      <a class="brand" href="/" aria-label="Permitify home">Permitify<b>.</b></a>
       <nav class="nav-links" aria-label="Main">
         <a href="/" aria-current="page">Home</a>
         <a href="#estimate">Fees</a>
@@ -182,11 +182,10 @@
     <!-- How it works -->
     <section class="band" id="how" aria-labelledby="how-title">
       <div class="wrap">
-        <div class="band-art">
+        <div class="band-head">
           <span class="eyebrow">How it works</span>
           <h2 id="how-title">Four steps to a confirmed slot</h2>
           <p>Booking takes about three minutes. You get a reference number straight away.</p>
-          <img src="/img/maya-lets-go.png" alt="" width="432" height="357" loading="lazy">
         </div>
         <ol class="sequence">
           <li>
@@ -217,7 +216,13 @@
             <span class="eyebrow">What you pay</span>
             <h2 id="ind-title">Fees depend on what you run</h2>
           </div>
-          <p>Your type of business sets the base fee and the inspections. Your size then scales the fee and can add more checks.</p>
+          <div class="city-pick">
+            <p>Your city's revenue code sets the rates. Your type of business sets the base fee and inspections, and your size scales the fee.</p>
+            <label class="control city-control" for="city-select">Your city in Metro Manila
+              <select id="city-select"></select>
+            </label>
+            <p class="estimate-note" style="margin:0;">City rates are samples for this project, not each city's official schedule.</p>
+          </div>
         </div>
         <div class="fees-wrap">
           <div class="rows" id="industry-rows" aria-live="polite"></div>
@@ -235,7 +240,7 @@
         <div class="split-head">
           <span class="eyebrow">Offices</span>
           <h2 id="off-title">Where to go</h2>
-          <p>Not every desk handles every service. The booking form only offers the desks that can serve your business.</p>
+          <p>Apply at the Business Permits and Licensing Office in your city hall. <a href="#industries" id="office-city-change">Change your city</a></p>
           <ul class="hours">
             <li><span class="icon-chip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>Weekdays, 8:00 AM to 5:00 PM</li>
             <li><span class="icon-chip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>Book up to 30 days ahead</li>
@@ -262,7 +267,7 @@
     <div class="wrap">
       <div class="footer-grid">
         <div>
-          <a class="brand" href="/"><img src="/img/maya-mark.png" alt="" width="40" height="40"><span>Permitify<b>.</b></span></a>
+          <a class="brand" href="/" aria-label="Permitify home">Permitify<b>.</b></a>
           <p class="footer-note">Book business permit appointments with Maya, your permit guide.</p>
         </div>
         <div>

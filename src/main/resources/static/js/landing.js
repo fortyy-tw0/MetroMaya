@@ -12,6 +12,33 @@
     });
   }
 
+  // Metro Manila LGUs. Halls and barangays from Wikipedia's list of city and municipal halls in Metro Manila.
+  // `rate` is a SAMPLE multiplier standing in for each city's revenue code; it is not an official rate.
+  const CITIES = [
+    { id: 'caloocan', name: 'Caloocan', hall: 'Caloocan City Hall', brgy: 'Grace Park East', rate: 0.95 },
+    { id: 'las-pinas', name: 'Las Piñas', hall: 'Las Piñas City Hall', brgy: 'Pamplona Tres', rate: 1.00 },
+    { id: 'makati', name: 'Makati', hall: 'Makati City Hall', brgy: 'Poblacion', rate: 1.30 },
+    { id: 'malabon', name: 'Malabon', hall: 'Malabon City Hall', brgy: 'San Agustin', rate: 0.90 },
+    { id: 'mandaluyong', name: 'Mandaluyong', hall: 'Mandaluyong City Hall', brgy: 'Plainview', rate: 1.15 },
+    { id: 'manila', name: 'Manila', hall: 'Manila City Hall', brgy: 'Ermita', rate: 1.15 },
+    { id: 'marikina', name: 'Marikina', hall: 'Marikina City Hall', brgy: 'Santa Elena', rate: 1.00 },
+    { id: 'muntinlupa', name: 'Muntinlupa', hall: 'Muntinlupa City Hall', brgy: 'Putatan', rate: 1.10 },
+    { id: 'navotas', name: 'Navotas', hall: 'Navotas City Hall', brgy: 'Sipac-Almacen', rate: 0.90 },
+    { id: 'paranaque', name: 'Parañaque', hall: 'Parañaque City Hall', brgy: 'San Antonio', rate: 1.10 },
+    { id: 'pasay', name: 'Pasay', hall: 'Pasay City Hall', brgy: 'Barangay 70, Zone 9', rate: 1.10 },
+    { id: 'pasig', name: 'Pasig', hall: 'Pasig Temporary City Hall', brgy: 'Rosario', rate: 1.20,
+      note: 'Pasig is using a temporary city hall while its new one is built.' },
+    { id: 'pateros', name: 'Pateros', hall: 'Pateros Municipal Hall', brgy: 'Aguho', rate: 0.85, municipality: true },
+    { id: 'quezon-city', name: 'Quezon City', hall: 'Quezon City Hall', brgy: 'Central', rate: 1.15 },
+    { id: 'san-juan', name: 'San Juan', hall: 'San Juan City Hall', brgy: 'Pinaglabanan', rate: 1.10 },
+    { id: 'taguig', name: 'Taguig', hall: 'Taguig City Hall', brgy: 'Tuktukan', rate: 1.25 },
+    { id: 'valenzuela', name: 'Valenzuela', hall: 'Valenzuela City Hall', brgy: 'Karuhatan', rate: 0.95 },
+  ];
+  function cityPlace(c) { return c.municipality ? c.name : (c.name === 'Quezon City' ? c.name : c.name + ' City'); }
+  let city = CITIES.find((c) => c.id === 'manila');
+  try { const saved = localStorage.getItem('permitify.city'); city = CITIES.find((c) => c.id === saved) || city; } catch (e) { /* no storage */ }
+  const scale = (n) => Math.round(n * city.rate * 100) / 100;
+
   let config, services, industries, offices;
   try {
     [config, { services }, { industries }, { offices }] = await Promise.all([
@@ -60,12 +87,17 @@
     $('est-book').href = '/book.html?service=' + encodeURIComponent(state.serviceId);
     const qs = new URLSearchParams({ serviceId: state.serviceId, industryId: state.industryId, employees: state.employees });
     try {
-      const { quote } = await api.get('/api/quote?' + qs.toString());
+      const { quote: raw } = await api.get('/api/quote?' + qs.toString());
       if (ticket !== latest) return; // a newer request is already on its way
+      const lines = raw.fee.lines.map((l) => ({ label: l.label, amount: scale(l.amount) }));
+      const quote = Object.assign({}, raw, {
+        fee: { lines, total: Math.round(lines.reduce((t, l) => t + l.amount, 0) * 100) / 100 },
+        inspections: raw.inspections.map((i) => Object.assign({}, i, { fee: scale(i.fee) })),
+      });
       const n = quote.inspections.length;
       clear($('est-tiles')).append(
         tile('Business size', quote.size.label, quote.size.range),
-        tile('Estimated total', peso(quote.fee.total), quote.fee.lines.length + ' fee items', true),
+        tile('Estimated total', peso(quote.fee.total), 'in ' + city.name + ' · ' + quote.fee.lines.length + ' fee items', true),
         tile('Inspections', String(n), n ? quote.inspections.map((i) => shortInspection(i.label)).join(', ') : 'None for this service'),
         tile('Time needed', minutesText(quote.estimatedMinutes), state.serviceId === 'inspection' ? 'on site' : 'at the counter'));
       renderFee($('est-fee'), quote.fee);
@@ -83,16 +115,20 @@
   renderTabs();
   refresh();
 
-  // ---------- industries ----------
-  const industryRows = clear($('industry-rows'));
-  industries.forEach((i) => {
-    industryRows.append(el('div', { class: 'row' },
-      el('div', null, el('h4', { text: i.name }), el('p', { text: i.description })),
-      el('div', { class: 'price' }, pesoShort(i.baseFee), el('small', { text: 'base permit fee, micro business' })),
-      el('div', { class: 'chips' },
-        i.inspections.map((label) => el('span', { class: 'chip', text: label })),
-        i.surcharges.map((s) => el('span', { class: 'chip chip-quiet', text: s.label + ' ' + pesoShort(s.amount) })))));
-  });
+  // ---------- industries (fees follow the chosen city) ----------
+  function renderIndustries() {
+    const industryRows = clear($('industry-rows'));
+    industries.forEach((i) => {
+      industryRows.append(el('div', { class: 'row' },
+        el('div', null, el('h4', { text: i.name }), el('p', { text: i.description })),
+        el('div', { class: 'price' }, pesoShort(scale(i.baseFee)),
+          el('small', { text: 'base permit fee, micro business' }),
+          el('span', { class: 'city-rate', text: 'in ' + city.name })),
+        el('div', { class: 'chips' },
+          i.inspections.map((label) => el('span', { class: 'chip', text: label })),
+          i.surcharges.map((s) => el('span', { class: 'chip chip-quiet', text: s.label + ' ' + pesoShort(scale(s.amount)) })))));
+    });
+  }
 
   // ---------- size tiers ----------
   const sizeGrid = clear($('size-grid'));
@@ -102,25 +138,39 @@
     s.extraDocuments.forEach((d) => extras.push('Needs ' + d.charAt(0).toLowerCase() + d.slice(1)));
     if (s.inspectionFactor !== 1) extras.push('Inspections cost ×' + s.inspectionFactor.toFixed(2));
     if (!extras.length) extras.push('No extra inspections or documents');
-    sizeGrid.append(el('article', { class: 'size-card' },
+    sizeGrid.append(el('article', { class: 'size-card', tabindex: '0' },
       el('h4', { text: s.label }),
       el('p', { class: 'range', text: s.range }),
       el('p', { class: 'mult' }, '×' + s.feeMultiplier.toFixed(2), el('small', { text: 'on the base permit fee' })),
       el('ul', null, extras.map((x) => el('li', { text: x })))));
   });
 
-  // ---------- offices ----------
+  // ---------- office: the chosen city's hall ----------
   const serviceName = Object.fromEntries(services.map((s) => [s.id, s.name]));
-  const sizeLabel = Object.fromEntries(config.sizes.map((s) => [s.id, s.label]));
-  const officeRows = clear($('office-rows'));
-  offices.forEach((o) => {
-    const serves = o.sizesServed.length === config.sizes.length
-      ? 'All business sizes'
-      : sizeLabel[o.sizesServed[0]] + ' to ' + sizeLabel[o.sizesServed[o.sizesServed.length - 1]].toLowerCase() + ' businesses';
-    officeRows.append(el('div', { class: 'row' },
-      el('div', null, el('h4', { text: o.name }), el('p', { text: o.address })),
+  function renderOffice() {
+    const place = cityPlace(city);
+    const address = city.hall + ', ' + city.brgy + ', ' + place + ', Metro Manila';
+    const maps = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(city.hall + ', ' + place + ', Metro Manila');
+    clear($('office-rows')).append(el('div', { class: 'row' },
+      el('div', null,
+        el('h4', { text: 'Business Permits and Licensing Office' }),
+        el('p', { text: address }),
+        city.note ? el('p', { class: 'hint', text: city.note }) : null,
+        el('a', { class: 'directions', href: maps, target: '_blank', rel: 'noopener', text: 'Get directions to ' + city.hall + ' →' })),
       el('div', { class: 'chips' },
-        o.serviceIds.map((id) => el('span', { class: 'chip', text: serviceName[id] })),
-        el('span', { class: 'chip chip-quiet', text: serves }))));
+        services.map((s) => el('span', { class: 'chip', text: serviceName[s.id] })),
+        el('span', { class: 'chip chip-quiet', text: 'All business sizes' }))));
+  }
+
+  // ---------- city picker ----------
+  const citySelect = $('city-select');
+  CITIES.forEach((c) => citySelect.append(el('option', { value: c.id, text: c.municipality ? c.name + ' (municipality)' : cityPlace(c) })));
+  citySelect.value = city.id;
+  citySelect.addEventListener('change', () => {
+    city = CITIES.find((c) => c.id === citySelect.value) || city;
+    try { localStorage.setItem('permitify.city', city.id); } catch (e) { /* no storage */ }
+    renderIndustries(); renderOffice(); refresh();
   });
+  renderIndustries();
+  renderOffice();
 })();
