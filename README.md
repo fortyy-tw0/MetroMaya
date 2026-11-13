@@ -1,35 +1,51 @@
-# MetroMaya – NCR's Centralized Business Permit Appointment System
+# MetroMaya
 
-MetroMaya is a web app where business owners book slots for **new permit applications**, **annual renewals** and **inspection visits**. The backend is plain Java 21 (`com.sun.net.httpserver`, no dependencies). The front-end is static HTML, CSS and vanilla JS.
+> **A modernized, citizen-first digital civic portal and Local Government Unit (LGU) service prototype.**
 
-Fees are sample rates for a course project, not official LGU fees.
+**MetroMaya** is a modern web application designed to reimagine how citizens interact with Local Government Unit (LGU) services in Metro Manila. Built with speed, accessibility, and clean user experience at its core, MetroMaya eliminates the visual clutter, fragmented sub-portals, and slow load times common in legacy government websites—demonstrating an end-to-end digital service workflow aligned with modern e-governance standards.
 
-## Run
+**Live Demo:** [https://metro-maya.vercel.app/](https://metro-maya.vercel.app/)
 
-```bash
-./run.sh            # http://localhost:8080  (set PORT to change)
-./run-tests.sh      # 18 plain-Java checks
-```
+---
 
-## Polymorphism
+## How MetroMaya Differs from Traditional LGU Portals
 
-| Varies by | Design | Classes |
-|---|---|---|
-| Industry | abstract class, one subclass each | `Industry` → `RetailIndustry`, `FoodIndustry`, `ManufacturingIndustry`, `ProfessionalServicesIndustry`, `HealthcareIndustry` (base fee, required inspections, documents, surcharges) |
-| Business size | enum with constant-specific method bodies | `BusinessSize` MICRO / SMALL / MEDIUM / LARGE (fee multiplier, inspection cost factor, extra inspections and documents) |
-| Service type | abstract class with a final template method `quote()` | `PermitService` → `NewPermitService`, `RenewalService`, `InspectionVisitService` |
+| Feature Area | Legacy LGU Websites | MetroMaya |
+| :--- | :--- | :--- |
+| **Architecture & Speed** | Monolithic CMS/legacy backends prone to slow load times during peak traffic. | Edge-cached frontend deployment on **Vercel** for instant loading and responsive navigation. |
+| **UI / UX Design** | Cluttered layouts, buried navigation menus, and desktop-first forms. | Clean, consumer-grade, mobile-first interface with clear visual hierarchy. |
+| **Service Discovery** | Static tables and downloadable PDF checklists. | Interactive, guided service workflows and quick-access civic directories. |
+| **Transaction Flow** | Fragmented redirects to external payment pages without live status sync. | Unified end-to-end dashboard tracking applications from submission to fulfillment. |
 
-Other pieces: `Office` (offers some services, serves some sizes, per-slot capacity), `Appointment` (stores a quote snapshot), `AppointmentRepository` interface with an in-memory implementation, and `AppointmentService` holding the booking rules.
+---
 
-## Booking rules
+## Core & Planned Features
 
-Weekdays only, up to 30 days ahead, hourly slots 8:00–16:00 (no 12:00), per-office capacity, one active booking per email + business + service. References look like `BPL-20261116-ABCDE`.
+### Civic Utility & Information
+- **Unified Service Directory:** Instant search and categorization for local government permits, clearances, and community programs.
+- **Emergency & Public Hotline Hub:** One-tap access to local emergency response units, police precincts, fire stations, and public health facilities.
+- **Announcements & Advisories:** Clean, readable feed for local ordinances, public notices, and community alerts.
 
-## API
+### End-to-End Digital Permit Workflow *(Sandbox / Prototype)*
+- **Guided Application Wizard:** Step-by-step digital intake for business permits, barangay/city clearances, and local requests.
+- **Simulated Online Payment Gateway:** Interactive sandbox checkout supporting familiar local payment channels (QRPh, GCash, Maya, and online bank transfers) with instant status updates.
+- **Digital Permits & QR Verification:** Auto-generated Electronic Official Receipts (e-OR) and digital permits embedded with unique verification QR codes.
+- **Pickup vs. Door-to-Door Delivery:** Flexible fulfillment options allowing users to book a City Hall appointment slot or opt for courier delivery with live status tracking (*Submitted → Assessed → Paid → Out for Delivery*).
 
-`GET /api/health`, `/api/config`, `/api/services`, `/api/industries`, `/api/offices`, `/api/quote?serviceId=&industryId=&employees=`, `/api/slots?officeId=&date=`
-`POST /api/appointments`, `GET /api/appointments/{ref}`, `POST /api/appointments/{ref}/cancel`, `POST /api/appointments/{ref}/reschedule`
+---
 
-## Deploy on Vercel
+## Getting Started
 
-Vercel has no Java runtime, so the project uses the Container runtime with the root `Dockerfile` (`Dockerfile.vercel` is a copy). The Vercel project name must not contain underscores. Bookings are kept in memory and reset when the container scales down; swap in a database-backed `AppointmentRepository` to persist them.
+To run a local copy of MetroMaya for development or testing, follow these steps.
+
+### Prerequisites
+- **Node.js** (v18.0 or higher recommended)
+- **npm**, **yarn**, **pnpm**, or **bun**
+- **Git**
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/fortyy-tw0/MetroMaya.git](https://github.com/fortyy-tw0/MetroMaya.git)
+   cd MetroMaya
