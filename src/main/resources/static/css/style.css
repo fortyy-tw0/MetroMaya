@@ -490,7 +490,12 @@ em { font-style: normal; }
 
 /* header "Book a slot" in the footer's browns */
 .nav-actions .btn-outline { color: var(--ink-soft); border-color: rgba(107, 84, 70, .4); }
-.nav-actions .btn-outline:hover { color: var(--ink); border-color: var(--ink-soft); background: var(--gold-soft); }
+/* Book a slot gets the same tab lift as the nav links */
+.nav-actions .btn-outline { transition: color .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
+.nav-actions .btn-outline:hover, .nav-actions .btn-outline:focus-visible {
+  color: var(--ink); background: #fff; border-color: transparent; transform: translateY(-2px); outline: none;
+  box-shadow: 0 0 0 2px var(--ink-soft), 0 8px 18px rgba(62, 36, 22, .16);
+}
 
 /* closing banner: standing Maya takes off and flies while Book a slot is hovered */
 .cta-maya { width: 290px; aspect-ratio: 344 / 356; }

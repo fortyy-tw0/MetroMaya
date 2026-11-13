@@ -91,7 +91,7 @@ The user asked for one data change: `RetailIndustry.requiredDocuments()` returns
 
 ```
 src/main/resources/static/
-  index.html     landing page (hero, Why MetroMaya, Fee estimator, How it works, Industries, Offices, CTA)
+  index.html     landing page (hero, What is MetroMaya, How It Works, Fee estimator, Industries, Offices, CTA)
   book.html      5-step booking wizard (Service, Business, Office, Date and time, Review)
   manage.html    track / cancel / reschedule by reference
   css/style.css  one stylesheet (~530 lines); tokens on :root
@@ -121,8 +121,9 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
 - **Fonts** (Google Fonts): Lexend for display text, Figtree for body text, JetBrains Mono for references.
 - **Style:** minimalist and easy to navigate.
 - **Header:** sticky, 72px tall, using the footer's brown/cream scheme. The logo is text only ("MetroMaya" with a gold dot). The old Maya logo mark (`maya-mark.png`) is no longer used.
-- **Nav (six tabs, in page order):** Home, Why MetroMaya (`#why`), Fee estimator (`#estimate`), How it works (`#how`), Fees (`#industries`), Offices (`#offices`).
+- **Nav (five tabs, in page order; keep this capitalization):** Home, What is MetroMaya (`#why`), How It Works (`#how`), Fees (`#estimate`; `#industries` also counts as Fees in the scrollspy), Offices (`#offices`).
   - Below 1200px the tabs tighten. Below 1080px "Track a booking" leaves the header (it's still in the footer). Below 900px the tabs hide.
+  - The header's **Book a slot** button uses the same tab-lift hover as the tabs.
   - Hover and active states use a **tab lift**: white background, 2px brown outline, `translateY(-2px)`. The user rejected pill shapes and glow.
   - A scrollspy (`common.js`) maps section ids to links. Home is active only while the hero is visible.
   - Jump links are handled in JS (`jumpTop` in `common.js`). They **centre** the section's content (its direct `.wrap` child, so padding doesn't count) in the screen area below the header. If the content is taller than that area (the Fees estimator, and most sections on phones), its top lands 16px under the header instead. The result is clamped to the page's scroll range. Measuring uses `offsetTop`/`offsetHeight`, so sections still mid-reveal don't throw it off. `main section[id] { scroll-margin-top: 88px }` is the no-JS fallback.
@@ -136,8 +137,9 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
    - Maya **peeks out** above the fact card (`.perch` > `.perch-clip`, clipped at the card's top edge), showing half her body. She flies in place with a flapping strip, and her drawn SVG eyes follow the pointer.
    - There is **no greeting text** next to her; the "Hi, I'm Maya!" label was removed on request.
    - Maya stays hidden until her images load (`.perch-clip.ready`, `.perch.maya-ready`). The eyes must never appear before the body.
-2. **Why MetroMaya (`#why`):** why someone should use MetroMaya.
-3. **Fee estimator (`#estimate`)**
+2. **What is MetroMaya (`#why`):** why someone should use MetroMaya.
+3. **How It Works (`#how`):** a navy rounded band with a centred head and 4 step cards.
+4. **Fee estimator (`#estimate`)**
    - White band containing an intro on the left plus Maya flying with a swinging wing and **winking every 5s**. The card is on the right.
    - **Card contents:**
      - service tabs (estimator-tab hover effect)
@@ -149,7 +151,6 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
    - **Documents to bring:** always visible, with no `<details>` toggle and no bullets. Each item is a soft navy row that slides in (`doc-in`, staggered by `--i`). The animation replays when the list re-renders and when the section is revealed again. The same markup is used in book.html (review and done) and manage.html.
    - Estimator Maya has a **fixed** `margin-top: 3rem`, so she never moves when the card height changes. The user explicitly wanted her not to move.
    - Size cards stand out on hover (lift, outline, shadow), not by glowing.
-4. **How it works (`#how`):** a navy rounded band with a centred head and 4 step cards.
 5. **Industries (`#industries`):** fees scale with the chosen city.
 6. **Offices (`#offices`):** the chosen city's hall (`"<hall>, <brgy>, <City>, Metro Manila"`, a Google Maps directions link, the Pasig note) followed by the **four desks** a permit passes through, all at the hall's Business One-Stop Shop (RA 11032):
    - BPLO/BPLD, the City (or Municipal) Treasurer's Office (CTO/MTO), the BFP desk, and the City Health Office / Sanitation Desk.

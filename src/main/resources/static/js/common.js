@@ -247,7 +247,7 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
   const links = Array.prototype.slice.call(document.querySelectorAll('.nav-links a'));
   if (!links.length || !document.querySelector('.hero-band')) return;
   // which nav link each part of the home page belongs to
-  const owner = { why: '#why', estimate: '#estimate', industries: '#industries', how: '#how', offices: '#offices' };
+  const owner = { why: '#why', estimate: '#estimate', industries: '#estimate', how: '#how', offices: '#offices' };
   const home = links.find((a) => a.getAttribute('href') === '/');
   const sections = Object.keys(owner).map((id) => document.getElementById(id)).filter(Boolean);
   function update() {
