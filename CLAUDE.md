@@ -121,9 +121,10 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
 - **Fonts** (Google Fonts): Lexend for display text, Figtree for body text, JetBrains Mono for references.
 - **Style:** minimalist and easy to navigate.
 - **Header:** sticky, 72px tall, using the footer's brown/cream scheme. The logo is text only ("MetroMaya" with a gold dot). The old Maya logo mark (`maya-mark.png`) is no longer used.
-- **Nav:** Home, Why MetroMaya (`#why`), Fees (`#estimate`), How it works (`#how`), Offices (`#offices`).
+- **Nav (six tabs, in page order):** Home, Why MetroMaya (`#why`), Fee estimator (`#estimate`), How it works (`#how`), Fees (`#industries`), Offices (`#offices`).
+  - Below 1200px the tabs tighten. Below 1080px "Track a booking" leaves the header (it's still in the footer). Below 900px the tabs hide.
   - Hover and active states use a **tab lift**: white background, 2px brown outline, `translateY(-2px)`. The user rejected pill shapes and glow.
-  - A scrollspy (`common.js`) maps section ids to links; `#industries` counts as Fees. Home is active only while the hero is visible.
+  - A scrollspy (`common.js`) maps section ids to links. Home is active only while the hero is visible.
   - Jump links are handled in JS (`jumpTop` in `common.js`). They **centre** the section's content (its direct `.wrap` child, so padding doesn't count) in the screen area below the header. If the content is taller than that area (the Fees estimator, and most sections on phones), its top lands 16px under the header instead. The result is clamped to the page's scroll range. Measuring uses `offsetTop`/`offsetHeight`, so sections still mid-reveal don't throw it off. `main section[id] { scroll-margin-top: 88px }` is the no-JS fallback.
   - **Home** and the logo on the home page smooth-scroll to the top instead of reloading. On other pages they navigate to `/` as normal.
   - The scrollspy line is the centre of that same area, so the highlighted tab always matches where a jump lands.
