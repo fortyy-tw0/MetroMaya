@@ -49,15 +49,16 @@
         <!-- 2 Business -->
         <section class="panel" id="panel-business" hidden>
           <h2>Tell us about your business</h2>
-          <p class="hint">Your type of business and number of employees set your fees, inspections and documents.</p>
+          <p class="hint">Your city, type of business and number of employees set your fees, inspections and documents.</p>
           <div class="form-split">
             <form id="business-form" novalidate>
               <div class="form-grid">
                 <h3 class="form-group-title">Business</h3>
                 <div class="field full"><label for="businessName">Business name</label><input id="businessName" name="businessName" autocomplete="organization" required></div>
-                <div class="field full"><label for="businessAddress">Business address</label><input id="businessAddress" name="businessAddress" autocomplete="street-address" placeholder="Street, barangay" required></div>
-                <div class="field"><label for="industryId">Type of business</label><select id="industryId" name="industryId" required></select></div>
-                <div class="field"><label for="employees">Number of employees</label><input id="employees" name="employees" type="number" min="1" max="100000" inputmode="numeric" value="5" required></div>
+                <div class="field full"><label for="businessAddress">Business address</label><input id="businessAddress" name="businessAddress" autocomplete="street-address" placeholder="Street, barangay, city" required></div>
+                <div class="field"><label for="cityId">City (Metro Manila)</label><select id="cityId" name="cityId" required><option value="" selected disabled>Choose your city</option></select><small class="field-note" id="city-note" hidden></small></div>
+                <div class="field"><label for="industryId">Type of business</label><select id="industryId" name="industryId" required><option value="" selected disabled>Choose a type of business</option></select></div>
+                <div class="field"><label for="employees">Number of employees</label><input id="employees" name="employees" type="number" min="1" max="100000" inputmode="numeric" placeholder="e.g. 5" required></div>
                 <h3 class="form-group-title">Owner or representative</h3>
                 <div class="field full"><label for="ownerName">Full name</label><input id="ownerName" name="ownerName" autocomplete="name" required></div>
                 <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" required></div>
@@ -69,7 +70,7 @@
 
             <aside class="live" aria-live="polite">
               <h3>Your estimate</h3>
-              <div id="live-body"><p class="live-empty">Choose a type of business to see your estimate.</p></div>
+              <div id="live-body"></div>
             </aside>
           </div>
         </section>

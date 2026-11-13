@@ -4,7 +4,7 @@
 
   const state = {
     step: 0, services: [], industries: [], offices: [], config: null,
-    serviceId: null, form: null, quote: null, officeId: null, date: '', time: '',
+    serviceId: null, form: null, quote: null, city: null, officeId: null, date: '', time: '',
   };
 
   const $ = (id) => document.getElementById(id);
@@ -67,24 +67,68 @@
   const liveBody = $('live-body');
   let liveTicket = 0;
 
+  // City: picked from the list, or filled in automatically when the address names a Metro Manila city.
+  const citySelect = $('cityId');
+  const cityNote = $('city-note');
+  NCR_CITIES.forEach((c) => citySelect.append(el('option', { value: c.id, text: c.municipality ? c.name + ' (municipality)' : cityPlace(c) })));
+  let lastDetected = null;
+  function detectFromAddress() {
+    const found = detectCity($('businessAddress').value);
+    if (found && found.id !== lastDetected) {
+      lastDetected = found.id;
+      citySelect.value = found.id;
+      cityNote.textContent = 'Found ' + cityPlace(found) + ' in your address.';
+      cityNote.hidden = false;
+      refreshLive();
+    } else if (!found) {
+      lastDetected = null;
+    }
+  }
+  $('businessAddress').addEventListener('input', debounce(detectFromAddress, 200));
+  citySelect.addEventListener('change', () => { cityNote.hidden = true; refreshLive(); });
+
+  const employeesOk = (v) => /^\d+$/.test(v) && Number(v) >= 1;
+
+  // The estimate only appears once the three things it depends on are filled in.
+  function missingForEstimate() {
+    const missing = [];
+    if (!$('industryId').value) missing.push('type of business');
+    if (!employeesOk($('employees').value.trim())) missing.push('number of employees');
+    if (!citySelect.value) missing.push('city');
+    return missing;
+  }
+
+  function showWaiting(missing) {
+    const list = missing.length > 1 ? missing.slice(0, -1).join(', ') + ' and ' + missing[missing.length - 1] : missing[0];
+    clear(liveBody).append(
+      el('p', { class: 'live-empty', text: 'Add your ' + list + ' to see your estimate.' }),
+      el('ul', { class: 'live-todo' }, ['type of business', 'number of employees', 'city'].map((item) =>
+        el('li', { class: missing.includes(item) ? '' : 'done', text: item.charAt(0).toUpperCase() + item.slice(1) }))));
+  }
+
   async function refreshLive() {
+    const missing = missingForEstimate();
+    if (!state.serviceId) return;
+    if (missing.length) { ++liveTicket; showWaiting(missing); return; }
     const industryId = $('industryId').value;
     const employees = $('employees').value.trim();
-    if (!state.serviceId || !industryId) return;
+    const city = cityById(citySelect.value);
     const ticket = ++liveTicket;
     const qs = new URLSearchParams({ serviceId: state.serviceId, industryId, employees });
     try {
-      const { quote } = await api.get('/api/quote?' + qs.toString());
+      const { quote: raw } = await api.get('/api/quote?' + qs.toString());
       if (ticket !== liveTicket) return;
+      const quote = scaleQuote(raw, city.rate);
       clear(liveBody).append(
-        el('p', { class: 'hint', text: quote.size.label + ' business, ' + quote.size.range }),
+        el('p', { class: 'hint', text: quote.size.label + ' business, ' + quote.size.range + ', in ' + cityPlace(city) }),
         el('div', { class: 'fee-total', style: 'border-top:0; padding-top:0; margin-bottom:.9rem; font-size:1.15rem;' },
           el('span', { text: 'Estimated total' }), el('span', { text: peso(quote.fee.total) })),
         el('div', { id: 'live-fee' }),
         el('p', { class: 'hint', style: 'margin:.5rem 0 0;',
           text: quote.inspections.length
             ? 'Inspections: ' + quote.inspections.map((i) => shortInspection(i.label)).join(', ') + '.'
-            : 'No inspection needed for this service.' }));
+            : 'No inspection needed for this service.' }),
+        el('p', { class: 'hint live-note', text: 'Sample rates for a course project, not official LGU fees.' }));
       const feeBox = $('live-fee');
       quote.fee.lines.forEach((line) => {
         feeBox.append(el('div', { class: 'fee-row' },
@@ -104,15 +148,24 @@
     const alertNode = $('business-alert');
     const form = Object.fromEntries(new FormData(e.target).entries());
     Object.keys(form).forEach((k) => { form[k] = String(form[k]).trim(); });
+    const city = cityById(form.cityId || '');
+    const inAddress = detectCity(form.businessAddress);
 
     const problems = [];
     if (form.businessName.length < 2) problems.push('Enter your business name.');
     else if (form.businessAddress.length < 5) problems.push('Enter the business address, including the barangay.');
-    else if (!/^\d+$/.test(form.employees) || Number(form.employees) < 1) problems.push('Enter the number of employees as a whole number, 1 or more.');
+    else if (!city) problems.push('Choose the city your business is in, or type it in the address.');
+    else if (inAddress && inAddress.id !== city.id) problems.push('Your address says ' + cityPlace(inAddress) + ' but the city is set to ' + cityPlace(city) + '. Make them match.');
+    else if (!form.industryId) problems.push('Choose your type of business.');
+    else if (!employeesOk(form.employees)) problems.push('Enter the number of employees as a whole number, 1 or more.');
     else if (form.ownerName.length < 2) problems.push('Enter the owner’s full name.');
     else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) problems.push('Enter a valid email address.');
     else if (form.phone.replace(/\D/g, '').length < 7) problems.push('Enter a valid mobile number.');
     if (problems.length) { showAlert(alertNode, problems[0], 'error'); return; }
+
+    // the address carries the city, so the booking (and Track a booking) knows which rates apply
+    if (!inAddress) form.businessAddress += ', ' + cityPlace(city);
+    delete form.cityId;
 
     try {
       const qs = new URLSearchParams({ serviceId: state.serviceId, industryId: form.industryId, employees: form.employees });
@@ -121,7 +174,8 @@
         state.officeId = null; state.date = ''; state.time = '';
       }
       state.form = form;
-      state.quote = quote;
+      state.city = city;
+      state.quote = scaleQuote(quote, city.rate);
       hideAlert(alertNode);
       showStep(2);
     } catch (err) {
@@ -269,8 +323,9 @@
     addRow(dl, 'Office', a.officeName + ', ' + a.officeAddress);
     addRow(dl, 'Date', formatDate(a.date));
     addRow(dl, 'Time', formatTime(a.time));
-    renderFee($('done-fee'), a.quote.fee);
-    renderInspections($('done-insp'), a.quote.inspections);
+    const doneQuote = state.city ? scaleQuote(a.quote, state.city.rate) : a.quote;
+    renderFee($('done-fee'), doneQuote.fee);
+    renderInspections($('done-insp'), doneQuote.inspections);
     renderDocs($('done-docs'), a.quote.requirements);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }

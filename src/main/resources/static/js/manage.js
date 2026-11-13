@@ -25,8 +25,11 @@
     addRow(dl, 'Date', formatDate(a.date));
     addRow(dl, 'Time', formatTime(a.time));
     addRow(dl, 'Owner', a.ownerName);
-    renderFee($('result-fee'), a.quote.fee);
-    renderInspections($('result-insp'), a.quote.inspections);
+    // fees follow the city named in the business address (the booking form always puts it there)
+    const city = detectCity(a.businessAddress);
+    const quote = city ? scaleQuote(a.quote, city.rate) : a.quote;
+    renderFee($('result-fee'), quote.fee);
+    renderInspections($('result-insp'), quote.inspections);
     renderDocs($('result-docs'), a.quote.requirements);
 
     $('actions').hidden = a.status !== 'CONFIRMED';

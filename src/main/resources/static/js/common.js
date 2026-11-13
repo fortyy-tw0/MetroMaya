@@ -96,6 +96,66 @@ function shortInspection(label) {
 
 // ---- quote rendering, shared by the landing page, booking wizard and manage page ----
 
+// ---- Metro Manila cities and municipalities (shared by the landing page and the booking form) ----
+// hall and brgy are from Wikipedia's list of Metro Manila city/municipal halls; rate is a SAMPLE
+// multiplier for this course project, not any city's official fees.
+const NCR_CITIES = [
+  { id: 'caloocan', name: 'Caloocan', hall: 'Caloocan City Hall', brgy: 'Grace Park East', rate: 0.95 },
+  { id: 'las-pinas', name: 'Las Piñas', hall: 'Las Piñas City Hall', brgy: 'Pamplona Tres', rate: 1.00 },
+  { id: 'makati', name: 'Makati', hall: 'Makati City Hall', brgy: 'Poblacion', rate: 1.30, health: 'Makati Health Department' },
+  { id: 'malabon', name: 'Malabon', hall: 'Malabon City Hall', brgy: 'San Agustin', rate: 0.90 },
+  { id: 'mandaluyong', name: 'Mandaluyong', hall: 'Mandaluyong City Hall', brgy: 'Plainview', rate: 1.15 },
+  { id: 'manila', name: 'Manila', hall: 'Manila City Hall', brgy: 'Ermita', rate: 1.15, bplo: 'Bureau of Permits', health: 'Manila Health Department' },
+  { id: 'marikina', name: 'Marikina', hall: 'Marikina City Hall', brgy: 'Santa Elena', rate: 1.00 },
+  { id: 'muntinlupa', name: 'Muntinlupa', hall: 'Muntinlupa City Hall', brgy: 'Putatan', rate: 1.10 },
+  { id: 'navotas', name: 'Navotas', hall: 'Navotas City Hall', brgy: 'Sipac-Almacen', rate: 0.90 },
+  { id: 'paranaque', name: 'Parañaque', hall: 'Parañaque City Hall', brgy: 'San Antonio', rate: 1.10 },
+  { id: 'pasay', name: 'Pasay', hall: 'Pasay City Hall', brgy: 'Barangay 70, Zone 9', rate: 1.10 },
+  { id: 'pasig', name: 'Pasig', hall: 'Pasig Temporary City Hall', brgy: 'Rosario', rate: 1.20,
+    note: 'Pasig is using a temporary city hall while its new one is built.' },
+  { id: 'pateros', name: 'Pateros', hall: 'Pateros Municipal Hall', brgy: 'Aguho', rate: 0.85, municipality: true },
+  { id: 'quezon-city', name: 'Quezon City', hall: 'Quezon City Hall', brgy: 'Central', rate: 1.15,
+    bplo: 'Business Permits and Licensing Department', health: 'Quezon City Health Department' },
+  { id: 'san-juan', name: 'San Juan', hall: 'San Juan City Hall', brgy: 'Pinaglabanan', rate: 1.10 },
+  { id: 'taguig', name: 'Taguig', hall: 'Taguig City Hall', brgy: 'Tuktukan', rate: 1.25 },
+  { id: 'valenzuela', name: 'Valenzuela', hall: 'Valenzuela City Hall', brgy: 'Karuhatan', rate: 0.95 },
+];
+
+function cityPlace(c) { return c.municipality ? c.name : (c.name === 'Quezon City' ? c.name : c.name + ' City'); }
+function cityById(id) { return NCR_CITIES.find((c) => c.id === id) || null; }
+
+// Finds the Metro Manila city named in a free-text address, e.g. "12 Rizal St, Brgy. Kapitolyo, Pasig".
+// Accents and case don't matter ("Las Pinas", "PARANAQUE"), "QC" counts as Quezon City, and
+// "Metro Manila" alone doesn't count as Manila. If several cities appear, the last one wins,
+// because the city comes after the street and barangay in an address.
+const CITY_PATTERNS = NCR_CITIES.map((c) => {
+  const base = c.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, '[\\s-]*');
+  const extra = c.id === 'quezon-city' ? '|q\\.?\\s?c\\.?' : '';
+  return { city: c, re: new RegExp('(?:^|[^a-z])(' + base + extra + ')(?:\\s+city)?(?![a-z])', 'g') };
+});
+function detectCity(text) {
+  const t = String(text || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .replace(/metro[\s-]*manila/g, ' ');
+  let best = null;
+  CITY_PATTERNS.forEach(({ city, re }) => {
+    re.lastIndex = 0;
+    let m;
+    while ((m = re.exec(t))) { if (!best || m.index >= best.at) best = { city, at: m.index }; }
+  });
+  return best ? best.city : null;
+}
+
+// The API quotes base (sample) fees; this scales every peso amount by a city's rate and
+// recomputes the total from the scaled lines, so the lines always add up.
+function scaleQuote(raw, rate) {
+  const r = (n) => Math.round(n * rate * 100) / 100;
+  const lines = raw.fee.lines.map((l) => ({ label: l.label, amount: r(l.amount) }));
+  return Object.assign({}, raw, {
+    fee: { lines, total: Math.round(lines.reduce((t, l) => t + l.amount, 0) * 100) / 100 },
+    inspections: raw.inspections.map((i) => Object.assign({}, i, { fee: r(i.fee) })),
+  });
+}
+
 function renderFee(container, fee) {
   clear(container);
   const max = Math.max(...fee.lines.map((l) => l.amount), 1);

@@ -14,28 +14,7 @@
 
   // Metro Manila LGUs. Halls and barangays from Wikipedia's list of city and municipal halls in Metro Manila.
   // `rate` is a SAMPLE multiplier standing in for each city's revenue code; it is not an official rate.
-  const CITIES = [
-    { id: 'caloocan', name: 'Caloocan', hall: 'Caloocan City Hall', brgy: 'Grace Park East', rate: 0.95 },
-    { id: 'las-pinas', name: 'Las Piñas', hall: 'Las Piñas City Hall', brgy: 'Pamplona Tres', rate: 1.00 },
-    { id: 'makati', name: 'Makati', hall: 'Makati City Hall', brgy: 'Poblacion', rate: 1.30, health: 'Makati Health Department' },
-    { id: 'malabon', name: 'Malabon', hall: 'Malabon City Hall', brgy: 'San Agustin', rate: 0.90 },
-    { id: 'mandaluyong', name: 'Mandaluyong', hall: 'Mandaluyong City Hall', brgy: 'Plainview', rate: 1.15 },
-    { id: 'manila', name: 'Manila', hall: 'Manila City Hall', brgy: 'Ermita', rate: 1.15, bplo: 'Bureau of Permits', health: 'Manila Health Department' },
-    { id: 'marikina', name: 'Marikina', hall: 'Marikina City Hall', brgy: 'Santa Elena', rate: 1.00 },
-    { id: 'muntinlupa', name: 'Muntinlupa', hall: 'Muntinlupa City Hall', brgy: 'Putatan', rate: 1.10 },
-    { id: 'navotas', name: 'Navotas', hall: 'Navotas City Hall', brgy: 'Sipac-Almacen', rate: 0.90 },
-    { id: 'paranaque', name: 'Parañaque', hall: 'Parañaque City Hall', brgy: 'San Antonio', rate: 1.10 },
-    { id: 'pasay', name: 'Pasay', hall: 'Pasay City Hall', brgy: 'Barangay 70, Zone 9', rate: 1.10 },
-    { id: 'pasig', name: 'Pasig', hall: 'Pasig Temporary City Hall', brgy: 'Rosario', rate: 1.20,
-      note: 'Pasig is using a temporary city hall while its new one is built.' },
-    { id: 'pateros', name: 'Pateros', hall: 'Pateros Municipal Hall', brgy: 'Aguho', rate: 0.85, municipality: true },
-    { id: 'quezon-city', name: 'Quezon City', hall: 'Quezon City Hall', brgy: 'Central', rate: 1.15,
-      bplo: 'Business Permits and Licensing Department', health: 'Quezon City Health Department' },
-    { id: 'san-juan', name: 'San Juan', hall: 'San Juan City Hall', brgy: 'Pinaglabanan', rate: 1.10 },
-    { id: 'taguig', name: 'Taguig', hall: 'Taguig City Hall', brgy: 'Tuktukan', rate: 1.25 },
-    { id: 'valenzuela', name: 'Valenzuela', hall: 'Valenzuela City Hall', brgy: 'Karuhatan', rate: 0.95 },
-  ];
-  function cityPlace(c) { return c.municipality ? c.name : (c.name === 'Quezon City' ? c.name : c.name + ' City'); }
+  const CITIES = NCR_CITIES; // shared list lives in common.js
   let city = CITIES.find((c) => c.id === 'manila');
   try { const saved = localStorage.getItem('metromaya.city'); city = CITIES.find((c) => c.id === saved) || city; } catch (e) { /* no storage */ }
   const scale = (n) => Math.round(n * city.rate * 100) / 100;
@@ -90,11 +69,7 @@
     try {
       const { quote: raw } = await api.get('/api/quote?' + qs.toString());
       if (ticket !== latest) return; // a newer request is already on its way
-      const lines = raw.fee.lines.map((l) => ({ label: l.label, amount: scale(l.amount) }));
-      const quote = Object.assign({}, raw, {
-        fee: { lines, total: Math.round(lines.reduce((t, l) => t + l.amount, 0) * 100) / 100 },
-        inspections: raw.inspections.map((i) => Object.assign({}, i, { fee: scale(i.fee) })),
-      });
+      const quote = scaleQuote(raw, city.rate);
       const n = quote.inspections.length;
       clear($('est-tiles')).append(
         tile('Business size', quote.size.label, quote.size.range),

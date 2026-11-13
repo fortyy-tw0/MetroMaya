@@ -372,6 +372,13 @@ em { font-style: normal; }
 .live { position: sticky; top: 6rem; border: 1px solid var(--line); border-radius: 20px; padding: 1.25rem; background: var(--cream); }
 .live h3 { font-size: 1.1rem; }
 .live-empty { color: var(--muted); font-size: .95rem; margin: 0; }
+.live-todo { list-style: none; padding: 0; margin: .9rem 0 0; display: grid; gap: .45rem; font-size: .9rem; color: var(--ink-soft); }
+.live-todo li { display: flex; align-items: center; gap: .55rem; }
+.live-todo li::before { content: ""; width: 16px; height: 16px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line-strong); flex: none; }
+.live-todo li.done { color: var(--muted); text-decoration: line-through; text-decoration-color: rgba(140, 122, 110, .5); }
+.live-todo li.done::before { background: var(--navy) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 8.2l2.3 2.3 4.7-4.9' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% no-repeat; box-shadow: none; }
+.live-note { margin: .75rem 0 0; font-size: .8rem; }
+.field-note { display: block; margin-top: .35rem; font-size: .8rem; font-weight: 600; color: var(--navy); }
 
 .slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: .6rem; margin-top: 1rem; }
 .slot { font: inherit; padding: .75rem .5rem; border: 1.5px solid var(--line-strong); border-radius: 12px; background: #fff; cursor: pointer; text-align: center; color: var(--ink); }

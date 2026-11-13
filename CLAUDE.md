@@ -185,7 +185,15 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
 - Scrollspy and jump links.
 - **Helpers:** `el()`, `clear()`, `peso()`, `pesoShort()`, `renderFee`, `renderInspections`, `renderDocs(list, requirements)` (sets `--i` on each item), `loadSlots`, `debounce`, `api.get`.
 
-### NCR cities (landing.js `CITIES`)
+### Booking form, step 2 (book.html / book.js)
+- **No defaults:** type of business starts on "Choose a type of business", employees is empty (placeholder "e.g. 5"), and the city starts on "Choose your city".
+- **The estimate only shows once type of business, employees (a whole number of at least 1) and city are filled in.** Until then the panel shows a checklist of what's missing.
+- **City detection:** typing in Business address runs `detectCity()` (common.js). It ignores accents and case, accepts "QC", and treats "Metro Manila" as no city. If several cities appear, the last one wins. A detected city sets the City select and shows "Found … in your address."
+- The estimate is scaled by the city's sample rate (`scaleQuote`), and so are Review and Done.
+- **On submit:** the address and the city must agree. If the address has no city, `, <City>` is appended to it, so Track a booking (manage.js) can `detectCity(a.businessAddress)` and show the same scaled fees.
+- **Known limitation:** the backend still stores base fees; the city scaling is client-side only.
+
+### NCR cities (`NCR_CITIES` in common.js, shared by landing.js and book.js)
 - The list has the 16 cities plus the municipality of Pateros, each with `hall`, `brgy` (from Wikipedia's list of Metro Manila city/municipal halls) and a **sample** `rate` multiplier.
 - Pasig has a note about its temporary city hall.
 - The default city is Manila. The choice is saved in `localStorage['metromaya.city']`, wrapped in try/catch.
