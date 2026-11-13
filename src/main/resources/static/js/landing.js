@@ -17,10 +17,10 @@
   const CITIES = [
     { id: 'caloocan', name: 'Caloocan', hall: 'Caloocan City Hall', brgy: 'Grace Park East', rate: 0.95 },
     { id: 'las-pinas', name: 'Las Piñas', hall: 'Las Piñas City Hall', brgy: 'Pamplona Tres', rate: 1.00 },
-    { id: 'makati', name: 'Makati', hall: 'Makati City Hall', brgy: 'Poblacion', rate: 1.30 },
+    { id: 'makati', name: 'Makati', hall: 'Makati City Hall', brgy: 'Poblacion', rate: 1.30, health: 'Makati Health Department' },
     { id: 'malabon', name: 'Malabon', hall: 'Malabon City Hall', brgy: 'San Agustin', rate: 0.90 },
     { id: 'mandaluyong', name: 'Mandaluyong', hall: 'Mandaluyong City Hall', brgy: 'Plainview', rate: 1.15 },
-    { id: 'manila', name: 'Manila', hall: 'Manila City Hall', brgy: 'Ermita', rate: 1.15 },
+    { id: 'manila', name: 'Manila', hall: 'Manila City Hall', brgy: 'Ermita', rate: 1.15, bplo: 'Bureau of Permits', health: 'Manila Health Department' },
     { id: 'marikina', name: 'Marikina', hall: 'Marikina City Hall', brgy: 'Santa Elena', rate: 1.00 },
     { id: 'muntinlupa', name: 'Muntinlupa', hall: 'Muntinlupa City Hall', brgy: 'Putatan', rate: 1.10 },
     { id: 'navotas', name: 'Navotas', hall: 'Navotas City Hall', brgy: 'Sipac-Almacen', rate: 0.90 },
@@ -29,7 +29,8 @@
     { id: 'pasig', name: 'Pasig', hall: 'Pasig Temporary City Hall', brgy: 'Rosario', rate: 1.20,
       note: 'Pasig is using a temporary city hall while its new one is built.' },
     { id: 'pateros', name: 'Pateros', hall: 'Pateros Municipal Hall', brgy: 'Aguho', rate: 0.85, municipality: true },
-    { id: 'quezon-city', name: 'Quezon City', hall: 'Quezon City Hall', brgy: 'Central', rate: 1.15 },
+    { id: 'quezon-city', name: 'Quezon City', hall: 'Quezon City Hall', brgy: 'Central', rate: 1.15,
+      bplo: 'Business Permits and Licensing Department', bploShort: 'BPLD', health: 'Quezon City Health Department' },
     { id: 'san-juan', name: 'San Juan', hall: 'San Juan City Hall', brgy: 'Pinaglabanan', rate: 1.10 },
     { id: 'taguig', name: 'Taguig', hall: 'Taguig City Hall', brgy: 'Tuktukan', rate: 1.25 },
     { id: 'valenzuela', name: 'Valenzuela', hall: 'Valenzuela City Hall', brgy: 'Karuhatan', rate: 0.95 },
@@ -145,21 +146,50 @@
       el('ul', null, extras.map((x) => el('li', { text: x })))));
   });
 
-  // ---------- office: the chosen city's hall ----------
-  const serviceName = Object.fromEntries(services.map((s) => [s.id, s.name]));
+  // ---------- offices: the chosen city's hall and the four desks a business permit passes through ----------
+  // Under the Ease of Doing Business Act (RA 11032) these desks sit together in the hall's
+  // Business One-Stop Shop. Cities that use their own office names override the defaults.
+  const ICON = {
+    permit: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>',
+    cash: '<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M7 9.5v.01M17 14.5v.01"/>',
+    fire: '<path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2.4 1.3-3.8 2.4-5 .3 1.6 1 2.6 2.1 3 .3-2.8-.4-5.4.5-8z"/>',
+    health: '<path d="M12 20s-7-4.3-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.7-7 10-7 10z"/><path d="M12 10v4M10 12h4"/>',
+  };
+  function desks(c) {
+    const lgu = c.municipality ? 'Municipal' : 'City';
+    return [
+      { icon: 'permit', short: c.bploShort || 'BPLO', name: c.bplo || 'Business Permits and Licensing Office',
+        what: 'Start here. Files your application, assesses your fees and releases the permit.' },
+      { icon: 'cash', short: c.municipality ? 'MTO' : 'CTO', name: c.treasurer || lgu + ' Treasurer\u2019s Office',
+        what: 'Pay the assessed fees and local business tax, and get your official receipt.' },
+      { icon: 'fire', short: 'BFP', name: 'Bureau of Fire Protection Desk',
+        what: 'Fire safety evaluation and your Fire Safety Inspection Certificate.' },
+      { icon: 'health', short: 'Health', name: c.health || lgu + ' Health Office / Sanitation Desk',
+        what: 'Sanitary permit, plus health certificates for staff who handle food or care.' },
+    ];
+  }
+  function deskIcon(k) {
+    const span = el('span', { class: 'icon-chip', 'aria-hidden': 'true' });
+    span.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + ICON[k] + '</svg>';
+    return span;
+  }
   function renderOffice() {
     const place = cityPlace(city);
     const address = city.hall + ', ' + city.brgy + ', ' + place + ', Metro Manila';
     const maps = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(city.hall + ', ' + place + ', Metro Manila');
-    clear($('office-rows')).append(el('div', { class: 'row' },
-      el('div', null,
-        el('h4', { text: 'Business Permits and Licensing Office' }),
-        el('p', { text: address }),
-        city.note ? el('p', { class: 'hint', text: city.note }) : null,
-        el('a', { class: 'directions', href: maps, target: '_blank', rel: 'noopener', text: 'Get directions to ' + city.hall + ' →' })),
-      el('div', { class: 'chips' },
-        services.map((s) => el('span', { class: 'chip', text: serviceName[s.id] })),
-        el('span', { class: 'chip chip-quiet', text: 'All business sizes' }))));
+    clear($('office-rows')).append(
+      el('div', { class: 'row office-hall' },
+        el('div', null,
+          el('h4', { text: city.hall }),
+          el('p', { text: address }),
+          city.note ? el('p', { class: 'hint', text: city.note }) : null,
+          el('a', { class: 'directions', href: maps, target: '_blank', rel: 'noopener', text: 'Get directions to ' + city.hall + ' \u2192' })),
+        el('p', { class: 'office-boss', text: 'All four desks below are at the hall\u2019s Business One-Stop Shop.' })),
+      ...desks(city).map((d) => el('div', { class: 'row desk' },
+        deskIcon(d.icon),
+        el('div', null,
+          el('h4', null, d.name, ' ', el('span', { class: 'desk-tag', text: d.short })),
+          el('p', { text: d.what })))));
   }
 
   // ---------- city picker ----------

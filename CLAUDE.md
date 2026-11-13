@@ -149,7 +149,12 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
    - Size cards stand out on hover (lift, outline, shadow), not by glowing.
 4. **How it works (`#how`):** a navy rounded band with a centred head and 4 step cards.
 5. **Industries (`#industries`):** fees scale with the chosen city.
-6. **Offices (`#offices`):** shows the chosen city's Business Permits and Licensing Office in this form: `"<hall>, <brgy>, <City>, Metro Manila"`. It includes a Google Maps directions link and a "Change your city" link to `#estimate`.
+6. **Offices (`#offices`):** the chosen city's hall (`"<hall>, <brgy>, <City>, Metro Manila"`, a Google Maps directions link, the Pasig note) followed by the **four desks** a permit passes through, all at the hall's Business One-Stop Shop (RA 11032):
+   - BPLO/BPLD, the City (or Municipal) Treasurer's Office (CTO/MTO), the BFP desk, and the City Health Office / Sanitation Desk.
+   - Each desk is a `.row.desk` with an icon, its name, a short tag, and one line on what you do there. The data is in `desks(c)` in `landing.js`.
+   - Cities can override the default names with `bplo`, `bploShort`, `treasurer` and `health` on their `CITIES` entry. Manila (Bureau of Permits, Manila Health Department), Quezon City (BPLD, Quezon City Health Department) and Makati (Makati Health Department) do this now.
+   - No floor or room numbers are given, because they weren't verified.
+   - The "Change your city" link points to `#estimate`.
 7. **CTA ("Ready to book your slot?"):** a sand card with Maya standing (`maya-ta-da.png`).
    - On hover or focus of **Book a slot** (or touch, via the `.cta-maya.jump` class), she lifts 42px, crossfades into a **flying** strip (`maya-hehe-fly.webp`, eyes closed). There is **no speech bubble**; the "Let's Go!" bubble was removed on request.
    - The fly layer is scaled by `1.12` so her flying size matches her standing size; the user complained she shrank.
