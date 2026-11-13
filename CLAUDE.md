@@ -121,7 +121,7 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
 - **Fonts** (Google Fonts): Lexend for display text, Figtree for body text, JetBrains Mono for references.
 - **Style:** minimalist and easy to navigate.
 - **Header:** sticky, 72px tall, using the footer's brown/cream scheme. The logo is text only ("MetroMaya" with a gold dot). The old Maya logo mark (`maya-mark.png`) is no longer used.
-- **Nav (five tabs, in page order; keep this capitalization):** Home, What is MetroMaya (`#why`), How It Works (`#how`), Fees (`#estimate`; `#industries` also counts as Fees in the scrollspy), Offices (`#offices`).
+- **Nav (six tabs, in page order; keep this capitalization):** Home, What is MetroMaya (`#why`), How It Works (`#how`), Fee Estimator (`#estimate`), Fees (`#industries`), Offices (`#offices`). Tab padding is `.55rem .9rem` so all six fit in the 1120px header.
   - Below 1200px the tabs tighten. Below 1080px "Track a booking" leaves the header (it's still in the footer). Below 900px the tabs hide.
   - The header's **Book a slot** button uses the same tab-lift hover as the tabs.
   - Hover and active states use a **tab lift**: white background, 2px brown outline, `translateY(-2px)`. The user rejected pill shapes and glow.
@@ -139,7 +139,7 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
    - Maya stays hidden until her images load (`.perch-clip.ready`, `.perch.maya-ready`). The eyes must never appear before the body.
 2. **What is MetroMaya (`#why`):** why someone should use MetroMaya.
 3. **How It Works (`#how`):** a navy rounded band with a centred head and 4 step cards.
-4. **Fee estimator (`#estimate`)**
+4. **Fee Estimator (`#estimate`):** heading "How much will my permit cost?"
    - White band containing an intro on the left plus Maya flying with a swinging wing and **winking every 5s**. The card is on the right.
    - **Card contents:**
      - service tabs (estimator-tab hover effect)

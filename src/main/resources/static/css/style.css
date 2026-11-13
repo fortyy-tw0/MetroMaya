@@ -85,7 +85,7 @@ em { font-style: normal; }
 .brand b { color: var(--gold); font-weight: 700; }
 .brand:hover { color: var(--ink); }
 .nav-links { display: flex; align-items: center; gap: .5rem; }
-.nav-links a { position: relative; text-decoration: none; color: var(--ink-soft); font-weight: 500; font-size: .97rem; padding: .55rem 1.05rem; border-radius: 12px; display: inline-block;
+.nav-links a { position: relative; text-decoration: none; color: var(--ink-soft); font-weight: 500; font-size: .97rem; padding: .55rem .9rem; border-radius: 12px; display: inline-block;
   transition: color .2s ease, background-color .2s ease, box-shadow .2s ease, transform .2s ease; }
 /* same lift-and-outline as the estimator's service tabs, in the footer's browns */
 .nav-links a:hover, .nav-links a:focus-visible, .nav-links a[aria-current="page"], .nav-links a.is-active {
