@@ -117,34 +117,77 @@
   refresh();
 
   // ---------- industries (fees follow the chosen city) ----------
+  // ---------- what you pay: industry rows follow the business size picked on the right ----------
+  // The rows are built once and then updated in place, so picking a size or a city doesn't make
+  // them disappear and replay their scroll-reveal.
+  const sizes = config.sizes;
+  let size = sizes[0];
+  try { const saved = localStorage.getItem('metromaya.size'); size = sizes.find((s) => s.id === saved) || size; } catch (e) { /* no storage */ }
+  const industryRefs = industries.map((i) => {
+    const amount = el('span', { class: 'amount' });
+    const basis = el('small');
+    const where = el('span', { class: 'city-rate' });
+    const chips = el('div', { class: 'chips' });
+    $('industry-rows').append(el('div', { class: 'row' },
+      el('div', null, el('h4', { text: i.name }), el('p', { text: i.description })),
+      el('div', { class: 'price' }, amount, basis, where),
+      chips));
+    return { i, amount, basis, where, chips };
+  });
   function renderIndustries() {
-    const industryRows = clear($('industry-rows'));
-    industries.forEach((i) => {
-      industryRows.append(el('div', { class: 'row' },
-        el('div', null, el('h4', { text: i.name }), el('p', { text: i.description })),
-        el('div', { class: 'price' }, pesoShort(scale(i.baseFee)),
-          el('small', { text: 'base permit fee, micro business' }),
-          el('span', { class: 'city-rate', text: 'in ' + city.name })),
-        el('div', { class: 'chips' },
-          i.inspections.map((label) => el('span', { class: 'chip', text: label })),
-          i.surcharges.map((s) => el('span', { class: 'chip chip-quiet', text: s.label + ' ' + pesoShort(scale(s.amount)) })))));
+    industryRefs.forEach(({ i, amount, basis, where, chips }) => {
+      amount.textContent = pesoShort(scale(i.baseFee * size.feeMultiplier));
+      basis.textContent = 'base permit fee, ' + size.label.toLowerCase() + ' business';
+      where.textContent = 'in ' + city.name;
+      // the industry's own inspections, plus any this size adds (no repeats)
+      const own = new Set(i.inspections);
+      const added = size.extraInspections.filter((label) => !own.has(label));
+      clear(chips).append(
+        ...i.inspections.map((label) => el('span', { class: 'chip', text: label })),
+        ...added.map((label) => el('span', { class: 'chip chip-added', title: 'Added for ' + size.label.toLowerCase() + ' businesses', text: label })),
+        ...i.surcharges.map((x) => el('span', { class: 'chip chip-quiet', text: x.label + ' ' + pesoShort(scale(x.amount)) })));
     });
   }
 
-  // ---------- size tiers ----------
+  // ---------- size tiers: pick one to update the fees on the left ----------
   const sizeGrid = clear($('size-grid'));
-  config.sizes.forEach((s) => {
+  const sizeCards = sizes.map((s) => {
     const extras = [];
     s.extraInspections.forEach((label) => extras.push('Adds ' + label.toLowerCase()));
     s.extraDocuments.forEach((d) => extras.push('Needs ' + d.charAt(0).toLowerCase() + d.slice(1)));
     if (s.inspectionFactor !== 1) extras.push('Inspections cost ×' + s.inspectionFactor.toFixed(2));
     if (!extras.length) extras.push('No extra inspections or documents');
-    sizeGrid.append(el('article', { class: 'size-card', tabindex: '0' },
+    const card = el('article', { class: 'size-card', role: 'radio', tabindex: '-1', 'aria-checked': 'false' },
+      el('span', { class: 'size-pick', 'aria-hidden': 'true', text: 'Selected' }),
       el('h4', { text: s.label }),
       el('p', { class: 'range', text: s.range }),
       el('p', { class: 'mult' }, '×' + s.feeMultiplier.toFixed(2), el('small', { text: 'on the base permit fee' })),
-      el('ul', null, extras.map((x) => el('li', { text: x })))));
+      el('ul', null, extras.map((x) => el('li', { text: x }))));
+    card.addEventListener('click', () => pickSize(s));
+    sizeGrid.append(card);
+    return card;
   });
+  sizeGrid.setAttribute('role', 'radiogroup');
+  sizeGrid.setAttribute('aria-label', 'Business size');
+  // arrow keys move between sizes, like any radio group
+  sizeGrid.addEventListener('keydown', (e) => {
+    const k = sizes.indexOf(size);
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (step) { e.preventDefault(); pickSize(sizes[(k + step + sizes.length) % sizes.length], true); }
+    else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); pickSize(size, true); }
+  });
+  function pickSize(s, focus) {
+    size = s;
+    try { localStorage.setItem('metromaya.size', s.id); } catch (e) { /* no storage */ }
+    sizeCards.forEach((card, k) => {
+      const on = sizes[k] === s;
+      card.classList.toggle('is-picked', on);
+      card.setAttribute('aria-checked', String(on));
+      card.tabIndex = on ? 0 : -1;
+      if (on && focus) card.focus();
+    });
+    renderIndustries();
+  }
 
   // ---------- offices: the chosen city's hall and the four desks a business permit passes through ----------
   // Under the Ease of Doing Business Act (RA 11032) these desks sit together in the hall's
@@ -201,6 +244,6 @@
     try { localStorage.setItem('metromaya.city', city.id); } catch (e) { /* no storage */ }
     renderIndustries(); renderOffice(); refresh();
   });
-  renderIndustries();
+  pickSize(size);
   renderOffice();
 })();

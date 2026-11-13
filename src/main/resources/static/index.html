@@ -21,8 +21,8 @@
         <a href="/" aria-current="page">Home</a>
         <a href="#why">What is MetroMaya</a>
         <a href="#how">How It Works</a>
-        <a href="#estimate">Fee Estimator</a>
         <a href="#industries">Fees</a>
+        <a href="#estimate">Fees Estimator</a>
         <a href="#offices">Offices</a>
       </nav>
       <div class="nav-actions">
@@ -158,11 +158,32 @@
       </div>
     </section>
 
+    <!-- What you pay -->
+    <section class="section" id="industries" aria-labelledby="ind-title">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">What you pay</span>
+            <h2 id="ind-title">Fees depend on what you run</h2>
+          </div>
+          <p>Your type of business sets the base fee and the inspections. Pick your business size to scale the fees and see any extra checks. Fees follow the city you pick in the estimator below.</p>
+        </div>
+        <div class="fees-wrap">
+          <div class="rows" id="industry-rows"></div>
+          <div>
+            <h3 class="sizes-title">Business size</h3>
+            <p class="sizes-hint">Pick one to update the fees.</p>
+            <div class="size-grid" id="size-grid"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Estimator -->
     <section class="section section-white" id="estimate" aria-labelledby="est-title">
       <div class="wrap estimate-wrap wrap-wide">
         <div class="estimate-intro">
-          <span class="eyebrow">Fee Estimator</span>
+          <span class="eyebrow">Fees Estimator</span>
           <h2 id="est-title">How much will my permit cost?</h2>
           <p>Choose a service and describe the business. The estimate updates as you type.</p>
           <p class="estimate-note">Sample rates for a course project, not any city's official fees.</p>
@@ -212,28 +233,8 @@
       </div>
     </section>
 
-    <!-- What you pay -->
-    <section class="section" id="industries" aria-labelledby="ind-title">
-      <div class="wrap">
-        <div class="section-head">
-          <div>
-            <span class="eyebrow">What you pay</span>
-            <h2 id="ind-title">Fees depend on what you run</h2>
-          </div>
-          <p>Your type of business sets the base fee and the inspections. Your size then scales the fee and can add more checks. Fees follow the city you pick in the estimator.</p>
-        </div>
-        <div class="fees-wrap">
-          <div class="rows" id="industry-rows" aria-live="polite"></div>
-          <div>
-            <h3 class="sizes-title">Business size</h3>
-            <div class="size-grid" id="size-grid"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- Offices -->
-    <section class="section" id="offices" aria-labelledby="off-title" style="padding-top: 0;">
+    <section class="section" id="offices" aria-labelledby="off-title">
       <div class="wrap offices-wrap">
         <div class="split-head">
           <span class="eyebrow">Offices</span>

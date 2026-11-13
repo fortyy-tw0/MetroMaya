@@ -91,7 +91,7 @@ The user asked for one data change: `RetailIndustry.requiredDocuments()` returns
 
 ```
 src/main/resources/static/
-  index.html     landing page (hero, What is MetroMaya, How It Works, Fee estimator, Industries, Offices, CTA)
+  index.html     landing page (hero, What is MetroMaya, How It Works, Fees/Industries, Fees Estimator, Offices, CTA)
   book.html      5-step booking wizard (Service, Business, Office, Date and time, Review)
   manage.html    track / cancel / reschedule by reference
   css/style.css  one stylesheet (~530 lines); tokens on :root
@@ -121,7 +121,7 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
 - **Fonts** (Google Fonts): Lexend for display text, Figtree for body text, JetBrains Mono for references.
 - **Style:** minimalist and easy to navigate.
 - **Header:** sticky, 72px tall, using the footer's brown/cream scheme. The logo is text only ("MetroMaya" with a gold dot). The old Maya logo mark (`maya-mark.png`) is no longer used.
-- **Nav (six tabs, in page order; keep this capitalization):** Home, What is MetroMaya (`#why`), How It Works (`#how`), Fee Estimator (`#estimate`), Fees (`#industries`), Offices (`#offices`). Tab padding is `.55rem .9rem` so all six fit in the 1120px header.
+- **Nav (six tabs, in page order; keep this capitalization):** Home, What is MetroMaya (`#why`), How It Works (`#how`), Fees (`#industries`), Fees Estimator (`#estimate`), Offices (`#offices`). Tab padding is `.55rem .9rem` so all six fit in the 1120px header.
   - Below 1200px the tabs tighten. Below 1080px "Track a booking" leaves the header (it's still in the footer). Below 900px the tabs hide.
   - The header's **Book a slot** button uses the same tab-lift hover as the tabs.
   - Hover and active states use a **tab lift**: white background, 2px brown outline, `translateY(-2px)`. The user rejected pill shapes and glow.
@@ -139,7 +139,13 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
    - Maya stays hidden until her images load (`.perch-clip.ready`, `.perch.maya-ready`). The eyes must never appear before the body.
 2. **What is MetroMaya (`#why`):** why someone should use MetroMaya.
 3. **How It Works (`#how`):** a navy rounded band with a centred head and 4 step cards.
-4. **Fee Estimator (`#estimate`):** heading "How much will my permit cost?"
+4. **Fees / What you pay (`#industries`):** fees scale with the chosen city **and the business size picked on the right**.
+   - The size cards form a radio group (click, tap, arrow keys). The choice is saved in `localStorage['metromaya.size']` and defaults to Micro.
+   - Each industry row shows `baseFee × feeMultiplier × city rate` and the industry's inspections. Inspections the size adds appear as outlined `.chip-added` chips. Surcharges don't scale with size, matching `NewPermitService`.
+   - Rows are built once and updated in place (`renderIndustries`), so a size or city change doesn't replay the scroll-reveal.
+   - The selected card has a navy outline and a "Selected" tag. Dimming of the other cards only happens on real hover (`@media (hover: hover)`) or keyboard focus.
+   - At ≤960px the size picker moves above the rows.
+5. **Fees Estimator (`#estimate`):** heading "How much will my permit cost?"
    - White band containing an intro on the left plus Maya flying with a swinging wing and **winking every 5s**. The card is on the right.
    - **Card contents:**
      - service tabs (estimator-tab hover effect)
@@ -151,7 +157,6 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
    - **Documents to bring:** always visible, with no `<details>` toggle and no bullets. Each item is a soft navy row that slides in (`doc-in`, staggered by `--i`). The animation replays when the list re-renders and when the section is revealed again. The same markup is used in book.html (review and done) and manage.html.
    - Estimator Maya has a **fixed** `margin-top: 3rem`, so she never moves when the card height changes. The user explicitly wanted her not to move.
    - Size cards stand out on hover (lift, outline, shadow), not by glowing.
-5. **Industries (`#industries`):** fees scale with the chosen city.
 6. **Offices (`#offices`):** the chosen city's hall (`"<hall>, <brgy>, <City>, Metro Manila"`, a Google Maps directions link, the Pasig note) followed by the **four desks** a permit passes through, all at the hall's Business One-Stop Shop (RA 11032):
    - BPLO/BPLD, the City (or Municipal) Treasurer's Office (CTO/MTO), the BFP desk, and the City Health Office / Sanitation Desk.
    - Each desk is a `.row.desk` with an icon, its name and one line on what you do there. There are no abbreviation tags (BPLO/CTO/…); they were removed on request. The data is in `desks(c)` in `landing.js`.

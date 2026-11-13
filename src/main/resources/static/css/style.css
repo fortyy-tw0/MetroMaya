@@ -282,7 +282,7 @@ em { font-style: normal; }
 .size-card .mult { font-family: var(--display); font-weight: 600; font-size: 1.8rem; line-height: 1.1; margin: .35rem 0 0; color: var(--navy); font-variant-numeric: tabular-nums; }
 .size-card .mult small { font-family: var(--sans); font-weight: 500; font-size: .8rem; color: var(--muted); display: block; margin-top: .2rem; }
 .size-card ul { margin: .35rem 0 0; padding-left: 1.1rem; color: var(--ink-soft); font-size: .88rem; }
-@media (max-width: 460px) { .size-grid { grid-template-columns: 1fr; } }
+@media (max-width: 460px) { .size-card { padding: .95rem; } .size-card .mult { font-size: 1.45rem; } .size-card ul { font-size: .8rem; padding-left: .95rem; } .size-pick { top: .6rem; right: .6rem; } .size-card h4 { padding-right: 4.2rem; } }
 .sizes-title { font-size: 1.05rem; margin: 0 0 1rem; }
 
 /* ---------- offices ---------- */
@@ -467,14 +467,26 @@ em { font-style: normal; }
 
 /* ---------- business size cards: the one you point at stands out, the others step back ---------- */
 .size-card { cursor: default; transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease, opacity .22s ease, background-color .22s ease; }
-.size-grid:hover .size-card, .size-grid:focus-within .size-card { opacity: .5; }
-.size-grid .size-card:hover, .size-grid .size-card:focus {
+@media (hover: hover) { .size-grid:hover .size-card { opacity: .5; } }
+.size-grid:has(.size-card:focus-visible) .size-card { opacity: .5; }
+.size-grid .size-card:focus { outline: none; }
+.size-grid .size-card:hover, .size-grid .size-card:focus-visible {
   opacity: 1; transform: translateY(-6px) scale(1.03); z-index: 1; outline: none;
   border-color: var(--navy); background: #fff;
   box-shadow: 0 0 0 2px var(--navy), 0 18px 36px rgba(44, 58, 114, .18);
 }
-.size-grid .size-card:hover h4, .size-grid .size-card:focus h4 { color: var(--navy); }
+.size-grid .size-card:hover h4, .size-grid .size-card:focus-visible h4 { color: var(--navy); }
 .size-card { position: relative; }
+/* picking a size: the chosen card keeps a navy outline and a small "Selected" tag */
+.size-grid .size-card { cursor: pointer; }
+.size-grid .size-card.is-picked { border-color: var(--navy); box-shadow: 0 0 0 2px var(--navy), 0 10px 24px rgba(44, 58, 114, .12); }
+.size-grid .size-card.is-picked h4 { color: var(--navy); }
+.size-pick { position: absolute; top: .9rem; right: .9rem; padding: .15rem .55rem; border-radius: 6px; background: var(--navy); color: #fff; font-size: .72rem; font-weight: 700; letter-spacing: .02em; opacity: 0; transform: scale(.8); transition: opacity .2s ease, transform .2s ease; }
+.size-card.is-picked .size-pick { opacity: 1; transform: none; }
+.sizes-hint { margin: -.7rem 0 1rem; color: var(--muted); font-size: .88rem; }
+.chip-added { background: #fff; box-shadow: inset 0 0 0 1.5px var(--navy); }
+.price .amount { display: inline-block; }
+@media (max-width: 960px) { .fees-wrap > :last-child { order: -1; } }
 
 /* ---------- office (city hall) ---------- */
 .office-card .row h4 { font-size: 1.15rem; }
