@@ -284,8 +284,15 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
     return Math.round(Math.max(0, Math.min(max, y)));
   }
   document.addEventListener('click', (e) => {
-    const a = e.target.closest && e.target.closest('a[href^="#"]');
+    const a = e.target.closest && e.target.closest('a[href^="#"], a[href="/"]');
     if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+    // Home and the logo: already on the home page, so glide back to the top instead of reloading
+    if (a.getAttribute('href') === '/') {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      history.replaceState(null, '', '/');
+      return;
+    }
     const target = document.getElementById(a.getAttribute('href').slice(1));
     if (!target) return;
     e.preventDefault();

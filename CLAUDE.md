@@ -1,10 +1,10 @@
-# Permitify: handoff for Claude Code
+# MetroMaya: handoff for Claude Code
 
 This is a business-permit appointment system for an OOP course project. It has a Java 21 backend and a static vanilla HTML/CSS/JS front end. The mascot is **Maya**, a Eurasian tree sparrow dressed as a mail carrier.
 
 - **Repo:** `fortyy-tw0/OOP_AppointmentSystem` (GitHub). Work on `main`. This file is `CLAUDE.md` at the repo root, so Claude Code loads it automatically.
 - **Live:** https://oopappointmentsys.vercel.app. Vercel auto-deploys from `main` using its Container runtime with the root `Dockerfile`.
-- **Brand:** **Permitify**. The slogan is **"Skip the line, get on business."** with "get on business" underlined in gold.
+- **Brand:** **MetroMaya**. The slogan is **"Skip the line, get on business."** with "get on business" underlined in gold.
 - **Disclaimer that must stay visible:** fees are *sample rates for a course project, not official LGU fees*.
 
 ---
@@ -91,7 +91,7 @@ The user asked for one data change: `RetailIndustry.requiredDocuments()` returns
 
 ```
 src/main/resources/static/
-  index.html     landing page (hero, Why Permitify, Fee estimator, How it works, Industries, Offices, CTA)
+  index.html     landing page (hero, Why MetroMaya, Fee estimator, How it works, Industries, Offices, CTA)
   book.html      5-step booking wizard (Service, Business, Office, Date and time, Review)
   manage.html    track / cancel / reschedule by reference
   css/style.css  one stylesheet (~530 lines); tokens on :root
@@ -120,11 +120,12 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
 
 - **Fonts** (Google Fonts): Lexend for display text, Figtree for body text, JetBrains Mono for references.
 - **Style:** minimalist and easy to navigate.
-- **Header:** sticky, 72px tall, using the footer's brown/cream scheme. The logo is text only ("Permitify" with a gold dot). The old Maya logo mark (`maya-mark.png`) is no longer used.
-- **Nav:** Home, Why Permitify (`#why`), Fees (`#estimate`), How it works (`#how`), Offices (`#offices`).
+- **Header:** sticky, 72px tall, using the footer's brown/cream scheme. The logo is text only ("MetroMaya" with a gold dot). The old Maya logo mark (`maya-mark.png`) is no longer used.
+- **Nav:** Home, Why MetroMaya (`#why`), Fees (`#estimate`), How it works (`#how`), Offices (`#offices`).
   - Hover and active states use a **tab lift**: white background, 2px brown outline, `translateY(-2px)`. The user rejected pill shapes and glow.
   - A scrollspy (`common.js`) maps section ids to links; `#industries` counts as Fees. Home is active only while the hero is visible.
   - Jump links are handled in JS (`jumpTop` in `common.js`). They **centre** the section's content (its direct `.wrap` child, so padding doesn't count) in the screen area below the header. If the content is taller than that area (the Fees estimator, and most sections on phones), its top lands 16px under the header instead. The result is clamped to the page's scroll range. Measuring uses `offsetTop`/`offsetHeight`, so sections still mid-reveal don't throw it off. `main section[id] { scroll-margin-top: 88px }` is the no-JS fallback.
+  - **Home** and the logo on the home page smooth-scroll to the top instead of reloading. On other pages they navigate to `/` as normal.
   - The scrollspy line is the centre of that same area, so the highlighted tab always matches where a jump lands.
 - `body { overflow-x: clip }` guards against horizontal scroll.
 
@@ -134,7 +135,7 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
    - Maya **peeks out** above the fact card (`.perch` > `.perch-clip`, clipped at the card's top edge), showing half her body. She flies in place with a flapping strip, and her drawn SVG eyes follow the pointer.
    - There is **no greeting text** next to her; the "Hi, I'm Maya!" label was removed on request.
    - Maya stays hidden until her images load (`.perch-clip.ready`, `.perch.maya-ready`). The eyes must never appear before the body.
-2. **Why Permitify (`#why`):** why someone should use Permitify.
+2. **Why MetroMaya (`#why`):** why someone should use MetroMaya.
 3. **Fee estimator (`#estimate`)**
    - White band containing an intro on the left plus Maya flying with a swinging wing and **winking every 5s**. The card is on the right.
    - **Card contents:**
@@ -151,8 +152,8 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
 5. **Industries (`#industries`):** fees scale with the chosen city.
 6. **Offices (`#offices`):** the chosen city's hall (`"<hall>, <brgy>, <City>, Metro Manila"`, a Google Maps directions link, the Pasig note) followed by the **four desks** a permit passes through, all at the hall's Business One-Stop Shop (RA 11032):
    - BPLO/BPLD, the City (or Municipal) Treasurer's Office (CTO/MTO), the BFP desk, and the City Health Office / Sanitation Desk.
-   - Each desk is a `.row.desk` with an icon, its name, a short tag, and one line on what you do there. The data is in `desks(c)` in `landing.js`.
-   - Cities can override the default names with `bplo`, `bploShort`, `treasurer` and `health` on their `CITIES` entry. Manila (Bureau of Permits, Manila Health Department), Quezon City (BPLD, Quezon City Health Department) and Makati (Makati Health Department) do this now.
+   - Each desk is a `.row.desk` with an icon, its name and one line on what you do there. There are no abbreviation tags (BPLO/CTO/…); they were removed on request. The data is in `desks(c)` in `landing.js`.
+   - Cities can override the default names with `bplo`, `treasurer` and `health` on their `CITIES` entry. Manila (Bureau of Permits, Manila Health Department), Quezon City (Business Permits and Licensing Department, Quezon City Health Department) and Makati (Makati Health Department) do this now.
    - No floor or room numbers are given, because they weren't verified.
    - The "Change your city" link points to `#estimate`.
 7. **CTA ("Ready to book your slot?"):** a sand card with Maya standing (`maya-ta-da.png`).
@@ -174,7 +175,7 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
 ### NCR cities (landing.js `CITIES`)
 - The list has the 16 cities plus the municipality of Pateros, each with `hall`, `brgy` (from Wikipedia's list of Metro Manila city/municipal halls) and a **sample** `rate` multiplier.
 - Pasig has a note about its temporary city hall.
-- The default city is Manila. The choice is saved in `localStorage['permitify.city']`, wrapped in try/catch.
+- The default city is Manila. The choice is saved in `localStorage['metromaya.city']`, wrapped in try/catch.
 - Fees are scaled client-side with `scale(n) = round(n * rate, 2)`, and the total is recomputed from the scaled lines.
 
 ---
@@ -192,7 +193,7 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
   - just above the band's bottom brown line
 
   This applies to every pose.
-- **Poses** (`static/img`): `maya-hello`, `maya-ta-da` (wings up, eyes open), `maya-whoa`, `maya-hey-you` (pointing; used in the estimator), `maya-hehehe` (eyes closed, laughing; used for CTA flying), `maya-lets-go`. Also `favicon.png`.
+- **Poses** (`static/img`): `maya-hello`, `maya-ta-da` (wings up, eyes open), `maya-whoa`, `maya-hey-you` (pointing; used in the estimator), `maya-hehehe` (eyes closed, laughing; used for CTA flying), `maya-lets-go`. There is **no favicon** (removed on request); each page has `<link rel="icon" href="data:,">` so browsers don't request `/favicon.ico`.
 - **Animation rules the user cares about:**
   - The animation must be seamless. Don't animate cut-out parts on top of the body. The flap is rendered by bending the whole drawing.
   - Her size must not change between states (wink, takeoff).

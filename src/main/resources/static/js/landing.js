@@ -30,14 +30,14 @@
       note: 'Pasig is using a temporary city hall while its new one is built.' },
     { id: 'pateros', name: 'Pateros', hall: 'Pateros Municipal Hall', brgy: 'Aguho', rate: 0.85, municipality: true },
     { id: 'quezon-city', name: 'Quezon City', hall: 'Quezon City Hall', brgy: 'Central', rate: 1.15,
-      bplo: 'Business Permits and Licensing Department', bploShort: 'BPLD', health: 'Quezon City Health Department' },
+      bplo: 'Business Permits and Licensing Department', health: 'Quezon City Health Department' },
     { id: 'san-juan', name: 'San Juan', hall: 'San Juan City Hall', brgy: 'Pinaglabanan', rate: 1.10 },
     { id: 'taguig', name: 'Taguig', hall: 'Taguig City Hall', brgy: 'Tuktukan', rate: 1.25 },
     { id: 'valenzuela', name: 'Valenzuela', hall: 'Valenzuela City Hall', brgy: 'Karuhatan', rate: 0.95 },
   ];
   function cityPlace(c) { return c.municipality ? c.name : (c.name === 'Quezon City' ? c.name : c.name + ' City'); }
   let city = CITIES.find((c) => c.id === 'manila');
-  try { const saved = localStorage.getItem('permitify.city'); city = CITIES.find((c) => c.id === saved) || city; } catch (e) { /* no storage */ }
+  try { const saved = localStorage.getItem('metromaya.city'); city = CITIES.find((c) => c.id === saved) || city; } catch (e) { /* no storage */ }
   const scale = (n) => Math.round(n * city.rate * 100) / 100;
 
   let config, services, industries, offices;
@@ -158,13 +158,13 @@
   function desks(c) {
     const lgu = c.municipality ? 'Municipal' : 'City';
     return [
-      { icon: 'permit', short: c.bploShort || 'BPLO', name: c.bplo || 'Business Permits and Licensing Office',
+      { icon: 'permit', name: c.bplo || 'Business Permits and Licensing Office',
         what: 'Start here. Files your application, assesses your fees and releases the permit.' },
-      { icon: 'cash', short: c.municipality ? 'MTO' : 'CTO', name: c.treasurer || lgu + ' Treasurer\u2019s Office',
+      { icon: 'cash', name: c.treasurer || lgu + ' Treasurer\u2019s Office',
         what: 'Pay the assessed fees and local business tax, and get your official receipt.' },
-      { icon: 'fire', short: 'BFP', name: 'Bureau of Fire Protection Desk',
+      { icon: 'fire', name: 'Bureau of Fire Protection Desk',
         what: 'Fire safety evaluation and your Fire Safety Inspection Certificate.' },
-      { icon: 'health', short: 'Health', name: c.health || lgu + ' Health Office / Sanitation Desk',
+      { icon: 'health', name: c.health || lgu + ' Health Office / Sanitation Desk',
         what: 'Sanitary permit, plus health certificates for staff who handle food or care.' },
     ];
   }
@@ -188,7 +188,7 @@
       ...desks(city).map((d) => el('div', { class: 'row desk' },
         deskIcon(d.icon),
         el('div', null,
-          el('h4', null, d.name, ' ', el('span', { class: 'desk-tag', text: d.short })),
+          el('h4', { text: d.name }),
           el('p', { text: d.what })))));
   }
 
@@ -198,7 +198,7 @@
   citySelect.value = city.id;
   citySelect.addEventListener('change', () => {
     city = CITIES.find((c) => c.id === citySelect.value) || city;
-    try { localStorage.setItem('permitify.city', city.id); } catch (e) { /* no storage */ }
+    try { localStorage.setItem('metromaya.city', city.id); } catch (e) { /* no storage */ }
     renderIndustries(); renderOffice(); refresh();
   });
   renderIndustries();

@@ -1,6 +1,6 @@
-# Permitify – business permit appointment system
+# MetroMaya – business permit appointment system
 
-Permitify is a web app where business owners book slots for **new permit applications**, **annual renewals** and **inspection visits**. The backend is plain Java 21 (`com.sun.net.httpserver`, no dependencies). The front-end is static HTML, CSS and vanilla JS.
+MetroMaya is a web app where business owners book slots for **new permit applications**, **annual renewals** and **inspection visits**. The backend is plain Java 21 (`com.sun.net.httpserver`, no dependencies). The front-end is static HTML, CSS and vanilla JS.
 
 Fees are sample rates for a course project, not official LGU fees.
 
