@@ -79,20 +79,21 @@ em { font-style: normal; }
 .site-header { position: sticky; top: 0; z-index: 30; background: rgba(251, 247, 240, .9); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid transparent; }
 .site-header.scrolled { border-bottom-color: var(--line); }
 .nav { width: min(1120px, 100% - 2.5rem); margin-inline: auto; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; height: 72px; }
-.brand { text-decoration: none; color: var(--navy); font-family: var(--display); font-weight: 700; font-size: 1.6rem; letter-spacing: -.02em; line-height: 1; }
+.brand { text-decoration: none; color: var(--ink-soft); font-family: var(--display); font-weight: 700; font-size: 1.6rem; letter-spacing: -.02em; line-height: 1; }
 .brand b { color: var(--gold); font-weight: 700; }
-.brand:hover { color: var(--navy-deep); }
+.brand:hover { color: var(--ink); }
 .nav-links { display: flex; align-items: center; gap: .5rem; }
-.nav-links a { position: relative; text-decoration: none; color: var(--ink-soft); font-weight: 500; font-size: .97rem; padding: .5rem .8rem; transition: color .2s ease, text-shadow .2s ease, transform .2s ease; display: inline-block; }
-/* no shape: the words themselves light up on hover and for the section you're reading */
+.nav-links a { position: relative; text-decoration: none; color: var(--ink-soft); font-weight: 500; font-size: .97rem; padding: .55rem 1.05rem; border-radius: 12px; display: inline-block;
+  transition: color .2s ease, background-color .2s ease, box-shadow .2s ease, transform .2s ease; }
+/* same lift-and-outline as the estimator's service tabs, in the footer's browns */
 .nav-links a:hover, .nav-links a:focus-visible, .nav-links a[aria-current="page"], .nav-links a.is-active {
-  color: var(--navy); font-weight: 700; transform: scale(1.06);
-  text-shadow: 0 0 14px rgba(237, 178, 74, .9), 0 0 2px rgba(237, 178, 74, .5);
+  color: var(--ink); background: #fff; transform: translateY(-2px); outline: none;
+  box-shadow: 0 0 0 2px var(--ink-soft), 0 8px 18px rgba(62, 36, 22, .16);
 }
-.nav-links a:focus-visible { outline: none; }
+.nav-links a[aria-current="page"], .nav-links a.is-active { font-weight: 600; }
 .nav-actions { display: flex; align-items: center; gap: .75rem; }
-.nav-actions .link { font-weight: 600; color: var(--navy); text-decoration: none; font-size: .95rem; padding: .5rem .25rem; }
-.nav-actions .link:hover { text-decoration: underline; text-underline-offset: 4px; }
+.nav-actions .link { font-weight: 600; color: var(--ink-soft); text-decoration: none; font-size: .95rem; padding: .5rem .25rem; }
+.nav-actions .link:hover { color: var(--ink); text-decoration: underline; text-decoration-color: var(--gold); text-decoration-thickness: 2px; text-underline-offset: 5px; }
 @media (max-width: 900px) { .nav-links { display: none; } }
 @media (max-width: 520px) { .nav-actions .link { display: none; } .brand { font-size: 1.35rem; } }
 
@@ -302,8 +303,9 @@ em { font-style: normal; }
 .cta { width: min(1120px, 100% - 2.5rem); margin: 7rem auto 5rem; background: var(--sand); border-radius: 28px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2rem; padding: 2.5rem clamp(1.5rem, 4vw, 3.5rem); overflow: hidden; }
 .cta h2 { margin: 0 0 .35rem; }
 .cta p { margin: 0 0 1.5rem; color: var(--ink-soft); }
-.cta img { width: 290px; margin: -5.5rem -.5rem -3.25rem 0; filter: drop-shadow(0 18px 20px rgba(62, 36, 22, .22)); }
-@media (max-width: 680px) { .cta { grid-template-columns: 1fr; text-align: left; } .cta img { width: 200px; margin: -1rem 0 -3rem auto; } }
+.cta-maya { position: relative; margin: -5.5rem -.5rem -3.25rem 0; }
+.cta img { width: 290px; filter: drop-shadow(0 18px 20px rgba(62, 36, 22, .22)); }
+@media (max-width: 680px) { .cta { grid-template-columns: 1fr; text-align: left; } .cta-maya { margin: -1rem 0 -3rem auto; } .cta img { width: 200px; } }
 
 /* ---------- footer ---------- */
 .footer { border-top: 1px solid var(--line); padding: 3rem 0 2rem; font-size: .93rem; color: var(--ink-soft); }
@@ -483,8 +485,34 @@ em { font-style: normal; }
 .office-card .directions { display: inline-block; margin-top: .6rem; font-weight: 600; font-size: .92rem; }
 .js-reveal .size-grid .size-card.reveal.in { transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease, opacity .22s ease; transition-delay: 0s; }
 
-/* closing banner: Maya pops out over the top edge and dances */
 .cta { overflow: visible; }
-.cta img { transform-origin: 50% 90%; animation: cta-dance 1.6s ease-in-out infinite; }
-@keyframes cta-dance { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-10px) rotate(3deg); } }
-@media (prefers-reduced-motion: reduce) { .cta img { animation: cta-dance 3.2s ease-in-out infinite !important; } }
+
+/* header "Book a slot" in the footer's browns */
+.nav-actions .btn-outline { color: var(--ink-soft); border-color: rgba(107, 84, 70, .4); }
+.nav-actions .btn-outline:hover { color: var(--ink); border-color: var(--ink-soft); background: var(--gold-soft); }
+
+/* closing banner: Maya jumps and shouts when "Book a slot" is hovered */
+.cta-say {
+  position: absolute; left: -2.5rem; top: 12%; z-index: 2; white-space: nowrap;
+  font-family: var(--display); font-weight: 600; font-size: 1.15rem; line-height: 1;
+  color: var(--navy); background: #fff; padding: .6rem .9rem; border-radius: 14px 14px 4px 14px;
+  box-shadow: 0 0 0 2px var(--navy), 0 8px 18px rgba(44, 58, 114, .18);
+  opacity: 0; transform: translateY(8px) scale(.6); transform-origin: 100% 100%;
+  transition: opacity .2s ease, transform .25s cubic-bezier(.2, .9, .3, 1.4);
+  pointer-events: none;
+}
+.cta-maya img { transform-origin: 50% 100%; }
+.cta:has(.btn:hover) .cta-maya img, .cta:has(.btn:focus-visible) .cta-maya img, .cta-maya.jump img { animation: maya-jump .7s cubic-bezier(.3, .7, .4, 1) infinite; }
+.cta:has(.btn:hover) .cta-say, .cta:has(.btn:focus-visible) .cta-say, .cta-maya.jump .cta-say { opacity: 1; transform: translateY(0) scale(1) rotate(-4deg); }
+@keyframes maya-jump {
+  0%   { transform: translateY(0) scale(1, 1); }
+  15%  { transform: translateY(0) scale(1.06, .92); }
+  45%  { transform: translateY(-34px) scale(.97, 1.04); }
+  75%  { transform: translateY(0) scale(1.04, .95); }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta:has(.btn:hover) .cta-maya img, .cta-maya.jump img { animation: maya-jump 1.2s ease-in-out infinite !important; }
+  .cta-say { transition: opacity .2s ease !important; }
+}
+@media (max-width: 680px) { .cta-say { left: -1.5rem; font-size: 1rem; } }

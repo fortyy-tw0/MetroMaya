@@ -246,6 +246,17 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
   pin();
 })();
 
+// ---- closing banner: Maya jumps while "Book a slot" is hovered or focused ----
+(function () {
+  const cta = document.querySelector('.cta'); const maya = document.querySelector('.cta-maya');
+  if (!cta || !maya) return;
+  const btn = cta.querySelector('.btn');
+  const on = () => maya.classList.add('jump'), off = () => maya.classList.remove('jump');
+  btn.addEventListener('mouseenter', on); btn.addEventListener('mouseleave', off);
+  btn.addEventListener('focus', on); btn.addEventListener('blur', off);
+  btn.addEventListener('touchstart', on, { passive: true });
+})();
+
 // ---- nav: highlight the link for the section you're reading ----
 (function () {
   const links = Array.prototype.slice.call(document.querySelectorAll('.nav-links a'));
