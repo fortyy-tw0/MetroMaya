@@ -242,6 +242,17 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
   btn.addEventListener('touchstart', on, { passive: true });
 })();
 
+// ---- slogan: the highlighter sweeps under "get on business." whenever the hero comes into view ----
+(function () {
+  const mark = document.querySelector('.hero-band .mark');
+  if (!mark) return;
+  if (!('IntersectionObserver' in window)) { mark.classList.add('hl'); return; }
+  new IntersectionObserver((entries) => entries.forEach((e) => {
+    if (e.isIntersecting) mark.classList.add('hl');
+    else mark.classList.remove('hl');
+  }), { threshold: 0.6 }).observe(mark);
+})();
+
 // ---- nav: highlight the link for the section you're reading ----
 (function () {
   const links = Array.prototype.slice.call(document.querySelectorAll('.nav-links a'));
