@@ -30,10 +30,7 @@ PORT=8097 java -cp out appointment.Main
   Then redeploy. This was done on 2026-11-14: 47 old images deleted.
 - Vercel builds `Dockerfile` (`Dockerfile.vercel` is a copy, so keep them identical). The container listens on `PORT` (default 80 in the image). The Vercel project name must not contain underscores.
 - **Bookings are in memory.** They reset whenever the container scales down.
-- **Commits** in this project used the trailer lines below. Use whatever attribution your environment specifies.
-  ```
-  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
-  ```
+- **Commits:** author them as `fortyy-tw0` with no `Co-Authored-By` or session trailer lines; the owner wants no assistant listed as a contributor.
 - **Checking the live site:** curl from a sandbox may be blocked. A web-fetch of `/css/style.css` that greps for a new rule worked.
 - **Screenshots:** Playwright (Node) with Chromium. Clear `scroll-behavior` before using `scrollIntoView` in scripts, and re-measure element boxes after hover, because the page height changes as the API data loads.
 
