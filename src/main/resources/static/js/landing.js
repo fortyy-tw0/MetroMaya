@@ -193,8 +193,10 @@
   }
   function renderOffice() {
     const place = cityPlace(city);
-    const address = city.hall + ', ' + city.brgy + ', ' + place + ', Metro Manila';
-    const maps = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(city.hall + ', ' + place + ', Metro Manila');
+    // the street address comes from the backend's office for this city (the same one bookings use)
+    const office = (offices || []).find((o) => o.id === city.id);
+    const address = (office ? office.address : city.hall + ', ' + city.brgy + ', ' + place) + ', Metro Manila';
+    const maps = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address);
     clear($('office-rows')).append(
       el('div', { class: 'row office-hall' },
         el('div', null,

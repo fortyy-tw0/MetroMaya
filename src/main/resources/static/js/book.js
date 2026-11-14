@@ -272,15 +272,24 @@
     return null;
   }
 
+  // Only the office for the city entered in step 2 is offered: a business permit is filed with
+  // the city (or municipality) the business is in. It's chosen for the user, who just confirms it.
   function renderOffices() {
     const box = clear($('office-choices'));
     const next = panels[2].querySelector('[data-next]');
-    $('office-hint').textContent = 'Showing which desks can serve a ' + state.quote.size.label.toLowerCase()
-      + ' business for ' + serviceById(state.serviceId).name.toLowerCase() + '.';
-    const current = officeById(state.officeId);
-    if (!current || officeProblem(current)) state.officeId = null;
+    const city = state.city;
+    const mine = state.offices.filter((o) => city && o.id === city.id);
+    $('office-hint').textContent = city
+      ? 'Your business is in ' + cityPlace(city) + ', so your ' + serviceById(state.serviceId).name.toLowerCase()
+        + ' is handled at ' + (city.municipality ? 'its municipal hall.' : 'its city hall.')
+      : '';
+    if (state.officeId && !mine.some((o) => o.id === state.officeId)) { state.officeId = null; state.date = ''; state.time = ''; }
+    if (!state.officeId && mine.length === 1 && !officeProblem(mine[0])) state.officeId = mine[0].id;
 
-    state.offices.forEach((o) => {
+    if (!mine.length) {
+      box.append(el('p', { class: 'alert alert-error', text: 'There is no office set up for ' + (city ? cityPlace(city) : 'your city') + ' yet. Go back and check the city.' }));
+    }
+    mine.forEach((o) => {
       const problem = officeProblem(o);
       const input = el('input', { type: 'radio', name: 'office', value: o.id, checked: o.id === state.officeId, disabled: !!problem });
       input.addEventListener('change', () => {
@@ -288,12 +297,16 @@
         state.officeId = o.id;
         next.disabled = false;
       });
+      const maps = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(o.address);
       box.append(el('label', { class: 'choice' + (problem ? ' disabled' : '') }, input,
         el('div', null,
           el('strong', { text: o.name }),
           el('small', { text: o.address }),
-          problem && el('small', { text: problem }))));
+          city && city.note ? el('small', { text: city.note }) : null,
+          problem && el('small', { text: problem }),
+          el('a', { class: 'directions', href: maps, target: '_blank', rel: 'noopener', text: 'Get directions →' }))));
     });
+    box.append(el('p', { class: 'hint office-other', text: 'Wrong city? Go back to the Business step and change it.' }));
     next.disabled = !state.officeId;
   }
 

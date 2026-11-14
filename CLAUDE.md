@@ -71,6 +71,7 @@ These three hierarchies are the course's polymorphism showcase, so keep them int
 **Booking rules:**
 - Weekdays only, up to 30 days ahead.
 - Hourly slots from 8:00 to 16:00, with no 12:00 slot.
+- **Offices:** one business permits office per city plus Pateros (`CatalogService`), with id = the front end's city id. Addresses are real (sourced Nov 2026 from city sites, DILG-NCR and news), including the building or floor where known. Each serves every service and size; slot capacities are sample values (2–4).
 - Each office has its own slot capacity.
 - One active booking per email + business + service.
 - References look like `BPL-20261116-ABCDE`.
@@ -205,6 +206,9 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
 - **On submit:** the fields are joined into the single `businessAddress` the API stores, e.g. `Unit 3, 12 Rizal St, Brgy. Kapitolyo, Pasig City 1600`. Track a booking (manage.js) runs `detectCity(a.businessAddress)` to show the same scaled fees.
 - The same form serves all three services (new permit, renewal, inspection).
 - **Known limitation:** the backend still stores base fees; the city scaling is client-side only.
+
+- **Step 3 (Office)** only shows the office for the city chosen in step 2 and pre-selects it, with a Google Maps directions link and the Pasig note. The home page's Offices card takes its street address from the same `/api/offices` entry.
+- `javac` runs with `-encoding UTF-8` (Dockerfile, Dockerfile.vercel, run.sh) because office names contain ñ.
 
 ### NCR cities (`NCR_CITIES` in common.js, shared by landing.js and book.js)
 - The list has the 16 cities plus the municipality of Pateros, each with `hall`, `brgy` (from Wikipedia's list of Metro Manila city/municipal halls) and a **sample** `rate` multiplier.

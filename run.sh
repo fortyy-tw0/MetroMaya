@@ -5,7 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 rm -rf out && mkdir out
-javac -d out $(find src/main/java -name '*.java')
+javac -encoding UTF-8 -d out $(find src/main/java -name '*.java')
 cp -r src/main/resources/. out/
 
 export PORT="${1:-${PORT:-8080}}"

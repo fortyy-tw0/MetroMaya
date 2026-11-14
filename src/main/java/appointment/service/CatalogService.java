@@ -37,18 +37,44 @@ public class CatalogService {
         add(new ProfessionalServicesIndustry());
         add(new HealthcareIndustry());
 
-        add(new Office("main", "BPLO Main Office",
-                "Ground Floor, City Hall", 4,
-                Set.of("new-permit", "renewal", "inspection"),
-                EnumSet.allOf(BusinessSize.class)));
-        add(new Office("north", "BPLO North District Desk",
-                "North District Civic Building, 2nd Floor", 2,
-                Set.of("new-permit", "renewal", "inspection"),
-                EnumSet.of(BusinessSize.MICRO, BusinessSize.SMALL, BusinessSize.MEDIUM)));
-        add(new Office("south", "BPLO South District Desk",
-                "South Plaza Government Hub, Ground Floor", 2,
-                Set.of("renewal", "inspection"),
-                EnumSet.of(BusinessSize.MICRO, BusinessSize.SMALL)));
+        // One business permits office per Metro Manila city (and Pateros), at its city/municipal hall.
+        // Addresses come from the cities' own sites, DILG-NCR and news reports (Nov 2026); the id matches
+        // the front end's city id (NCR_CITIES in common.js). Slot capacities are sample values.
+        Set<String> all = Set.of("new-permit", "renewal", "inspection");
+        add(new Office("caloocan", "Caloocan Business Permits and Licensing Office",
+                "Caloocan City Hall, 8th Avenue cor. 8th Street, Grace Park East, Caloocan City", 4, all, EnumSet.allOf(BusinessSize.class)));
+        add(new Office("las-pinas", "Las Piñas Business Permits and Licensing Office",
+                "Las Piñas City Hall Compound, Alabang–Zapote Road, Pamplona Tres, Las Piñas City", 4, all, EnumSet.allOf(BusinessSize.class)));
+        add(new Office("makati", "Makati Business Permits Office",
+                "Ground Floor, Makati City Hall Main Building II, J.P. Rizal Street, Poblacion, Makati City 1200", 4, all, EnumSet.allOf(BusinessSize.class)));
+        add(new Office("malabon", "Malabon Business Permit and Licensing Office",
+                "3rd Floor, Malabon City Hall, F. Sevilla Boulevard, San Agustin, Malabon City", 3, all, EnumSet.allOf(BusinessSize.class)));
+        add(new Office("mandaluyong", "Mandaluyong Business Permits and Licensing Department",
+                "Mandaluyong City Hall, Maysilo Circle, Plainview, Mandaluyong City", 4, all, EnumSet.allOf(BusinessSize.class)));
+        add(new Office("manila", "Manila Bureau of Permits",
+                "Manila City Hall, Antonio Villegas Street, Ermita, Manila 1000", 4, all, EnumSet.allOf(BusinessSize.class)));
+        add(new Office("marikina", "Marikina Business Permits and Licensing Office",
+                "Marikina City Hall, Shoe Avenue, Santa Elena, Marikina City 1800", 3, all, EnumSet.allOf(BusinessSize.class)));
+        add(new Office("muntinlupa", "Muntinlupa Business Permits and Licensing Office",
+                "Muntinlupa City Hall Compound, Putatan, Muntinlupa City", 3, all, EnumSet.allOf(BusinessSize.class)));
+        add(new Office("navotas", "Navotas Business Permits and Licensing Office",
+                "Navotas City Hall, M. Naval Street, Sipac-Almacen, Navotas City 1485", 3, all, EnumSet.allOf(BusinessSize.class)));
+        add(new Office("paranaque", "Parañaque Business Permits and Licensing Office",
+                "Parañaque City Hall, San Antonio Avenue, San Antonio, Parañaque City", 4, all, EnumSet.allOf(BusinessSize.class)));
+        add(new Office("pasay", "Pasay Business Permits and Licensing Office",
+                "Pasay City Hall, F.B. Harrison Street, Pasay City", 4, all, EnumSet.allOf(BusinessSize.class)));
+        add(new Office("pasig", "Pasig Business Permits and Licensing Office",
+                "Pasig Temporary City Hall, Eulogio Amang Rodriguez Avenue, Rosario, Pasig City", 4, all, EnumSet.allOf(BusinessSize.class)));
+        add(new Office("pateros", "Pateros Business Permits and Licensing Office",
+                "Pateros Municipal Hall, G. de Borja Street, Aguho, Pateros", 2, all, EnumSet.allOf(BusinessSize.class)));
+        add(new Office("quezon-city", "Quezon City Business Permits and Licensing Department",
+                "Ground Floor, Civic Center Building A, Quezon City Hall Compound, Elliptical Road, Central, Diliman, Quezon City 1100", 4, all, EnumSet.allOf(BusinessSize.class)));
+        add(new Office("san-juan", "San Juan Business Permits and Licensing Office",
+                "San Juan City Hall (City Government Center), Pinaglabanan Street, San Juan City", 3, all, EnumSet.allOf(BusinessSize.class)));
+        add(new Office("taguig", "Taguig Business Permits and Licensing Office",
+                "Taguig City Hall Compound, General Luna Street, Tuktukan, Taguig City", 4, all, EnumSet.allOf(BusinessSize.class)));
+        add(new Office("valenzuela", "Valenzuela Business Permits and Licensing Office",
+                "3rd Floor, Bulwagang Geronimo Angeles (Finance Center), Valenzuela City Government Complex, MacArthur Highway, Karuhatan, Valenzuela City", 4, all, EnumSet.allOf(BusinessSize.class)));
     }
 
     private void add(PermitService s) { services.put(s.getId(), s); }
