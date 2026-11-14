@@ -17,16 +17,18 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * All booking rules live here:
- * weekdays only, within the next 30 days, fixed hourly slots, per-slot capacity,
+ * weekdays that aren't regular holidays, up to 3 months ahead, fixed hourly slots, per-slot capacity,
  * offices that only offer some services and serve some business sizes,
  * and one active booking per business per service.
  */
 public class AppointmentService {
 
-    public static final int MAX_DAYS_AHEAD = 30;
+    /** Bookings open up to this many months ahead. */
+    public static final int MAX_MONTHS_AHEAD = 3;
 
     /** Hourly slots, 8:00 to 16:00, with a lunch break at 12:00. */
     public static final List<LocalTime> SLOT_TIMES = List.of(
@@ -38,12 +40,15 @@ public class AppointmentService {
     private final AppointmentRepository repository;
     private final CatalogService catalog;
     private final Clock clock;
+    private final HolidayCalendar holidays;
     private final SecureRandom random = new SecureRandom();
 
-    public AppointmentService(AppointmentRepository repository, CatalogService catalog, Clock clock) {
+    public AppointmentService(AppointmentRepository repository, CatalogService catalog, Clock clock,
+                              HolidayCalendar holidays) {
         this.repository = repository;
         this.catalog = catalog;
         this.clock = clock;
+        this.holidays = holidays;
     }
 
     public CatalogService getCatalog() {
@@ -52,6 +57,16 @@ public class AppointmentService {
 
     public LocalDate today() {
         return LocalDate.now(clock);
+    }
+
+    /** The last day that can be booked: 3 months from today. */
+    public LocalDate lastBookableDate() {
+        return today().plusMonths(MAX_MONTHS_AHEAD);
+    }
+
+    /** Regular holidays from today to the last bookable day, when offices are closed. */
+    public List<HolidayCalendar.Holiday> upcomingHolidays() {
+        return holidays.between(today(), lastBookableDate());
     }
 
     /** Prices a service for a type of business and head count, without booking anything. */
@@ -63,9 +78,10 @@ public class AppointmentService {
     public List<SlotInfo> getSlots(String officeId, LocalDate date) {
         Office office = catalog.getOffice(officeId);
         validateDate(date);
+        Map<LocalTime, Long> takenByTime = repository.countActiveByTime(office.getId(), date, SLOT_TIMES);
         List<SlotInfo> slots = new ArrayList<>();
         for (LocalTime time : SLOT_TIMES) {
-            int taken = (int) repository.countActive(office.getId(), date, time);
+            int taken = takenByTime.getOrDefault(time, 0L).intValue();
             int remaining = Math.max(0, office.getCapacityPerSlot() - taken);
             boolean inFuture = !LocalDateTime.of(date, time).isBefore(LocalDateTime.now(clock));
             slots.add(new SlotInfo(time, office.getCapacityPerSlot(), remaining, inFuture && remaining > 0));
@@ -139,13 +155,17 @@ public class AppointmentService {
         if (date.isBefore(today)) {
             throw new BookingException("That date has already passed.");
         }
-        if (date.isAfter(today.plusDays(MAX_DAYS_AHEAD))) {
-            throw new BookingException("Slots open up to " + MAX_DAYS_AHEAD + " days in advance.");
+        if (date.isAfter(lastBookableDate())) {
+            throw new BookingException("Slots open up to " + MAX_MONTHS_AHEAD + " months in advance, until "
+                    + lastBookableDate().format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy", java.util.Locale.ENGLISH)) + ".");
         }
         DayOfWeek day = date.getDayOfWeek();
         if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
             throw new BookingException("Offices are closed on weekends. Please choose a weekday.");
         }
+        holidays.holidayOn(date).ifPresent(h -> {
+            throw new BookingException("Offices are closed on " + h.name() + ", a regular holiday. Please choose another day.");
+        });
     }
 
     private void validateSlot(Office office, LocalDate date, LocalTime time) {

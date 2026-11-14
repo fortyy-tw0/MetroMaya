@@ -37,7 +37,7 @@ Maya, a tree sparrow dressed as a mail carrier, is the site's guide and mascot.
 1. **Service:** new permit, renewal or inspection visit.
 2. **Business:** business name, Address Line 1, then City, Barangay and ZIP code, your type of business, number of employees, and the owner's contact details. An estimate appears once the city, type of business and employees are filled in.
 3. **Office:** your city's business permits office is selected for you, with its address and directions.
-4. **Date and time:** a weekday up to 30 days ahead. Slots run hourly from 8:00 to 16:00, with no 12:00 slot.
+4. **Date and time:** a weekday up to 3 months ahead, except regular holidays. Slots run hourly from 8:00 to 16:00, with no 12:00 slot.
 5. **Review and confirm:** you get a reference number such as `BPL-20261116-ABCDE`.
 
 No account is needed.
@@ -55,7 +55,8 @@ Enter your reference number to see the booking, move it to another free slot, or
 | Backend | **Java 21**, using the JDK's built-in HTTP server (`com.sun.net.httpserver`). No frameworks, no build tool, no external libraries. |
 | Frontend | **HTML, CSS and vanilla JavaScript**. Static pages served by the Java server. |
 | Fonts | Lexend, Figtree and JetBrains Mono (Google Fonts) |
-| Data | Bookings are kept in memory. Barangays come from the PSA's PSGC list and ZIP codes from the PHLPost directory. |
+| Database | **Supabase (PostgreSQL)**, reached through its REST API with Java's built-in HTTP client. Without Supabase settings, bookings are kept in memory for local testing. |
+| Data | Barangays come from the PSA's PSGC list and ZIP codes from the PHLPost directory. Regular holidays follow RA 9492 and the yearly proclamations. |
 | Mascot assets | Python 3 (NumPy, SciPy, Pillow) scripts in `tools/maya/` generate Maya's animation frames |
 | Hosting | **Vercel**, using its container runtime with the root `Dockerfile` |
 
@@ -69,7 +70,7 @@ The Java model is built around three class hierarchies:
 | Business size | Enum with constant-specific methods | `BusinessSize`: `MICRO`, `SMALL`, `MEDIUM`, `LARGE` |
 | Service | Abstract class with a final template method `quote()` | `PermitService` → `NewPermitService`, `RenewalService`, `InspectionVisitService` |
 
-Storage goes through the `AppointmentRepository` interface, implemented by `InMemoryAppointmentRepository`. A full walkthrough of the code is in [`docs/MetroMaya-How-the-Code-Works.pdf`](docs/MetroMaya-How-the-Code-Works.pdf).
+Storage goes through the `AppointmentRepository` interface, implemented by `SupabaseAppointmentRepository` (the live database) and `InMemoryAppointmentRepository` (local testing); holidays come from the `HolidayCalendar` interface.
 
 ---
 
@@ -88,7 +89,7 @@ src/main/resources/static/
   manage.html      track, move or cancel a booking
   css/, js/, img/  styles, scripts and Maya's images
 tools/             scripts that build Maya's animations and the barangay/ZIP data
-docs/              the code guide (PDF)
+supabase/          database migration (the appointments table)
 ```
 
 ---
@@ -105,7 +106,10 @@ cd MetroMaya
 
 Then open [http://localhost:8080](http://localhost:8080). Set the `PORT` environment variable to use another port.
 
-Bookings are stored in memory, so they reset whenever the server restarts.
+Without database settings, bookings are kept in memory and reset when the server restarts. To store them in Supabase:
+
+1. Run `supabase/migrations/20261114000000_create_appointments.sql` in your Supabase project (SQL Editor), or let the Supabase GitHub integration apply it.
+2. Set `SUPABASE_URL` (Project Settings → API) and `SUPABASE_SERVICE_ROLE_KEY` (or the newer secret key as `SUPABASE_SECRET_KEY`) as environment variables. Never put this key in the front end.
 
 ---
 

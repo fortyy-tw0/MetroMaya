@@ -29,7 +29,7 @@ PORT=8097 java -cp out appointment.Main
   ```
   Then redeploy. This was done on 2026-11-14: 47 old images deleted.
 - Vercel builds `Dockerfile` (`Dockerfile.vercel` is a copy, so keep them identical). The container listens on `PORT` (default 80 in the image). The Vercel project name must not contain underscores.
-- **Bookings are in memory.** They reset whenever the container scales down.
+- **Bookings are stored in Supabase** (`SupabaseAppointmentRepository`, Supabase's REST API via the JDK HTTP client, no dependencies) when `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (or `SUPABASE_SECRET_KEY`) are set in Vercel. Without them `Main` falls back to `InMemoryAppointmentRepository` (local runs). The table is created by `supabase/migrations/20261114000000_create_appointments.sql` (RLS on, no policies, so only the server's secret key can read or write; a partial unique index also enforces one active booking per email + business + service). The key must never reach the browser.
 - **Commits:** author them as `fortyy-tw0` with no `Co-Authored-By` or session trailer lines; the owner wants no assistant listed as a contributor.
 - **Checking the live site:** curl from a sandbox may be blocked. A web-fetch of `/css/style.css` that greps for a new rule worked.
 - **Screenshots:** Playwright (Node) with Chromium. Clear `scroll-behavior` before using `scrollIntoView` in scripts, and re-measure element boxes after hover, because the page height changes as the API data loads.
@@ -54,7 +54,10 @@ src/main/java/appointment/
   repository/  AppointmentRepository (interface), InMemoryAppointmentRepository
   service/     AppointmentService (booking rules), CatalogService, SlotInfo,
                BookingException, NotFoundException
-  web/         WebServer, ApiHandler (routes), StaticHandler (serves /static; has webp MIME), Json
+  repository/  … + SupabaseAppointmentRepository (Supabase REST)
+  service/     … + HolidayCalendar, PhilippineHolidayCalendar
+  util/        Json (tiny reader + writer)
+  web/         WebServer, ApiHandler (routes, 503 when the database is unreachable), StaticHandler (serves /static; has webp MIME)
 ```
 
 These three hierarchies are the course's polymorphism showcase, so keep them intact:
@@ -66,7 +69,8 @@ These three hierarchies are the course's polymorphism showcase, so keep them int
 | Service | abstract class with a final template method `quote()` | `model/PermitService.java` and its 3 subclasses |
 
 **Booking rules:**
-- Weekdays only, up to 30 days ahead.
+- Weekdays only, **up to 3 months ahead** (`MAX_MONTHS_AHEAD`, `lastBookableDate()`), and **never on a Philippine regular holiday** (`HolidayCalendar` / `PhilippineHolidayCalendar`: fixed dates, Maundy Thursday and Good Friday from Easter, National Heroes Day on the last Monday of August; matches Proclamations 1006 (2026) and 1427 (2027)). Eid'l Fitr and Eid'l Adha are proclaimed yearly: add them to `PROCLAIMED`. `/api/config` and `/api/slots` send `maxDate`, `maxMonthsAhead` and `holidays`; `closedReason()` / `holidayHint()` in common.js apply the same rules in the browser.
+- **Mobile number:** exactly 11 digits starting with 09 (`Applicant`, the form, and a check constraint in the table).
 - Hourly slots from 8:00 to 16:00, with no 12:00 slot.
 - **Offices:** one business permits office per city plus Pateros (`CatalogService`), with id = the front end's city id. Addresses are real (sourced Nov 2026 from city sites, DILG-NCR and news), including the building or floor where known. Each serves every service and size; slot capacities are sample values (2–4).
 - Each office has its own slot capacity.
@@ -290,7 +294,7 @@ tools/maya/apply_hat_piping.sh   # redo cap piping on every pose from src/before
 ## 7. Open questions / next steps
 
 1. **Fees jump link:** resolved. Jumps now centre each section (see §3, Nav).
-2. **Persistence:** bookings live in memory and reset on scale-down. A database-backed `AppointmentRepository` is the intended way to fix this.
+2. **Persistence:** done in code (Supabase). Live only once the migration has run in the user's Supabase project and the two env vars are set in Vercel. Tested here against a local PostgREST stand-in, not the real project.
 3. **Repo cleanup (done):** only `main` exists on GitHub; the old-UI branches are gone. Unused images (`maya-mark`, `maya-whoa`, `maya-lets-go`) were deleted. The user deleted `src/test/` (SmokeTest), so `run-tests.sh` was removed too. There's no automated test suite now; check changes by building and running the site.
 4. **Booking page:** Maya next to the title is now 200px (128px on phones). Confirm with the user that she matches the "Book a slot" heading.
 5. **Mobile pass:**

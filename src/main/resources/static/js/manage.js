@@ -83,7 +83,8 @@
     }
     const input = $('new-date');
     input.min = config.today;
-    input.max = addDaysISO(config.today, config.maxDaysAhead);
+    input.max = config.maxDate;
+    $('new-date-hint').textContent = 'Weekdays only, up to ' + config.maxMonthsAhead + ' months ahead. ' + holidayHint(config);
     newDate = '';
     newTime = '';
     input.value = '';
@@ -97,9 +98,10 @@
     newTime = '';
     $('reschedule-confirm').disabled = true;
     if (!newDate) { clear($('new-slots')); return; }
-    if (isWeekend(newDate)) {
+    const closed = closedReason(newDate, config);
+    if (closed) {
       clear($('new-slots'));
-      showAlert($('new-slot-alert'), 'Offices are closed on weekends. Choose a weekday.', 'error');
+      showAlert($('new-slot-alert'), closed, 'error');
       return;
     }
     await loadSlots($('new-slots'), $('new-slot-alert'), current.officeId, newDate, newTime, (time) => {

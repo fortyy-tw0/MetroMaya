@@ -36,6 +36,15 @@ public class Appointment {
         this.createdAt = createdAt;
     }
 
+    /** Rebuilds a stored appointment with the status it was saved with (used by database repositories). */
+    public static Appointment restore(String referenceNo, Applicant applicant, Business business, PermitService service,
+                                      Office office, LocalDate date, LocalTime time, Quote quote, Instant createdAt,
+                                      AppointmentStatus status) {
+        Appointment a = new Appointment(referenceNo, applicant, business, service, office, date, time, quote, createdAt);
+        a.status = status;
+        return a;
+    }
+
     public boolean isActive() {
         return status == AppointmentStatus.CONFIRMED;
     }

@@ -6,7 +6,8 @@ import java.util.regex.Pattern;
 public class Applicant {
 
     private static final Pattern EMAIL = Pattern.compile("^[\\w.+-]+@[\\w-]+(\\.[\\w-]+)+$");
-    private static final Pattern PHONE = Pattern.compile("^[0-9+\\-\\s]{7,18}$");
+    /** A Philippine mobile number: exactly 11 digits, starting with 09 (e.g. 09171234567). */
+    private static final Pattern PHONE = Pattern.compile("^09\\d{9}$");
 
     private final String fullName;
     private final String email;
@@ -20,7 +21,7 @@ public class Applicant {
             throw new IllegalArgumentException("Please enter a valid email address.");
         }
         if (phone == null || !PHONE.matcher(phone.trim()).matches()) {
-            throw new IllegalArgumentException("Please enter a valid mobile number.");
+            throw new IllegalArgumentException("Enter an 11-digit mobile number starting with 09, e.g. 09171234567.");
         }
         this.fullName = fullName.trim();
         this.email = email.trim().toLowerCase();

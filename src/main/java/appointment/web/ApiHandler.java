@@ -14,6 +14,7 @@ import appointment.service.AppointmentService;
 import appointment.service.BookingException;
 import appointment.service.NotFoundException;
 import appointment.service.SlotInfo;
+import appointment.util.Json;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -64,6 +65,9 @@ class ApiHandler implements HttpHandler {
                 respond(exchange, 404, Map.of("error", e.getMessage()));
             } catch (DateTimeParseException e) {
                 respond(exchange, 400, Map.of("error", "Invalid date or time format."));
+            } catch (IllegalStateException e) {
+                // the bookings database could not be reached; the message is safe to show
+                respond(exchange, 503, Map.of("error", e.getMessage()));
             } catch (Exception e) {
                 e.printStackTrace();
                 respond(exchange, 500, Map.of("error", "Something went wrong on our side. Please try again."));
@@ -144,7 +148,7 @@ class ApiHandler implements HttpHandler {
     private Map<String, Object> configJson() {
         Map<String, Object> cfg = new LinkedHashMap<>();
         cfg.put("today", appointments.today().toString());
-        cfg.put("maxDaysAhead", AppointmentService.MAX_DAYS_AHEAD);
+        cfg.putAll(windowJson());
         List<Map<String, Object>> sizes = new ArrayList<>();
         for (BusinessSize size : BusinessSize.values()) {
             Map<String, Object> m = new LinkedHashMap<>();
@@ -159,6 +163,19 @@ class ApiHandler implements HttpHandler {
         }
         cfg.put("sizes", sizes);
         return cfg;
+    }
+
+    /** The booking window: up to 3 months ahead, minus weekends and the regular holidays listed here. */
+    private Map<String, Object> windowJson() {
+        Map<String, Object> m = new LinkedHashMap<>();
+        LocalDate today = appointments.today(), last = appointments.lastBookableDate();
+        m.put("maxDate", last.toString());
+        m.put("maxDaysAhead", java.time.temporal.ChronoUnit.DAYS.between(today, last));
+        m.put("maxMonthsAhead", AppointmentService.MAX_MONTHS_AHEAD);
+        List<Map<String, Object>> holidays = new ArrayList<>();
+        appointments.upcomingHolidays().forEach(h -> holidays.add(Map.of("date", h.date().toString(), "name", h.name())));
+        m.put("holidays", holidays);
+        return m;
     }
 
     private Map<String, Object> servicesJson() {
@@ -264,7 +281,7 @@ class ApiHandler implements HttpHandler {
         }
         Map<String, Object> out = new LinkedHashMap<>();
         out.put("today", appointments.today().toString());
-        out.put("maxDaysAhead", AppointmentService.MAX_DAYS_AHEAD);
+        out.putAll(windowJson());
         out.put("slots", list);
         return out;
     }

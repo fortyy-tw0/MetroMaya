@@ -81,6 +81,26 @@ function isWeekend(iso) {
   return day === 0 || day === 6;
 }
 
+// Why a day can't be booked, or null if it can. `config` is /api/config: today, maxDate (3 months ahead)
+// and the regular holidays in between, so the page and the server apply the same rules.
+function closedReason(iso, config) {
+  if (iso < config.today) return 'That date has already passed.';
+  if (iso > config.maxDate) return 'Slots open up to ' + config.maxMonthsAhead + ' months ahead, until ' + formatDate(config.maxDate) + '.';
+  if (isWeekend(iso)) return 'Offices are closed on weekends. Choose a weekday.';
+  const h = (config.holidays || []).find((x) => x.date === iso);
+  if (h) return 'Offices are closed on ' + h.name + ', a regular holiday. Choose another day.';
+  return null;
+}
+
+// "Closed on Nov 30 (Bonifacio Day), Dec 25 (Christmas Day), …" for the date picker's hint.
+function holidayHint(config) {
+  const list = (config.holidays || []).map((h) => {
+    const [y, m, d] = h.date.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' (' + h.name + ')';
+  });
+  return list.length ? 'Closed for regular holidays on ' + list.join(', ') + '.' : '';
+}
+
 function showAlert(node, message, kind) {
   node.textContent = message;
   node.className = 'alert ' + (kind === 'ok' ? 'alert-ok' : 'alert-error');
@@ -196,8 +216,12 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
   clear(container);
   hideAlert(alertNode);
   if (!date) return;
+  // only the newest request draws: picking dates quickly must not stack two days' slots
+  const ticket = (container.__slotTicket = (container.__slotTicket || 0) + 1);
   try {
     const data = await api.get('/api/slots?officeId=' + encodeURIComponent(officeId) + '&date=' + encodeURIComponent(date));
+    if (ticket !== container.__slotTicket) return;
+    clear(container);
     data.slots.forEach((slot) => {
       const btn = el('button', {
         type: 'button',
@@ -218,7 +242,7 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
       showAlert(alertNode, 'No free slots on that day. Try another date.', 'error');
     }
   } catch (e) {
-    showAlert(alertNode, e.message, 'error');
+    if (ticket === container.__slotTicket) showAlert(alertNode, e.message, 'error');
   }
 }
 

@@ -162,6 +162,12 @@
     if (zipInput.value.length === 4) zipNote.hidden = true;
   });
 
+  // Mobile number: digits only, at most 11 (09XXXXXXXXX)
+  $('phone').addEventListener('input', (e) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
+    if (digits !== e.target.value) e.target.value = digits;
+  });
+
   const employeesOk = (v) => /^\d+$/.test(v) && Number(v) >= 1;
 
   // The estimate only appears once the three things it depends on are filled in.
@@ -235,7 +241,7 @@
     else if (!employeesOk(form.employees)) problems.push('Enter the number of employees as a whole number, 1 or more.');
     else if (form.ownerName.length < 2) problems.push('Enter the owner’s full name.');
     else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) problems.push('Enter a valid email address.');
-    else if (form.phone.replace(/\D/g, '').length < 7) problems.push('Enter a valid mobile number.');
+    else if (!/^09\d{9}$/.test(form.phone)) problems.push('Enter an 11-digit mobile number starting with 09, e.g. 09171234567.');
     if (problems.length) { showAlert(alertNode, problems[0], 'error'); return; }
 
     // one address line for the booking, ending in the city and ZIP, e.g.
@@ -316,11 +322,11 @@
     const dateInput = $('date');
     const min = state.config.today;
     dateInput.min = min;
-    dateInput.max = addDaysISO(min, state.config.maxDaysAhead);
+    dateInput.max = state.config.maxDate;
     dateInput.value = state.date;
-    $('date-hint').textContent = 'Weekdays only, up to ' + state.config.maxDaysAhead + ' days ahead. '
+    $('date-hint').textContent = 'Weekdays only, up to ' + state.config.maxMonthsAhead + ' months ahead. '
       + 'Expect about ' + minutesText(state.quote.estimatedMinutes)
-      + (state.serviceId === 'inspection' ? ' on site.' : ' at the counter.');
+      + (state.serviceId === 'inspection' ? ' on site. ' : ' at the counter. ') + holidayHint(state.config);
     panels[3].querySelector('[data-next]').disabled = !(state.date && state.time);
     refreshSlots();
   }
@@ -329,15 +335,10 @@
     const next = panels[3].querySelector('[data-next]');
     const alertNode = $('slot-alert');
     if (!state.date) { clear($('slots')); hideAlert(alertNode); return; }
-    if (state.date < state.config.today || state.date > addDaysISO(state.config.today, state.config.maxDaysAhead)) {
+    const closed = closedReason(state.date, state.config);
+    if (closed) {
       clear($('slots'));
-      showAlert(alertNode, 'Choose a date within the next ' + state.config.maxDaysAhead + ' days.', 'error');
-      next.disabled = true;
-      return;
-    }
-    if (isWeekend(state.date)) {
-      clear($('slots'));
-      showAlert(alertNode, 'Offices are closed on weekends. Choose a weekday.', 'error');
+      showAlert(alertNode, closed, 'error');
       next.disabled = true;
       return;
     }
