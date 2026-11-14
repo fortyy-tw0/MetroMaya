@@ -3,7 +3,7 @@
 This is a business-permit appointment system for an OOP course project. It has a Java 21 backend and a static vanilla HTML/CSS/JS front end. The mascot is **Maya**, a Eurasian tree sparrow dressed as a mail carrier.
 
 - **Repo:** `fortyy-tw0/OOP_AppointmentSystem` (GitHub). Work on `main`. This file is `CLAUDE.md` at the repo root, so Claude Code loads it automatically.
-- **Live:** https://oopappointmentsys.vercel.app. Vercel auto-deploys from `main` using its Container runtime with the root `Dockerfile`.
+- **Live:** https://metro-maya.vercel.app (Vercel project `metro-maya`, team `forty-tw0`, Hobby plan; the GitHub repo is now `fortyy-tw0/MetroMaya`). Vercel auto-deploys from `main` using its Container runtime with the root `Dockerfile`.
 - **Brand:** **MetroMaya**. The slogan is **"Skip the line, get on business."** with a **thin gold line** (`.mark::before`, 0.07em tall, rounded) under "get on business.". It draws in left to right (scaleX, about 0.9s) each time the hero comes into view; `common.js` toggles `.mark.hl`. Under reduced motion it shows without the animation. The user rejected a thick highlighter band, so keep it thin.
 - **Disclaimer that must stay visible:** fees are *sample rates for a course project, not official LGU fees*.
 
@@ -21,7 +21,13 @@ PORT=8097 java -cp out appointment.Main
 ```
 
 - No dependencies: it uses `com.sun.net.httpserver` and no build tool.
-- **Deploy:** push to `main`, then Vercel (project `metro-maya`) builds `Dockerfile`. If a build fails with "repository has reached the maximum allowed number of images", old images must be deleted in Vercel → project → Sandboxes → Container Registry; the code itself is fine.
+- **Deploy:** push to `main`, then Vercel (project `metro-maya`) builds `Dockerfile`.
+- **Container registry limit:** each deploy stores a ~66 MB image in the `dockerfile` repository, and the registry holds about 50. Once it's full, builds fail with "repository has reached the maximum allowed number of images". The Hobby dashboard has no Container Registry tab, so the user clears it with the Vercel CLI, keeping the newest few:
+  ```
+  vercel vcr image ls dockerfile --project metro-maya --limit 100
+  vercel vcr image rm dockerfile <image-id> --project metro-maya --yes
+  ```
+  Then redeploy. This was done on 2026-11-14: 47 old images deleted.
 - Vercel builds `Dockerfile` (`Dockerfile.vercel` is a copy, so keep them identical). The container listens on `PORT` (default 80 in the image). The Vercel project name must not contain underscores.
 - **Bookings are in memory.** They reset whenever the container scales down.
 - **Commits** in this project used the trailer lines below. Use whatever attribution your environment specifies.
