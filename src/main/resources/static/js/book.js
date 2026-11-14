@@ -71,7 +71,7 @@
   // Barangays come from the PSA's PSGC list and ZIP codes from PHLPost's directory (see tools/places).
   const citySelect = $('cityId');
   const brgySelect = $('barangay');
-  const zipSelect = $('zip');
+  const zipInput = $('zip');
   const cityNote = $('city-note');
   const zipNote = $('zip-note');
   NCR_CITIES.forEach((c) => citySelect.append(el('option', { value: c.id, text: c.municipality ? c.name + ' (municipality)' : cityPlace(c) })));
@@ -90,7 +90,7 @@
     zipNote.hidden = true;
     if (!places) {
       fillSelect(brgySelect, 'Choose a city first', []);
-      fillSelect(zipSelect, 'Choose a city first', []);
+      suggestZip();
       return;
     }
     if (citySelect.value === 'manila') {
@@ -102,33 +102,38 @@
     } else {
       fillSelect(brgySelect, 'Choose your barangay', places.barangays.map((b) => el('option', { value: b.name, text: b.name })));
     }
-    renderZips();
+    suggestZip();
   }
 
-  // ZIP codes cover areas, not barangays, so all of the city's codes are offered. When the barangay
-  // (or, in Manila, its district) clearly matches one, it's picked for you.
-  function renderZips() {
+  // The ZIP code is typed by the user. When the barangay (or, in Manila, its district) clearly matches a
+  // PHLPost area, its code is offered as the placeholder and a one-click hint, but nothing is filled in.
+  function suggestZip() {
     const places = NCR_PLACES[citySelect.value];
+    zipNote.hidden = true;
+    clear(zipNote);
+    zipInput.placeholder = '4 digits';
     if (!places) return;
-    let zips = places.zips;
-    let match = null;
     const brgy = places.barangays.find((b) => b.name === brgySelect.value);
+    let match = null;
     if (brgy && brgy.zips) {
-      zips = places.zips.filter((z) => brgy.zips.includes(z.code));
+      const zips = places.zips.filter((z) => brgy.zips.includes(z.code));
       if (zips.length === 1) match = zips[0];
     } else if (brgy) {
       const name = fold(brgy.name);
-      match = places.zips.find((z) => fold(z.area).split(/\s*(?:,|&|\/|\+|-)\s*|\s+and\s+/).some((part) => part === name || part.split(' ').join(' ') === name))
-        || places.zips.find((z) => (' ' + fold(z.area) + ' ').includes(' ' + name + ' ')) || null;
+      match = places.zips.find((z) => fold(z.area).split(/\s*(?:,|&|\/|\+|-)\s*|\s+and\s+/).includes(name))
+        || places.zips.find((z) => (' ' + fold(z.area) + ' ').includes(' ' + name + ' '))
+        // barangays named after their area, e.g. "Almanza Uno" in PHLPost's "Almanza"
+        || places.zips.find((z) => fold(z.area).split(/\s*(?:,|&|\/|\+|-)\s*|\s+and\s+/).some((part) => part.length >= 5 && name.startsWith(part + ' ')))
+        || null;
     }
-    fillSelect(zipSelect, brgySelect.value ? 'Choose your ZIP code' : 'Choose your ZIP code', zips.map((z) =>
-      el('option', { value: z.code, text: z.code + ' · ' + z.area })));
     if (match) {
-      zipSelect.value = match.code;
-      zipNote.textContent = 'Matched to ' + brgySelect.value + '. Change it if your ZIP code is different.';
-      zipNote.hidden = false;
-    } else {
-      zipNote.hidden = true;
+      zipInput.placeholder = 'e.g. ' + match.code;
+      if (zipInput.value.trim() !== match.code) {
+        const use = el('button', { type: 'button', class: 'link-btn', text: 'Use ' + match.code });
+        use.addEventListener('click', () => { zipInput.value = match.code; zipNote.hidden = true; });
+        zipNote.append('PHLPost lists ' + match.code + ' for ' + match.area + '. ', use);
+        zipNote.hidden = false;
+      }
     }
   }
 
@@ -151,8 +156,11 @@
   }
   $('addressLine1').addEventListener('input', debounce(detectFromAddress, 200));
   citySelect.addEventListener('change', () => { cityNote.hidden = true; renderBarangays(); refreshLive(); });
-  brgySelect.addEventListener('change', renderZips);
-  zipSelect.addEventListener('change', () => { zipNote.hidden = true; });
+  brgySelect.addEventListener('change', suggestZip);
+  zipInput.addEventListener('input', () => {
+    zipInput.value = zipInput.value.replace(/\D/g, '').slice(0, 4);
+    if (zipInput.value.length === 4) zipNote.hidden = true;
+  });
 
   const employeesOk = (v) => /^\d+$/.test(v) && Number(v) >= 1;
 
@@ -222,7 +230,7 @@
     else if ((form.addressLine1 || '').length < 3) problems.push('Enter Address Line 1: unit or block number, street and subdivision.');
     else if (!city) problems.push('Choose the city your business is in.');
     else if (!form.barangay) problems.push('Choose your barangay.');
-    else if (!form.zip) problems.push('Choose your ZIP code.');
+    else if (!/^\d{4}$/.test(form.zip || '')) problems.push('Enter your 4-digit ZIP code.');
     else if (!form.industryId) problems.push('Choose your type of business.');
     else if (!employeesOk(form.employees)) problems.push('Enter the number of employees as a whole number, 1 or more.');
     else if (form.ownerName.length < 2) problems.push('Enter the owner’s full name.');

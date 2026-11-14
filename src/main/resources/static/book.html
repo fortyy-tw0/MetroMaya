@@ -58,9 +58,9 @@
                 <div class="field full"><label for="addressLine1">Address Line 1</label><input id="addressLine1" name="addressLine1" autocomplete="address-line1" placeholder="Unit/Block No./Street/Subdivision" required></div>
                 <div class="field"><label for="cityId">City (Metro Manila)</label><select id="cityId" name="cityId" required><option value="" selected disabled>Choose your city</option></select><small class="field-note" id="city-note" hidden></small></div>
                 <div class="field"><label for="barangay">Barangay</label><select id="barangay" name="barangay" required disabled><option value="" selected disabled>Choose a city first</option></select></div>
-                <div class="field"><label for="zip">ZIP code</label><select id="zip" name="zip" required disabled><option value="" selected disabled>Choose a city first</option></select><small class="field-note" id="zip-note" hidden></small></div>
+                <div class="field"><label for="zip">ZIP code</label><input id="zip" name="zip" autocomplete="postal-code" inputmode="numeric" maxlength="4" pattern="\d{4}" placeholder="4 digits" required><small class="field-note" id="zip-note" hidden></small></div>
                 <div class="field field-spacer" aria-hidden="true"></div>
-                <div class="field"><label for="industryId">Type of business</label><select id="industryId" name="industryId" required><option value="" selected disabled>Choose a type of business</option></select></div>
+                <div class="field"><label for="industryId">Type of business</label><select id="industryId" name="industryId" required><option value="" selected disabled>Choose one</option></select></div>
                 <div class="field"><label for="employees">Number of employees</label><input id="employees" name="employees" type="number" min="1" max="100000" inputmode="numeric" placeholder="e.g. 5" required></div>
                 <h3 class="form-group-title">Owner or representative</h3>
                 <div class="field full"><label for="ownerName">Full name</label><input id="ownerName" name="ownerName" autocomplete="name" required></div>
