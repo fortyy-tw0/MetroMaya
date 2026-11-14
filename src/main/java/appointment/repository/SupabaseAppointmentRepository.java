@@ -50,7 +50,8 @@ public class SupabaseAppointmentRepository implements AppointmentRepository {
     private final HttpClient http = HttpClient.newBuilder().connectTimeout(TIMEOUT).build();
 
     public SupabaseAppointmentRepository(String projectUrl, String apiKey, CatalogService catalog) {
-        String base = projectUrl.endsWith("/") ? projectUrl.substring(0, projectUrl.length() - 1) : projectUrl;
+        // accept the project URL with or without the REST path Supabase's dashboard shows ("…/rest/v1/")
+        String base = projectUrl.trim().replaceAll("/+$", "").replaceAll("/rest/v1$", "");
         this.restUrl = base + "/rest/v1/" + TABLE;
         this.apiKey = apiKey;
         this.catalog = catalog;
