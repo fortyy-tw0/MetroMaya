@@ -32,7 +32,11 @@
     renderFee($('result-fee'), quote.fee);
     renderInspections($('result-insp'), quote.inspections);
     renderDocs($('result-docs'), a.quote.requirements);
-    renderPayment($('result-pay'), a, (updated) => { current = updated; });
+    $('result-print').textContent = printActionLabel(a);
+    renderPayment($('result-pay'), a, (updated) => {
+      current = updated;
+      $('result-print').textContent = printActionLabel(updated);
+    });
 
     $('actions').hidden = a.status !== 'CONFIRMED' || !!a.acceptedAt;
     $('reschedule-box').hidden = true;

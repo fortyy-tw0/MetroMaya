@@ -563,7 +563,11 @@
     renderFee($('done-fee'), doneQuote.fee);
     renderInspections($('done-insp'), doneQuote.inspections);
     renderDocs($('done-docs'), a.quote.requirements);
-    renderPayment($('done-pay'), a, (updated) => { doneAppointment = updated; });
+    $('done-print').textContent = printActionLabel(a);
+    renderPayment($('done-pay'), a, (updated) => {
+      doneAppointment = updated;
+      $('done-print').textContent = printActionLabel(updated);
+    });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   let doneAppointment = null;

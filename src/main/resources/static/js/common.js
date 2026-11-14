@@ -514,7 +514,6 @@ const PAY_CHANNELS = [
   { id: 'ewallet', label: 'E-wallet', note: 'GCash, Maya and others' },
   { id: 'online-banking', label: 'Online banking', note: 'Pay from your bank account' },
   { id: 'landbank', label: 'LANDBANK Link.BizPortal', note: 'Government payment portal' },
-  { id: 'otc', label: 'Over the counter', note: 'Pay at the treasurer’s window' },
 ];
 
 function renderPayment(box, a, onUpdate) {
@@ -546,7 +545,7 @@ function renderPayment(box, a, onUpdate) {
         el('p', { text: 'Show this code at the office. Staff scan it to check this booking and the live payment record.' })),
       el('p', { class: 'hint receipt-note', text: 'Demo receipt from a prototype. No money moved, and this is not an official receipt. In production the city treasurer’s office would issue the official receipt.' }),
       el('div', { class: 'receipt-actions no-print' },
-        el('button', { type: 'button', class: 'btn btn-outline btn-small', onclick: () => printReceipt(a), text: 'Print or save receipt' }))));
+        el('button', { type: 'button', class: 'btn btn-outline btn-small', onclick: () => printBooking(a), text: 'Print confirmation and receipt' }))));
     return;
   }
   if (a.status !== 'CONFIRMED') return;
@@ -607,8 +606,14 @@ function renderPayment(box, a, onUpdate) {
   });
   box.append(el('div', { class: 'pay-panel' },
     el('div', { class: 'pay-panel-head' }, el('h3', { text: 'Pay your fees online' }), demoTag),
-    el('p', { class: 'hint', text: 'Pay the estimated ' + peso(a.amountDue) + ' now, or pay at the city hall on the day of your visit.' }),
-    choices, alertNode, el('div', { class: 'pay-actions' }, btn)));
+    el('p', { class: 'hint', text: 'You can pay the estimated ' + peso(a.amountDue) + ' online now, or pay at city hall on the day of your visit. Your booking stays confirmed either way.' }),
+    choices, alertNode, el('div', { class: 'pay-actions' },
+      el('button', { type: 'button', class: 'btn btn-outline', text: 'I’ll pay at city hall', onclick: () => {
+        clear(box).append(el('div', { class: 'pay-panel' },
+          el('h3', { text: 'Pay at city hall' }),
+          el('p', { text: 'Your booking is confirmed. Bring your confirmation and follow the office’s payment instructions when you arrive.' }),
+          el('button', { type: 'button', class: 'link-btn', text: 'Pay online instead', onclick: () => renderPayment(box, a, onUpdate) })));
+      } }), btn)));
 }
 
 // The office QR carries only the booking reference. Staff must enter their server-side access key
@@ -645,57 +650,80 @@ function printRow(list, label, value) {
   list.append(el('dt', { text: label }), el('dd', { text: value == null ? '—' : String(value) }));
 }
 
-function paymentStatusText(a) {
-  if (a.payment && a.payment.status === 'PAID') return 'Demo payment recorded · ' + a.payment.receiptNo;
-  if (a.payment && a.payment.status === 'PENDING') return 'Demo payment pending';
-  return 'No payment recorded; ask the office about payment due';
+function printActionLabel(a) {
+  return a.payment && a.payment.status === 'PAID' ? 'Print confirmation and receipt' : 'Print booking confirmation';
 }
 
-function printSheet(title, a, rows, note, withDocuments) {
+function printBooking(a) {
+  const paid = a.payment && a.payment.status === 'PAID';
   let sheet = document.getElementById('print-sheet');
   if (!sheet) {
     sheet = el('div', { id: 'print-sheet', class: 'print-sheet' });
     document.body.append(sheet);
   }
   clear(sheet);
-  const dl = el('dl', { class: 'print-rows' });
-  rows.forEach(([label, value]) => printRow(dl, label, value));
-  sheet.append(el('p', { class: 'print-brand', text: 'MetroMaya · Business Permit Appointments' }),
-    el('h1', { text: title }),
-    el('p', { class: 'print-ref', text: a.referenceNo }),
-    dl);
-  if (withDocuments && a.quote && a.quote.requirements) {
-    sheet.append(el('h2', { text: 'Documents to bring' }),
-      el('ul', null, a.quote.requirements.map((item) => el('li', { text: item }))));
+
+  const summary = el('dl', { class: 'summary print-summary' });
+  [
+    ['Service', a.serviceName], ['Business', a.businessName], ['Business address', a.businessAddress],
+    ['Applicant', a.ownerName], ['Office', a.officeName + ', ' + a.officeAddress],
+    ['Date', formatDate(a.date)], ['Time', formatTime(a.time)],
+  ].forEach(([label, value]) => printRow(summary, label, value));
+
+  sheet.append(
+    el('div', { class: 'print-masthead' },
+      el('div', { class: 'brand' },
+        el('span', { class: 'brand-mark', 'aria-hidden': 'true' }),
+        el('span', { class: 'brand-text' }, el('span', { class: 'brand-name', text: 'MetroMaya' }),
+          el('span', { class: 'brand-sub', text: 'Business Permit Appointments · Metro Manila' }))),
+      el('span', { class: 'print-document-type', text: paid ? 'Prototype confirmation + demo receipt · Not official' : 'Prototype booking confirmation · Not official' })),
+    el('div', { class: 'ticket print-ticket' },
+      el('div', { class: 'ticket-main' },
+        el('div', { class: 'label', text: 'Booking reference' }),
+        el('div', { class: 'ref', text: a.referenceNo }),
+        el('div', { class: 'ticket-sub', text: 'Show this at the business permits office' })),
+      el('div', { class: 'ticket-stub', 'aria-hidden': 'true' }, el('span', { text: 'Claim stub' })),
+      el('span', { class: 'ticket-status' + (a.status === 'CANCELLED' ? ' print-ticket-cancelled' : ''), text: a.status === 'CANCELLED' ? 'Cancelled' : a.acceptedAt ? 'Accepted' : 'Confirmed' })),
+    summary);
+
+  if (paid) {
+    const p = a.payment;
+    const rows = el('dl', { class: 'receipt-rows' });
+    [
+      ['Receipt no.', p.receiptNo], ['Transaction', p.txn],
+      ['Channel', p.channel],
+      ['Date paid', new Date(p.paidAt).toLocaleString('en-PH', { dateStyle: 'long', timeStyle: 'short' })],
+    ].forEach(([label, value]) => printRow(rows, label, value));
+    const city = detectCity(a.businessAddress);
+    const quote = city ? scaleQuote(a.quote, city.rate) : a.quote;
+    const fee = el('div', { class: 'receipt-fee' });
+    renderFee(fee, quote.fee);
+    sheet.append(el('section', { class: 'receipt print-payment', 'aria-label': 'Demo payment acknowledgement' },
+      el('div', { class: 'receipt-head' },
+        el('div', null, el('p', { class: 'receipt-kind', text: 'Demo payment acknowledgement' }),
+          el('p', { class: 'receipt-amount', text: peso(p.amount) })),
+        el('span', { class: 'receipt-paid', text: 'Paid' })),
+      el('span', { class: 'demo-tag', text: 'Demo · no money moves' }),
+      rows, fee,
+      el('p', { class: 'receipt-note', text: 'This is a prototype acknowledgement, not an official receipt. The city treasurer issues the official receipt.' })));
   }
-  sheet.append(el('div', { class: 'print-checkin' }, checkInQr(a),
-      el('div', null, el('b', { text: 'Office check-in' }),
-        el('p', { text: 'Staff: scan this code to verify the live booking and payment status, then accept the booking.' }),
-        el('p', { text: a.referenceNo }))),
-    el('p', { class: 'print-note', text: note }));
+
+  const docs = el('ul', { class: 'print-doc-list' });
+  (a.quote.requirements || []).forEach((item) => docs.append(el('li', { text: item })));
+  const inspections = el('ul', { class: 'print-inspection-list' });
+  (a.quote.inspections || []).forEach((item) => inspections.append(
+    el('li', { text: item.label + ' · ' + minutesText(item.minutes) })));
+  sheet.append(
+    el('div', { class: 'print-requirements' },
+      el('section', null, el('h2', { text: 'Documents to bring' }), docs),
+      el('section', null, el('h2', { text: 'Inspections' }), inspections,
+        el('div', { class: 'checkin-code print-checkin' },
+          checkInQr(a),
+          el('div', null, el('h3', { text: 'Office check-in code' }),
+            el('p', { text: paid ? 'Staff scan to verify the booking and demo payment.' : 'Staff scan to verify the booking.' }),
+            el('p', { class: 'checkin-ref', text: a.referenceNo }))))));
+
   requestAnimationFrame(() => window.print());
-}
-
-function printBooking(a) {
-  printSheet('Booking confirmation', a, [
-    ['Booking', a.status === 'CANCELLED' ? 'Cancelled' : a.acceptedAt ? 'Accepted at office' : 'Confirmed'],
-    ['Service', a.serviceName], ['Business', a.businessName], ['Applicant', a.ownerName],
-    ['Office', a.officeName + ', ' + a.officeAddress],
-    ['Appointment', formatDate(a.date) + ' at ' + formatTime(a.time)],
-    ['Estimated fee', peso(a.amountDue)], ['Payment', paymentStatusText(a)],
-  ], 'Prototype booking confirmation. Fees are sample rates; this is not an official government document.', true);
-}
-
-function printReceipt(a) {
-  const p = a.payment;
-  if (!p || p.status !== 'PAID') return;
-  printSheet('Demo payment acknowledgement', a, [
-    ['Receipt no.', p.receiptNo], ['Transaction', p.txn],
-    ['Business', a.businessName], ['Service', a.serviceName],
-    ['Paid to', a.officeName], ['Channel', p.channel],
-    ['Date paid', new Date(p.paidAt).toLocaleString('en-PH', { dateStyle: 'long', timeStyle: 'short' })],
-    ['Amount', peso(p.amount)], ['Booking', a.status === 'CANCELLED' ? 'Cancelled' : 'Confirmed'],
-  ], 'Demo receipt only. No money moved. This is not an official receipt; the city treasurer would issue one.', false);
 }
 
 // ---- month calendar (pick a day, see its time slots) ----

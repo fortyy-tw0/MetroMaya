@@ -243,7 +243,6 @@ public class AppointmentService {
         m.put("ewallet", "E-wallet");
         m.put("online-banking", "Online banking");
         m.put("landbank", "LANDBANK Link.BizPortal");
-        m.put("otc", "Over the counter");
         return m;
     }
 
