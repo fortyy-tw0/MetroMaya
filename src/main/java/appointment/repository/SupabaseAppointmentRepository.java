@@ -143,6 +143,7 @@ public class SupabaseAppointmentRepository implements AppointmentRepository {
         if (a.getApplicant().isVerified()) row.put("verified_id", a.getApplicant().getVerifiedId());
         // only sent once there is a payment, so bookings keep saving before the payment migration has run
         if (a.getPayment() != null) row.put("payment", a.getPayment().toMap());
+        if (a.getAcceptedAt() != null) row.put("accepted_at", a.getAcceptedAt().toString());
         row.put("quote", quoteToJson(a.getQuote()));
         row.put("created_at", a.getCreatedAt().toString());
         row.put("updated_at", Instant.now().toString());
@@ -159,6 +160,7 @@ public class SupabaseAppointmentRepository implements AppointmentRepository {
                 quoteFromJson(row.get("quote")), OffsetDateTime.parse(str(row, "created_at")).toInstant(),
                 AppointmentStatus.valueOf(str(row, "status")));
         restored.setPayment(paymentFrom(row.get("payment")));
+        if (row.get("accepted_at") != null) restored.setAcceptedAt(OffsetDateTime.parse(str(row, "accepted_at")).toInstant());
         return restored;
     }
 

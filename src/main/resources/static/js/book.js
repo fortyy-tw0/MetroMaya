@@ -546,6 +546,7 @@
   });
 
   function showDone(a) {
+    doneAppointment = a;
     panels.forEach((p) => { p.hidden = true; });
     $('stepper').hidden = true;
     donePanel.hidden = false;
@@ -557,13 +558,16 @@
     addRow(dl, 'Office', a.officeName + ', ' + a.officeAddress);
     addRow(dl, 'Date', formatDate(a.date));
     addRow(dl, 'Time', formatTime(a.time));
+    renderCheckInCode($('done-checkin'), a);
     const doneQuote = state.city ? scaleQuote(a.quote, state.city.rate) : a.quote;
     renderFee($('done-fee'), doneQuote.fee);
     renderInspections($('done-insp'), doneQuote.inspections);
     renderDocs($('done-docs'), a.quote.requirements);
-    renderPayment($('done-pay'), a);
+    renderPayment($('done-pay'), a, (updated) => { doneAppointment = updated; });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+  let doneAppointment = null;
+  $('done-print').addEventListener('click', () => { if (doneAppointment) printBooking(doneAppointment); });
 
   // ---------- step 0: verify it's you (only when the server has eGov settings) ----------
   // Two ways: eGovPH SSO (the "Login as eGov" widget gives an exchange code the server redeems), or a photo

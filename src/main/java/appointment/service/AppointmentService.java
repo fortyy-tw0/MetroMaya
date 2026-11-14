@@ -270,6 +270,17 @@ public class AppointmentService {
         return a;
     }
 
+    /** Office check-in is idempotent; payment remains a separate, live status. */
+    public synchronized Appointment acceptAtOffice(String referenceNo) {
+        Appointment a = find(referenceNo);
+        if (!a.isActive()) throw new BookingException("A cancelled booking cannot be accepted.");
+        if (a.getAcceptedAt() == null) {
+            a.accept(Instant.now(clock));
+            repository.save(a);
+        }
+        return a;
+    }
+
     /** The booking a payment transaction belongs to. Transaction ids are the booking reference plus "-P" and a code. */
     public Appointment findByPaymentTxn(String txn) {
         String t = txn == null ? "" : txn.trim().toUpperCase();

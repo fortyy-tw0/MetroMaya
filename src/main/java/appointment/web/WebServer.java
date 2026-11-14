@@ -16,10 +16,10 @@ public class WebServer {
     private final HttpServer server;
 
     public WebServer(int port, AppointmentService appointments, EgovVerifier egov, IdScanner idScanner,
-                     VerificationPass passes) throws IOException {
+                     VerificationPass passes, String officeAccessKey) throws IOException {
         server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/", new StaticHandler());
-        server.createContext("/api/", new ApiHandler(appointments, egov, idScanner, passes));
+        server.createContext("/api/", new ApiHandler(appointments, egov, idScanner, passes, officeAccessKey));
         server.setExecutor(Executors.newFixedThreadPool(16));
     }
 

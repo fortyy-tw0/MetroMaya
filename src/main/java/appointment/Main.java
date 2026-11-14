@@ -52,7 +52,7 @@ public class Main {
         } else {
             System.out.println("No eGov settings: anyone can book without verifying.");
         }
-        new WebServer(port, service, egov, ids, passes).start();
+        new WebServer(port, service, egov, ids, passes, env("OFFICE_ACCESS_KEY")).start();
         System.out.println("Appointment system running on http://localhost:" + port);
     }
 

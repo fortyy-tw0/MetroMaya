@@ -24,6 +24,8 @@ public class Appointment {
     private AppointmentStatus status = AppointmentStatus.CONFIRMED;
     /** The demo fee payment, or null when the fees haven't been paid online. */
     private Payment payment;
+    /** When office staff accepted the applicant's booking at the counter. */
+    private Instant acceptedAt;
 
     public Appointment(String referenceNo, Applicant applicant, Business business, PermitService service,
                        Office office, LocalDate date, LocalTime time, Quote quote, Instant createdAt) {
@@ -55,6 +57,7 @@ public class Appointment {
         if (!isActive()) {
             throw new BookingException("This booking has already been cancelled.");
         }
+        if (acceptedAt != null) throw new BookingException("This booking was accepted at the office and cannot be cancelled online.");
         status = AppointmentStatus.CANCELLED;
     }
 
@@ -62,8 +65,14 @@ public class Appointment {
         if (!isActive()) {
             throw new BookingException("A cancelled booking cannot be moved.");
         }
+        if (acceptedAt != null) throw new BookingException("This booking was accepted at the office and cannot be moved online.");
         this.date = newDate;
         this.time = newTime;
+    }
+
+    public void accept(Instant when) {
+        if (!isActive()) throw new BookingException("A cancelled booking cannot be accepted.");
+        if (acceptedAt == null) acceptedAt = when;
     }
 
     public String getReferenceNo() { return referenceNo; }
@@ -78,4 +87,6 @@ public class Appointment {
     public Instant getCreatedAt() { return createdAt; }
     public Payment getPayment() { return payment; }
     public void setPayment(Payment payment) { this.payment = payment; }
+    public Instant getAcceptedAt() { return acceptedAt; }
+    public void setAcceptedAt(Instant acceptedAt) { this.acceptedAt = acceptedAt; }
 }

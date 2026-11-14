@@ -542,9 +542,11 @@ function renderPayment(box, a, onUpdate) {
         el('div', null, el('p', { class: 'receipt-kind', text: 'Acknowledgement receipt' }), el('p', { class: 'receipt-amount', text: peso(p.amount) })),
         el('span', { class: 'receipt-paid', text: 'Paid' })),
       demoTag, dl, fee,
+      el('div', { class: 'receipt-checkin' }, checkInQr(a),
+        el('p', { text: 'Show this code at the office. Staff scan it to check this booking and the live payment record.' })),
       el('p', { class: 'hint receipt-note', text: 'Demo receipt from a prototype. No money moved, and this is not an official receipt. In production the city treasurer’s office would issue the official receipt.' }),
       el('div', { class: 'receipt-actions no-print' },
-        el('button', { type: 'button', class: 'btn btn-outline btn-small', onclick: () => window.print(), text: 'Print or save receipt' }))));
+        el('button', { type: 'button', class: 'btn btn-outline btn-small', onclick: () => printReceipt(a), text: 'Print or save receipt' }))));
     return;
   }
   if (a.status !== 'CONFIRMED') return;
@@ -607,6 +609,93 @@ function renderPayment(box, a, onUpdate) {
     el('div', { class: 'pay-panel-head' }, el('h3', { text: 'Pay your fees online' }), demoTag),
     el('p', { class: 'hint', text: 'Pay the estimated ' + peso(a.amountDue) + ' now, or pay at the city hall on the day of your visit.' }),
     choices, alertNode, el('div', { class: 'pay-actions' }, btn)));
+}
+
+// The office QR carries only the booking reference. Staff must enter their server-side access key
+// before the live booking and payment status can be viewed or the booking accepted.
+function checkInUrl(a) {
+  return location.origin + '/office.html?ref=' + encodeURIComponent(a.referenceNo);
+}
+
+function checkInQr(a) {
+  const box = el('div', { class: 'qr checkin-qr', role: 'img', 'aria-label': 'QR code for office staff to check this booking' });
+  if (window.qrcode) {
+    const code = qrcode(0, 'M');
+    code.addData(checkInUrl(a));
+    code.make();
+    box.innerHTML = code.createSvgTag({ cellSize: 5, margin: 2, scalable: true });
+  } else {
+    box.append(el('span', { text: 'QR unavailable' }));
+  }
+  return box;
+}
+
+function renderCheckInCode(box, a) {
+  clear(box);
+  box.append(el('div', { class: 'checkin-code' },
+    checkInQr(a),
+    el('div', null,
+      el('h3', { text: 'Office check-in code' }),
+      el('p', { text: 'Show this QR code or your reference number at the office. Staff scan it to verify the booking and current payment status.' }),
+      el('p', { class: 'checkin-ref', text: a.referenceNo }),
+      el('p', { class: 'hint', text: a.acceptedAt ? 'Accepted at the office.' : 'Awaiting office check-in.' }))));
+}
+
+function printRow(list, label, value) {
+  list.append(el('dt', { text: label }), el('dd', { text: value == null ? '—' : String(value) }));
+}
+
+function paymentStatusText(a) {
+  if (a.payment && a.payment.status === 'PAID') return 'Demo payment recorded · ' + a.payment.receiptNo;
+  if (a.payment && a.payment.status === 'PENDING') return 'Demo payment pending';
+  return 'No payment recorded; ask the office about payment due';
+}
+
+function printSheet(title, a, rows, note, withDocuments) {
+  let sheet = document.getElementById('print-sheet');
+  if (!sheet) {
+    sheet = el('div', { id: 'print-sheet', class: 'print-sheet' });
+    document.body.append(sheet);
+  }
+  clear(sheet);
+  const dl = el('dl', { class: 'print-rows' });
+  rows.forEach(([label, value]) => printRow(dl, label, value));
+  sheet.append(el('p', { class: 'print-brand', text: 'MetroMaya · Business Permit Appointments' }),
+    el('h1', { text: title }),
+    el('p', { class: 'print-ref', text: a.referenceNo }),
+    dl);
+  if (withDocuments && a.quote && a.quote.requirements) {
+    sheet.append(el('h2', { text: 'Documents to bring' }),
+      el('ul', null, a.quote.requirements.map((item) => el('li', { text: item }))));
+  }
+  sheet.append(el('div', { class: 'print-checkin' }, checkInQr(a),
+      el('div', null, el('b', { text: 'Office check-in' }),
+        el('p', { text: 'Staff: scan this code to verify the live booking and payment status, then accept the booking.' }),
+        el('p', { text: a.referenceNo }))),
+    el('p', { class: 'print-note', text: note }));
+  requestAnimationFrame(() => window.print());
+}
+
+function printBooking(a) {
+  printSheet('Booking confirmation', a, [
+    ['Booking', a.status === 'CANCELLED' ? 'Cancelled' : a.acceptedAt ? 'Accepted at office' : 'Confirmed'],
+    ['Service', a.serviceName], ['Business', a.businessName], ['Applicant', a.ownerName],
+    ['Office', a.officeName + ', ' + a.officeAddress],
+    ['Appointment', formatDate(a.date) + ' at ' + formatTime(a.time)],
+    ['Estimated fee', peso(a.amountDue)], ['Payment', paymentStatusText(a)],
+  ], 'Prototype booking confirmation. Fees are sample rates; this is not an official government document.', true);
+}
+
+function printReceipt(a) {
+  const p = a.payment;
+  if (!p || p.status !== 'PAID') return;
+  printSheet('Demo payment acknowledgement', a, [
+    ['Receipt no.', p.receiptNo], ['Transaction', p.txn],
+    ['Business', a.businessName], ['Service', a.serviceName],
+    ['Paid to', a.officeName], ['Channel', p.channel],
+    ['Date paid', new Date(p.paidAt).toLocaleString('en-PH', { dateStyle: 'long', timeStyle: 'short' })],
+    ['Amount', peso(p.amount)], ['Booking', a.status === 'CANCELLED' ? 'Cancelled' : 'Confirmed'],
+  ], 'Demo receipt only. No money moved. This is not an official receipt; the city treasurer would issue one.', false);
 }
 
 // ---- month calendar (pick a day, see its time slots) ----

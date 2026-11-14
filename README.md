@@ -138,3 +138,10 @@ Either way the server returns a signed 30-minute pass that booking requires; the
 | `POST /api/appointments/{ref}/pay` | Starts a **demo** fee payment (`channel`); the amount is computed by the server. No money moves |
 | `GET /api/pay/{txn}` · `POST /api/pay/{txn}/complete` | Demo checkout opened from the payment QR (`/pay.html?txn=…`); completing it issues a demo acknowledgement receipt |
 | `POST /api/appointments/{ref}/reschedule` | Moves a booking to a new date and time |
+| `GET /api/office/{ref}` · `POST /api/office/{ref}/accept` | Staff-only live check and office acceptance; requires `X-Office-Key` matching `OFFICE_ACCESS_KEY` |
+
+### Printing and office check-in
+
+The booking confirmation and demo acknowledgement receipt have separate print layouts containing only the appointment or payment details, the reference number, and an office check-in QR. The code opens `/office.html?ref=…`; it does not itself accept a booking or assert that payment was made. Staff enter the office access key, see the live booking and demo payment status (`paid`, `pending`, or `no payment recorded`), then explicitly accept the booking. Acceptance is recorded once and prevents online cancellation or rescheduling. It does not change payment status.
+
+Set a strong `OFFICE_ACCESS_KEY` in the server environment to enable office check-in. Without it, the staff API reports that check-in is unavailable. Apply `supabase/migrations/20261117000000_add_office_acceptance.sql` before accepting bookings when using Supabase. The key is entered on the office page and sent only in the `X-Office-Key` request header; do not put it in the QR or a URL. The existing payment flow remains a demo: no money moves, and the printed acknowledgement is not an official receipt.

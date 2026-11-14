@@ -26,6 +26,7 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLDecoder;
+import java.security.MessageDigest;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -54,6 +55,8 @@ import java.util.Map;
  *   POST /api/appointments/{ref}/pay        (channel) → starts a DEMO fee payment (no money moves)
  *   GET  /api/pay/{txn}                     demo checkout details (opened by scanning the payment QR)
  *   POST /api/pay/{txn}/complete            marks the demo payment paid and issues a demo receipt
+ *   GET  /api/office/{ref}                   staff-only booking and payment check
+ *   POST /api/office/{ref}/accept            staff-only, idempotent check-in
  */
 class ApiHandler implements HttpHandler {
 
@@ -64,12 +67,15 @@ class ApiHandler implements HttpHandler {
     private final EgovVerifier egov;
     private final IdScanner idScanner;
     private final VerificationPass passes;
+    private final String officeAccessKey;
 
-    ApiHandler(AppointmentService appointments, EgovVerifier egov, IdScanner idScanner, VerificationPass passes) {
+    ApiHandler(AppointmentService appointments, EgovVerifier egov, IdScanner idScanner, VerificationPass passes,
+               String officeAccessKey) {
         this.appointments = appointments;
         this.egov = egov;
         this.idScanner = idScanner;
         this.passes = passes;
+        this.officeAccessKey = officeAccessKey;
     }
 
     @Override
@@ -98,6 +104,27 @@ class ApiHandler implements HttpHandler {
         String path = exchange.getRequestURI().getPath();
         String[] parts = path.substring("/api/".length()).split("/");
         String head = parts[0];
+
+        if (head.equals("office") && parts.length >= 2) {
+            if (officeAccessKey == null) {
+                respond(exchange, 503, Map.of("error", "Office check-in is not configured on this server."));
+                return;
+            }
+            String supplied = exchange.getRequestHeaders().getFirst("X-Office-Key");
+            if (supplied == null || !MessageDigest.isEqual(
+                    officeAccessKey.getBytes(StandardCharsets.UTF_8), supplied.getBytes(StandardCharsets.UTF_8))) {
+                respond(exchange, 401, Map.of("error", "Enter the office access key to check this booking."));
+                return;
+            }
+            if (method.equals("GET") && parts.length == 2) {
+                respond(exchange, 200, appointmentJson(appointments.find(parts[1])));
+                return;
+            }
+            if (method.equals("POST") && parts.length == 3 && parts[2].equals("accept")) {
+                respond(exchange, 200, appointmentJson(appointments.acceptAtOffice(parts[1])));
+                return;
+            }
+        }
 
         if (method.equals("GET") && parts.length == 1) {
             switch (head) {
@@ -387,6 +414,7 @@ class ApiHandler implements HttpHandler {
         m.put("quote", quoteJson(a.getQuote()));
         m.put("amountDue", appointments.amountDue(a));
         m.put("payment", paymentJson(a.getPayment()));
+        m.put("acceptedAt", a.getAcceptedAt() == null ? null : a.getAcceptedAt().toString());
         return Map.of("appointment", m);
     }
 

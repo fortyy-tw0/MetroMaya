@@ -14,7 +14,7 @@
     $('result').hidden = false;
     $('result-ref').textContent = a.referenceNo;
     const badge = $('result-status');
-    badge.textContent = a.status === 'CONFIRMED' ? 'Confirmed' : 'Cancelled';
+    badge.textContent = a.status === 'CANCELLED' ? 'Cancelled' : a.acceptedAt ? 'Accepted at office' : 'Confirmed';
     badge.className = 'badge badge-' + a.status;
 
     const dl = clear($('result-summary'));
@@ -25,6 +25,7 @@
     addRow(dl, 'Date', formatDate(a.date));
     addRow(dl, 'Time', formatTime(a.time));
     addRow(dl, 'Owner', a.ownerName);
+    renderCheckInCode($('result-checkin'), a);
     // fees follow the city named in the business address (the booking form always puts it there)
     const city = detectCity(a.businessAddress);
     const quote = city ? scaleQuote(a.quote, city.rate) : a.quote;
@@ -33,10 +34,12 @@
     renderDocs($('result-docs'), a.quote.requirements);
     renderPayment($('result-pay'), a, (updated) => { current = updated; });
 
-    $('actions').hidden = a.status !== 'CONFIRMED';
+    $('actions').hidden = a.status !== 'CONFIRMED' || !!a.acceptedAt;
     $('reschedule-box').hidden = true;
     hideAlert($('result-alert'));
   }
+
+  $('result-print').addEventListener('click', () => { if (current) printBooking(current); });
 
   async function lookup(ref) {
     hideAlert($('lookup-alert'));

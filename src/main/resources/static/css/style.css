@@ -634,6 +634,24 @@ html { scrollbar-color: var(--line-strong) var(--bg); }
 .lookup .field { flex: 1 1 260px; margin: 0; }
 .lookup-empty { display: flex; align-items: center; gap: 1rem; margin-top: 1.25rem; color: var(--muted); font-size: .95rem; }
 .lookup-empty img { width: 64px; }
+.checkin-code { display: flex; gap: 1rem; align-items: center; padding: 1rem; margin: 1rem 0; border: 1px solid var(--line-strong); border-radius: var(--r-lg); background: #fff; }
+.checkin-code h3 { margin-bottom: .25rem; }
+.checkin-code p { margin-bottom: .35rem; }
+.checkin-ref { font-family: var(--mono); font-weight: 700; overflow-wrap: anywhere; }
+.checkin-qr { flex: 0 0 168px; }
+@media (max-width: 520px) { .checkin-code { flex-direction: column; align-items: flex-start; } }
+.print-sheet { display: none; }
+.office-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: .75rem; align-items: end; }
+.office-form .field { margin: 0; }
+.office-result { margin-top: 1.5rem; }
+.office-result-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.office-result-head h2 { font-family: var(--mono); overflow-wrap: anywhere; margin: 0; }
+.office-payment { padding: 1rem; margin: 1rem 0; border: 1px solid var(--line-strong); border-radius: var(--r); }
+.office-payment p { margin: .25rem 0; }
+.office-payment-paid { background: var(--green-50); border-color: var(--green); }
+.office-payment-pending { background: var(--gold-50); }
+.office-result > button { margin-right: .5rem; }
+@media (max-width: 720px) { .office-form { grid-template-columns: 1fr; } }
 
 /* ---------- dropdowns: one chevron, room kept for it ---------- */
 .field select, .control select {
@@ -676,6 +694,22 @@ html[data-contrast="high"] .schedule .row:nth-child(even), html[data-contrast="h
   .gov-strip, .site-header, .footer, .nav-row, .no-print, .stepper, .page-title img, .skip-link { display: none !important; }
   body { background: #fff; }
   .card { box-shadow: none; border: 1px solid var(--line-strong); }
+  @page { size: A4; margin: 16mm; }
+  body > :not(#print-sheet) { display: none !important; }
+  #print-sheet { display: block !important; max-width: 175mm; margin: 0 auto; color: #111; font: 11pt/1.4 Arial, sans-serif; }
+  #print-sheet h1 { font-size: 19pt; margin: 0 0 2mm; color: #111; }
+  #print-sheet h2 { font-size: 12pt; margin: 5mm 0 2mm; color: #111; }
+  .print-brand { margin: 0 0 5mm; border-bottom: 2px solid #111; padding-bottom: 2mm; font-weight: bold; }
+  .print-ref { font: bold 14pt/1.3 monospace; margin: 0 0 5mm; }
+  .print-rows { display: grid; grid-template-columns: 38mm 1fr; gap: 1.5mm 4mm; margin: 0; }
+  .print-rows dt { font-weight: bold; }
+  .print-rows dd { margin: 0; overflow-wrap: anywhere; }
+  #print-sheet ul { margin: 0; padding-left: 6mm; }
+  #print-sheet li { break-inside: avoid; }
+  .print-checkin { display: flex; align-items: center; gap: 5mm; margin-top: 7mm; padding-top: 4mm; border-top: 1px solid #555; break-inside: avoid; }
+  .print-checkin .qr { width: 34mm; flex: 0 0 34mm; border: 0; padding: 0; }
+  .print-checkin p { margin: 1mm 0; }
+  .print-note { margin-top: 6mm; font-size: 9pt; }
 }
 
 /* ---------- breadcrumbs, consent, privacy notice ---------- */
@@ -774,6 +808,9 @@ html[data-motion="paused"] *, html[data-motion="paused"] *::before, html[data-mo
 .receipt-rows dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
 .receipt-rows dd:first-of-type, .receipt-rows dd:nth-of-type(2) { font-family: var(--mono); font-size: .88rem; }
 .receipt-fee { border-top: 1px dashed var(--line-strong); padding-top: .8rem; }
+.receipt-checkin { display: flex; gap: 1rem; align-items: center; border-top: 1px dashed var(--line-strong); padding-top: .8rem; }
+.receipt-checkin .qr { flex: 0 0 120px; width: 120px; }
+.receipt-checkin p { margin: 0; font-size: .9rem; }
 .receipt-note { margin: 0; font-size: .82rem; }
 .receipt-actions { display: flex; justify-content: flex-end; }
 @media (max-width: 520px) { .receipt-rows { grid-template-columns: 1fr; gap: 0; } .receipt-rows dd { margin-bottom: .45rem; } }
