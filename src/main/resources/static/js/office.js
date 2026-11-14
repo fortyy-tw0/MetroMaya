@@ -1,6 +1,7 @@
 (function () {
   const $ = (id) => document.getElementById(id);
   let current = null;
+  let recoveredToken = null;
 
   async function officeRequest(path, method) {
     const key = $('office-key').value;
@@ -11,7 +12,7 @@
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Could not check the booking.');
-    return data.appointment;
+    return data;
   }
 
   function row(dl, label, value) {
@@ -20,6 +21,7 @@
 
   function render(a) {
     current = a;
+    $('office-ref').value = a.referenceNo;
     $('office-result').hidden = false;
     $('office-result-ref').textContent = a.referenceNo;
     const badge = $('office-result-status');
@@ -58,8 +60,14 @@
     hideAlert($('office-error'));
     hideAlert($('office-success'));
     $('office-result').hidden = true;
+    $('office-access-result').hidden = true;
+    recoveredToken = null;
     try {
-      render(await officeRequest('/api/office/' + encodeURIComponent($('office-ref').value.trim().toUpperCase()), 'GET'));
+      const ref = $('office-ref').value.trim().toUpperCase();
+      const code = new URLSearchParams(location.search).get('code');
+      if (!ref && !code) throw new Error('Scan a check-in QR or enter a booking reference.');
+      const path = ref ? '/api/office/' + encodeURIComponent(ref) : '/api/office/checkin/' + encodeURIComponent(code);
+      render((await officeRequest(path, 'GET')).appointment);
     } catch (e) {
       showAlert($('office-error'), e.message, 'error');
     }
@@ -73,11 +81,39 @@
     button.disabled = true;
     hideAlert($('office-error'));
     try {
-      render(await officeRequest('/api/office/' + encodeURIComponent(current.referenceNo) + '/accept', 'POST'));
+      render((await officeRequest('/api/office/' + encodeURIComponent(current.referenceNo) + '/accept', 'POST')).appointment);
       showAlert($('office-success'), 'Booking accepted at the office. Payment status is shown above.', 'ok');
     } catch (e) {
       showAlert($('office-error'), e.message, 'error');
       button.disabled = false;
+    }
+  });
+
+  $('office-recover').addEventListener('click', async () => {
+    if (!current || !window.confirm('Verify the applicant’s identity before issuing a new private access code. The old code will stop working. Continue?')) return;
+    hideAlert($('office-error'));
+    const button = $('office-recover');
+    button.disabled = true;
+    try {
+      const result = await officeRequest('/api/office/' + encodeURIComponent(current.referenceNo) + '/reset-management', 'POST');
+      render(result.appointment);
+      recoveredToken = result.managementToken;
+      $('office-new-code').value = recoveredToken;
+      $('office-access-result').hidden = false;
+    } catch (e) {
+      showAlert($('office-error'), e.message, 'error');
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('office-copy-link').addEventListener('click', async () => {
+    if (!current || !recoveredToken) return;
+    try {
+      await navigator.clipboard.writeText(location.origin + privateManagementUrl(current.referenceNo, recoveredToken));
+      $('office-copy-status').textContent = 'Private link copied.';
+    } catch (e) {
+      $('office-copy-status').textContent = 'Copy failed. Give the code above instead.';
     }
   });
 

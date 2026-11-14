@@ -57,6 +57,8 @@ import java.util.Map;
  *   POST /api/pay/{txn}/complete            marks the demo payment paid and issues a demo receipt
  *   GET  /api/office/{ref}                   staff-only booking and payment check
  *   POST /api/office/{ref}/accept            staff-only, idempotent check-in
+ *   GET  /api/office/checkin/{code}          staff-only lookup from the public QR
+ *   POST /api/office/{ref}/reset-management  staff-assisted private code recovery
  */
 class ApiHandler implements HttpHandler {
 
@@ -116,12 +118,20 @@ class ApiHandler implements HttpHandler {
                 respond(exchange, 401, Map.of("error", "Enter the office access key to check this booking."));
                 return;
             }
+            if (method.equals("GET") && parts.length == 3 && parts[1].equals("checkin")) {
+                respond(exchange, 200, appointmentJson(appointments.findByCheckInCode(parts[2])));
+                return;
+            }
             if (method.equals("GET") && parts.length == 2) {
                 respond(exchange, 200, appointmentJson(appointments.find(parts[1])));
                 return;
             }
             if (method.equals("POST") && parts.length == 3 && parts[2].equals("accept")) {
                 respond(exchange, 200, appointmentJson(appointments.acceptAtOffice(parts[1])));
+                return;
+            }
+            if (method.equals("POST") && parts.length == 3 && parts[2].equals("reset-management")) {
+                respond(exchange, 200, bookingResultJson(appointments.resetManagement(parts[1])));
                 return;
             }
         }
@@ -184,19 +194,19 @@ class ApiHandler implements HttpHandler {
 
         if (head.equals("appointments")) {
             if (method.equals("POST") && parts.length == 1) {
-                respond(exchange, 201, appointmentJson(book(readForm(exchange))));
+                respond(exchange, 201, bookingResultJson(book(readForm(exchange))));
                 return;
             }
             if (method.equals("GET") && parts.length == 2) {
-                respond(exchange, 200, appointmentJson(appointments.find(parts[1])));
+                respond(exchange, 200, appointmentJson(appointments.findManaged(parts[1], managementToken(exchange))));
                 return;
             }
             if (method.equals("POST") && parts.length == 3 && parts[2].equals("cancel")) {
-                respond(exchange, 200, appointmentJson(appointments.cancel(parts[1])));
+                respond(exchange, 200, appointmentJson(appointments.cancel(parts[1], managementToken(exchange))));
                 return;
             }
             if (method.equals("POST") && parts.length == 3 && parts[2].equals("pay")) {
-                Appointment started = appointments.startPayment(parts[1], readForm(exchange).get("channel"));
+                Appointment started = appointments.startPayment(parts[1], readForm(exchange).get("channel"), managementToken(exchange));
                 respond(exchange, 200, appointmentJson(started));
                 return;
             }
@@ -204,7 +214,7 @@ class ApiHandler implements HttpHandler {
                 Map<String, String> form = readForm(exchange);
                 Appointment moved = appointments.reschedule(parts[1],
                         LocalDate.parse(form.getOrDefault("date", "")),
-                        LocalTime.parse(form.getOrDefault("time", "")));
+                        LocalTime.parse(form.getOrDefault("time", "")), managementToken(exchange));
                 respond(exchange, 200, appointmentJson(moved));
                 return;
             }
@@ -212,7 +222,7 @@ class ApiHandler implements HttpHandler {
         respond(exchange, 404, Map.of("error", "Unknown API endpoint."));
     }
 
-    private Appointment book(Map<String, String> form) {
+    private AppointmentService.BookingResult book(Map<String, String> form) {
         Industry industry = appointments.getCatalog().getIndustry(form.get("industryId"));
         Business business = new Business(
                 form.get("businessName"),
@@ -415,7 +425,19 @@ class ApiHandler implements HttpHandler {
         m.put("amountDue", appointments.amountDue(a));
         m.put("payment", paymentJson(a.getPayment()));
         m.put("acceptedAt", a.getAcceptedAt() == null ? null : a.getAcceptedAt().toString());
+        m.put("checkInCode", a.getCheckInCode());
         return Map.of("appointment", m);
+    }
+
+    private Map<String, Object> bookingResultJson(AppointmentService.BookingResult result) {
+        Map<String, Object> body = new LinkedHashMap<>(appointmentJson(result.appointment()));
+        body.put("managementToken", result.managementToken());
+        return body;
+    }
+
+    private static String managementToken(HttpExchange exchange) {
+        String header = exchange.getRequestHeaders().getFirst("X-Management-Token");
+        return header == null ? null : header.trim();
     }
 
     private Map<String, Object> availabilityJson(HttpExchange exchange) {

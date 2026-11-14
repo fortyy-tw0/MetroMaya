@@ -23,7 +23,21 @@ const api = {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams(data || {}).toString(),
   }),
+  managedGet: (path, token) => request(path, {
+    headers: { 'X-Management-Token': token },
+    cache: 'no-store',
+  }),
+  managedPost: (path, data, token) => request(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Management-Token': token },
+    body: new URLSearchParams(data || {}).toString(),
+    cache: 'no-store',
+  }),
 };
+
+function privateManagementUrl(referenceNo, token) {
+  return '/manage.html?ref=' + encodeURIComponent(referenceNo) + '#access=' + encodeURIComponent(token);
+}
 
 function el(tag, props, ...children) {
   const node = document.createElement(tag);
@@ -516,7 +530,7 @@ const PAY_CHANNELS = [
   { id: 'landbank', label: 'LANDBANK Link.BizPortal', note: 'Government payment portal' },
 ];
 
-function renderPayment(box, a, onUpdate) {
+function renderPayment(box, a, onUpdate, managementToken) {
   clear(box);
   if (box.__poll) { clearInterval(box.__poll); box.__poll = null; }
   const p = a.payment;
@@ -565,15 +579,15 @@ function renderPayment(box, a, onUpdate) {
           el('p', { text: 'Scan with your phone camera to open the payment page, or open it here. Channel: ' + p.channel + '.' }),
           el('a', { class: 'btn btn-primary', href: url, target: '_blank', rel: 'noopener', text: 'Open payment page' }),
           status,
-          el('button', { type: 'button', class: 'link-btn', text: 'Choose another way to pay', onclick: () => renderPayment(box, Object.assign({}, a, { payment: null }), onUpdate) })))));
+          el('button', { type: 'button', class: 'link-btn', text: 'Choose another way to pay', onclick: () => renderPayment(box, Object.assign({}, a, { payment: null }), onUpdate, managementToken) })))));
     box.__poll = setInterval(async () => {
       if (!document.body.contains(box)) { clearInterval(box.__poll); return; }
       try {
         const { payment } = await api.get('/api/pay/' + encodeURIComponent(p.txn));
         if (payment.status === 'PAID') {
           clearInterval(box.__poll);
-          const { appointment } = await api.get('/api/appointments/' + encodeURIComponent(a.referenceNo));
-          renderPayment(box, appointment, onUpdate);
+          const { appointment } = await api.managedGet('/api/appointments/' + encodeURIComponent(a.referenceNo), managementToken);
+          renderPayment(box, appointment, onUpdate, managementToken);
           if (onUpdate) onUpdate(appointment);
         }
       } catch (e) { /* keep waiting */ }
@@ -596,8 +610,8 @@ function renderPayment(box, a, onUpdate) {
     hideAlert(alertNode);
     try {
       const channel = choices.querySelector('input:checked').value;
-      const { appointment } = await api.post('/api/appointments/' + encodeURIComponent(a.referenceNo) + '/pay', { channel });
-      renderPayment(box, appointment, onUpdate);
+      const { appointment } = await api.managedPost('/api/appointments/' + encodeURIComponent(a.referenceNo) + '/pay', { channel }, managementToken);
+      renderPayment(box, appointment, onUpdate, managementToken);
       if (onUpdate) onUpdate(appointment);
     } catch (e) {
       showAlert(alertNode, e.message, 'error');
@@ -612,19 +626,19 @@ function renderPayment(box, a, onUpdate) {
         clear(box).append(el('div', { class: 'pay-panel' },
           el('h3', { text: 'Pay at city hall' }),
           el('p', { text: 'Your booking is confirmed. Bring your confirmation and follow the office’s payment instructions when you arrive.' }),
-          el('button', { type: 'button', class: 'link-btn', text: 'Pay online instead', onclick: () => renderPayment(box, a, onUpdate) })));
+          el('button', { type: 'button', class: 'link-btn', text: 'Pay online instead', onclick: () => renderPayment(box, a, onUpdate, managementToken) })));
       } }), btn)));
 }
 
-// The office QR carries only the booking reference. Staff must enter their server-side access key
+// The office QR carries only an opaque lookup code. Staff must enter their server-side access key
 // before the live booking and payment status can be viewed or the booking accepted.
 function checkInUrl(a) {
-  return location.origin + '/office.html?ref=' + encodeURIComponent(a.referenceNo);
+  return location.origin + '/office.html?code=' + encodeURIComponent(a.checkInCode);
 }
 
 function checkInQr(a) {
   const box = el('div', { class: 'qr checkin-qr', role: 'img', 'aria-label': 'QR code for office staff to check this booking' });
-  if (window.qrcode) {
+  if (window.qrcode && a.checkInCode) {
     const code = qrcode(0, 'M');
     code.addData(checkInUrl(a));
     code.make();

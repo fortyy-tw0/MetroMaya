@@ -38,13 +38,13 @@ Maya, a tree sparrow dressed as a mail carrier, is the site's guide and mascot.
 2. **Business:** business name, Address Line 1, then City, Barangay and ZIP code, your type of business, number of employees, and the owner's contact details. An estimate appears once the city, type of business and employees are filled in.
 3. **Office:** your city's business permits office is selected for you, with its address and directions.
 4. **Date and time:** a weekday up to 3 months ahead, except regular holidays. Slots run hourly from 8:00 to 16:00, with no 12:00 slot.
-5. **Review and confirm:** you get a reference number such as `BPL-20261116-ABCDE`.
+5. **Review and confirm:** you get a reference number such as `BPL-20261116-ABCDE` and a private access code. Save the private link before leaving the page.
 
 No account is needed.
 
 ### 3. Track a booking (`/manage.html`)
 
-Enter your reference number to see the booking, move it to another free slot, or cancel it.
+Enter your reference number **and private access code** to see the booking, move it to another free slot, or cancel it. The reference and office check-in QR alone cannot manage a booking. If you lose the code, office staff can issue a new one after checking your identity; this revokes the old code.
 
 ---
 
@@ -131,17 +131,19 @@ Either way the server returns a signed 30-minute pass that booking requires; the
 | `GET /api/slots?officeId=&date=YYYY-MM-DD` | Available time slots for an office and day |
 | `POST /api/verify/egov` | Redeems the eGovPH widget's exchange code; returns a signed 30-minute pass and the person's details |
 | `POST /api/verify/id` | Reads an ID photo (raw JPEG/PNG/WebP body, max 8 MB); returns a pass and the name on the ID |
-| `POST /api/appointments` | Books a slot and returns the reference number (needs `verifyPass` when verification is on) |
-| `GET /api/appointments/{ref}` | Looks up a booking |
-| `POST /api/appointments/{ref}/cancel` | Cancels a booking |
+| `POST /api/appointments` | Books a slot and returns the reference, private `managementToken`, and public office `checkInCode` (needs `verifyPass` when verification is on) |
+| `GET /api/appointments/{ref}` | Looks up a booking with the private code in `X-Management-Token` |
+| `POST /api/appointments/{ref}/cancel` | Cancels a booking with `X-Management-Token` |
 | `GET /api/availability?officeId=&month=YYYY-MM` | Every day of a month for an office: open or why closed (weekend, holiday, outside the window), places left. Drives the month calendar |
-| `POST /api/appointments/{ref}/pay` | Starts a **demo** fee payment (`channel`); the amount is computed by the server. No money moves |
+| `POST /api/appointments/{ref}/pay` | Starts a **demo** fee payment (`channel`, `X-Management-Token`); the amount is computed by the server. No money moves |
 | `GET /api/pay/{txn}` · `POST /api/pay/{txn}/complete` | Demo checkout opened from the payment QR (`/pay.html?txn=…`); completing it issues a demo acknowledgement receipt |
-| `POST /api/appointments/{ref}/reschedule` | Moves a booking to a new date and time |
+| `POST /api/appointments/{ref}/reschedule` | Moves a booking with `X-Management-Token` |
 | `GET /api/office/{ref}` · `POST /api/office/{ref}/accept` | Staff-only live check and office acceptance; requires `X-Office-Key` matching `OFFICE_ACCESS_KEY` |
+| `GET /api/office/checkin/{code}` | Staff-only lookup of an opaque check-in QR code; also requires `X-Office-Key` |
+| `POST /api/office/{ref}/reset-management` | Staff-only recovery; issues a new private code and revokes the old one |
 
 ### Printing and office check-in
 
-The print layout follows the on-screen booking ticket and receipt. An unpaid booking prints only the confirmation, documents, inspections, and office check-in QR; it contains no fee or payment status. When a demo payment is recorded, the same printout also includes its acknowledgement and fee breakdown. Applicants can skip online payment and pay at city hall; this is not a payment channel in the demo checkout. The code opens `/office.html?ref=…`; it does not itself accept a booking or assert that payment was made. Staff enter the office access key, see the live booking and demo payment status (`paid`, `pending`, or `no payment recorded`), then explicitly accept the booking. Acceptance is recorded once and prevents online cancellation or rescheduling. It does not change payment status.
+The print layout follows the on-screen booking ticket and receipt. An unpaid booking prints only the confirmation, documents, inspections, and office check-in QR; it contains no fee or payment status or private access code. When a demo payment is recorded, the same printout also includes its acknowledgement and fee breakdown. Applicants can skip online payment and pay at city hall; this is not a payment channel in the demo checkout. The QR opens `/office.html?code=…` with an opaque lookup code, not the booking reference or private management code. Staff enter the office access key, see the live booking and demo payment status (`paid`, `pending`, or `no payment recorded`), then explicitly accept the booking. Acceptance is recorded once and prevents online cancellation or rescheduling. It does not change payment status.
 
-Set a strong `OFFICE_ACCESS_KEY` in the server environment to enable office check-in. Without it, the staff API reports that check-in is unavailable. Apply `supabase/migrations/20261117000000_add_office_acceptance.sql` before accepting bookings when using Supabase. The key is entered on the office page and sent only in the `X-Office-Key` request header; do not put it in the QR or a URL. The existing payment flow remains a demo: no money moves, and the printed acknowledgement is not an official receipt.
+Set a strong `OFFICE_ACCESS_KEY` in the server environment to enable office check-in. Without it, the staff API reports that check-in is unavailable. Apply `supabase/migrations/20261117000000_add_office_acceptance.sql` and `supabase/migrations/20261118000000_add_booking_credentials.sql` before deploying this update with Supabase. Existing bookings have no private code; office staff must issue one after verifying the applicant. The private management code is returned once, stored only as a SHA-256 hash, and sent in `X-Management-Token`; private links put it in the URL fragment, which the management page removes before loading external scripts. The office key is sent only in `X-Office-Key`. The existing payment flow remains a demo: no money moves, and the printed acknowledgement is not an official receipt. Run `python3 tools/test_booking_access.py` for the access regression checks.

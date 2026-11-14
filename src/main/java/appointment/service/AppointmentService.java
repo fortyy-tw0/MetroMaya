@@ -11,6 +11,11 @@ import appointment.model.Quote;
 import appointment.repository.AppointmentRepository;
 
 import java.security.SecureRandom;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.HexFormat;
 import java.time.Clock;
 import java.time.DayOfWeek;
 import java.time.Instant;
@@ -48,6 +53,9 @@ public class AppointmentService {
     private final Clock clock;
     private final HolidayCalendar holidays;
     private final SecureRandom random = new SecureRandom();
+
+    /** The raw management token is returned once; only its SHA-256 hash is stored. */
+    public record BookingResult(Appointment appointment, String managementToken) {}
 
     public AppointmentService(AppointmentRepository repository, CatalogService catalog, Clock clock,
                               HolidayCalendar holidays) {
@@ -95,7 +103,7 @@ public class AppointmentService {
         return slots;
     }
 
-    public synchronized Appointment book(String serviceId, String officeId, LocalDate date, LocalTime time,
+    public synchronized BookingResult book(String serviceId, String officeId, LocalDate date, LocalTime time,
                                          Applicant applicant, Business business) {
         PermitService service = catalog.getService(serviceId);
         Office office = catalog.getOffice(officeId);
@@ -127,8 +135,11 @@ public class AppointmentService {
 
         Appointment appointment = new Appointment(newReference(date), applicant, business, service, office,
                 date, time, service.quote(business), Instant.now(clock));
+        String managementToken = newSecret(32);
+        appointment.setManagementTokenHash(hashToken(managementToken));
+        appointment.setCheckInCode(newSecret(24));
         repository.save(appointment);
-        return appointment;
+        return new BookingResult(appointment, managementToken);
     }
 
     public Appointment find(String referenceNo) {
@@ -136,15 +147,44 @@ public class AppointmentService {
                 .orElseThrow(() -> new NotFoundException("No booking found for that reference number."));
     }
 
-    public synchronized Appointment cancel(String referenceNo) {
-        Appointment appointment = find(referenceNo);
+    /** A booking reference is public and never authorizes an applicant-facing lookup or change. */
+    public Appointment findManaged(String referenceNo, String managementToken) {
+        String error = "Booking not found or private access code is invalid.";
+        if (managementToken == null || !managementToken.matches("[A-Za-z0-9_-]{43}"))
+            throw new NotFoundException(error);
+        Appointment a = repository.findByReference(referenceNo).orElseThrow(() -> new NotFoundException(error));
+        String expected = a.getManagementTokenHash();
+        if (expected == null || !MessageDigest.isEqual(expected.getBytes(StandardCharsets.US_ASCII),
+                hashToken(managementToken).getBytes(StandardCharsets.US_ASCII)))
+            throw new NotFoundException(error);
+        return a;
+    }
+
+    /** An opaque QR code only locates a booking for a separately authenticated office worker. */
+    public Appointment findByCheckInCode(String checkInCode) {
+        return repository.findByCheckInCode(checkInCode)
+                .orElseThrow(() -> new NotFoundException("No booking found for that check-in code."));
+    }
+
+    /** Staff-assisted recovery for existing bookings and lost private codes. Revokes the old code. */
+    public synchronized BookingResult resetManagement(String referenceNo) {
+        Appointment a = find(referenceNo);
+        String managementToken = newSecret(32);
+        a.setManagementTokenHash(hashToken(managementToken));
+        if (a.getCheckInCode() == null) a.setCheckInCode(newSecret(24));
+        repository.save(a);
+        return new BookingResult(a, managementToken);
+    }
+
+    public synchronized Appointment cancel(String referenceNo, String managementToken) {
+        Appointment appointment = findManaged(referenceNo, managementToken);
         appointment.cancel();
         repository.save(appointment);
         return appointment;
     }
 
-    public synchronized Appointment reschedule(String referenceNo, LocalDate date, LocalTime time) {
-        Appointment appointment = find(referenceNo);
+    public synchronized Appointment reschedule(String referenceNo, LocalDate date, LocalTime time, String managementToken) {
+        Appointment appointment = findManaged(referenceNo, managementToken);
         if (!appointment.isActive()) {
             throw new BookingException("A cancelled booking cannot be moved.");
         }
@@ -257,13 +297,13 @@ public class AppointmentService {
     }
 
     /** Starts (or restarts) a demo payment for a confirmed, unpaid booking through the chosen channel. */
-    public synchronized Appointment startPayment(String referenceNo, String channelId) {
-        Appointment a = find(referenceNo);
+    public synchronized Appointment startPayment(String referenceNo, String channelId, String managementToken) {
+        Appointment a = findManaged(referenceNo, managementToken);
         if (!a.isActive()) throw new BookingException("A cancelled booking can't be paid.");
         if (a.getPayment() != null && a.getPayment().isPaid()) throw new BookingException("This booking is already paid.");
         String channel = PAYMENT_CHANNELS.get(channelId);
         if (channel == null) throw new BookingException("Choose how you'd like to pay.");
-        String txn = a.getReferenceNo() + "-P" + randomCode(4);
+        String txn = a.getReferenceNo() + "-P" + randomCode(16);
         a.setPayment(new Payment(txn, channel, amountDue(a), Instant.now(clock)));
         repository.save(a);
         return a;
@@ -308,6 +348,21 @@ public class AppointmentService {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) sb.append(REF_ALPHABET.charAt(random.nextInt(REF_ALPHABET.length())));
         return sb.toString();
+    }
+
+    private String newSecret(int bytes) {
+        byte[] value = new byte[bytes];
+        random.nextBytes(value);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(value);
+    }
+
+    private static String hashToken(String token) {
+        try {
+            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                    .digest(token.getBytes(StandardCharsets.US_ASCII)));
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Cannot create booking access code.", e);
+        }
     }
 
     private String newReference(LocalDate date) {

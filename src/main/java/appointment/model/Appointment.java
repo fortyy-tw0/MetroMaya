@@ -26,6 +26,10 @@ public class Appointment {
     private Payment payment;
     /** When office staff accepted the applicant's booking at the counter. */
     private Instant acceptedAt;
+    /** Secret management credential is stored only as a hash. Null on bookings made before this feature. */
+    private String managementTokenHash;
+    /** Opaque office lookup code. It grants no access without the office key. */
+    private String checkInCode;
 
     public Appointment(String referenceNo, Applicant applicant, Business business, PermitService service,
                        Office office, LocalDate date, LocalTime time, Quote quote, Instant createdAt) {
@@ -89,4 +93,8 @@ public class Appointment {
     public void setPayment(Payment payment) { this.payment = payment; }
     public Instant getAcceptedAt() { return acceptedAt; }
     public void setAcceptedAt(Instant acceptedAt) { this.acceptedAt = acceptedAt; }
+    public String getManagementTokenHash() { return managementTokenHash; }
+    public void setManagementTokenHash(String managementTokenHash) { this.managementTokenHash = managementTokenHash; }
+    public String getCheckInCode() { return checkInCode; }
+    public void setCheckInCode(String checkInCode) { this.checkInCode = checkInCode; }
 }

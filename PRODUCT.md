@@ -21,7 +21,7 @@ Fees, inspections, documents, identity verification and a confirmed office slot 
 
 ## Operating Context
 
-- Three pages: home (fees, fee estimator, offices), `/book.html` (Verify → Service → Business → Office → Date and time → Review), `/manage.html` (track, move or cancel by reference number, e.g. `BPL-20261116-ABCDE`).
+- Applicant pages: home (fees, fee estimator, offices), `/book.html` (Verify → Service → Business → Office → Date and time → Review), `/manage.html` (track, move or cancel with the reference number and a private access code). The office check-in QR contains a separate opaque lookup code and requires staff authentication.
 - Verification before booking: eGovPH SSO, or a scanned government ID (server OCR + LLM field sorting); the verified name is locked; max 3 active bookings per person.
 - Office step: map with the user's location (or a typed starting point) and the fastest route to the city hall; Google Maps link for live traffic.
 - Being pitched to DICT and government agencies for adoption.

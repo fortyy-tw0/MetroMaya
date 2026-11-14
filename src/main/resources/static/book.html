@@ -205,7 +205,13 @@
             </div>
           </div>
           <section class="pay-box" id="done-pay" aria-label="Payment"></section>
-          <p class="hint" style="margin-top: 1.25rem;">Keep your reference number. You need it to move or cancel this booking.</p>
+          <div class="private-access no-print">
+            <h3>Save your private booking access</h3>
+            <p>Your reference number is for office check-in. To view, move, or cancel the booking later, save the private link or access code below. Anyone with this code can manage your booking.</p>
+            <div class="field"><label for="done-access-code">Private access code</label><input id="done-access-code" readonly autocomplete="off"></div>
+            <button class="btn btn-outline btn-small" id="copy-manage-link" type="button">Copy private link</button>
+            <span id="copy-manage-status" role="status"></span>
+          </div>
           <div class="nav-row no-print">
             <a class="btn btn-outline" id="done-manage" href="/manage.html">Track this booking</a>
             <div style="display:flex; gap:.75rem; flex-wrap:wrap;">

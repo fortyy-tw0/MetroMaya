@@ -83,6 +83,13 @@ public class SupabaseAppointmentRepository implements AppointmentRepository {
     }
 
     @Override
+    public Optional<Appointment> findByCheckInCode(String checkInCode) {
+        if (checkInCode == null || !checkInCode.matches("[A-Za-z0-9_-]{32}")) return Optional.empty();
+        List<Map<String, Object>> rows = select("checkin_code=eq." + enc(checkInCode) + "&limit=1");
+        return rows.stream().findFirst().map(this::toAppointment);
+    }
+
+    @Override
     public long countActive(String officeId, LocalDate date, LocalTime time) {
         return select("select=reference_no&status=eq.CONFIRMED&office_id=eq." + enc(officeId)
                 + "&appt_date=eq." + date + "&appt_time=eq." + time).size();
@@ -144,6 +151,8 @@ public class SupabaseAppointmentRepository implements AppointmentRepository {
         // only sent once there is a payment, so bookings keep saving before the payment migration has run
         if (a.getPayment() != null) row.put("payment", a.getPayment().toMap());
         if (a.getAcceptedAt() != null) row.put("accepted_at", a.getAcceptedAt().toString());
+        if (a.getManagementTokenHash() != null) row.put("management_token_hash", a.getManagementTokenHash());
+        if (a.getCheckInCode() != null) row.put("checkin_code", a.getCheckInCode());
         row.put("quote", quoteToJson(a.getQuote()));
         row.put("created_at", a.getCreatedAt().toString());
         row.put("updated_at", Instant.now().toString());
@@ -161,6 +170,8 @@ public class SupabaseAppointmentRepository implements AppointmentRepository {
                 AppointmentStatus.valueOf(str(row, "status")));
         restored.setPayment(paymentFrom(row.get("payment")));
         if (row.get("accepted_at") != null) restored.setAcceptedAt(OffsetDateTime.parse(str(row, "accepted_at")).toInstant());
+        restored.setManagementTokenHash(str(row, "management_token_hash"));
+        restored.setCheckInCode(str(row, "checkin_code"));
         return restored;
     }
 

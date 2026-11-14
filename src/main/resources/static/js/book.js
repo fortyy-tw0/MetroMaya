@@ -526,7 +526,7 @@
     btn.textContent = 'Booking…';
     hideAlert($('submit-alert'));
     try {
-      const { appointment } = await api.post('/api/appointments', {
+      const { appointment, managementToken } = await api.post('/api/appointments', {
         serviceId: state.serviceId,
         officeId: state.officeId,
         date: state.date,
@@ -534,7 +534,7 @@
         ...state.form,
         ...(state.verifyPass ? { verifyPass: state.verifyPass } : {}),
       });
-      showDone(appointment);
+      showDone(appointment, managementToken);
     } catch (e) {
       showAlert($('submit-alert'), e.message, 'error');
       // an expired pass: verify again, then come straight back to Review
@@ -545,13 +545,15 @@
     }
   });
 
-  function showDone(a) {
+  function showDone(a, managementToken) {
     doneAppointment = a;
+    doneManagementToken = managementToken;
     panels.forEach((p) => { p.hidden = true; });
     $('stepper').hidden = true;
     donePanel.hidden = false;
     $('done-ref').textContent = a.referenceNo;
-    $('done-manage').href = '/manage.html?ref=' + encodeURIComponent(a.referenceNo);
+    $('done-manage').href = privateManagementUrl(a.referenceNo, managementToken);
+    $('done-access-code').value = managementToken;
     const dl = clear($('done-summary'));
     addRow(dl, 'Service', a.serviceName);
     addRow(dl, 'Business', a.businessName);
@@ -567,11 +569,21 @@
     renderPayment($('done-pay'), a, (updated) => {
       doneAppointment = updated;
       $('done-print').textContent = printActionLabel(updated);
-    });
+    }, managementToken);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   let doneAppointment = null;
+  let doneManagementToken = null;
   $('done-print').addEventListener('click', () => { if (doneAppointment) printBooking(doneAppointment); });
+  $('copy-manage-link').addEventListener('click', async () => {
+    if (!doneAppointment || !doneManagementToken) return;
+    try {
+      await navigator.clipboard.writeText(location.origin + privateManagementUrl(doneAppointment.referenceNo, doneManagementToken));
+      $('copy-manage-status').textContent = 'Private link copied.';
+    } catch (e) {
+      $('copy-manage-status').textContent = 'Copy failed. Save the access code above instead.';
+    }
+  });
 
   // ---------- step 0: verify it's you (only when the server has eGov settings) ----------
   // Two ways: eGovPH SSO (the "Login as eGov" widget gives an exchange code the server redeems), or a photo

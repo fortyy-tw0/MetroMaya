@@ -33,6 +33,7 @@ PORT=8097 java -cp out appointment.Main
 - **Verify before booking** (anti-bot): when eGov SSO (`EGOV_BASE_URL`, `EGOV_PARTNER_CODE`, `EGOV_PARTNER_SECRET`) and/or ID scanning (`ASSEMBLYAI_API_KEY` + a working `tesseract` binary) are set up, `/api/config` sends `verify { egov: {partnerCode, host} | null, idScan }` and book.js shows `#panel-verify` (stepper hidden) before the wizard. Options: the eGov SSO widget (`widgets.e.gov.ph/v1.0.0/egov-login.min.js`) → `POST /api/verify/egov` (`EgovVerifier`), or an ID photo → `POST /api/verify/id` (raw JPEG/PNG/WebP, ≤8 MB, type sniffed from bytes) → `IdScanner`: Tesseract TSV OCR on the server (temp file deleted at once) → lines tagged `[x=% y=% h=%]` → AssemblyAI LLM Gateway chat completions (`ID_SCAN_MODEL`, default `claude-sonnet-5-5`) returns JSON fields; rejects non-IDs and expired IDs. **The gateway strips images** (tested 2026-11-14: Claude answered "NO IMAGE", Gemini guessed), which is why OCR runs locally and only text goes out. The Dockerfiles `apk add tesseract-ocr tesseract-ocr-data-eng` (bigger image; mind the Vercel registry limit). Both return a stateless HMAC pass (`VerificationPass`, 30 min, key from `VERIFY_PASS_SECRET` or the eGov/AssemblyAI secrets) that `POST /api/appointments` requires as `verifyPass`; the booker's name and `verified_id` (`egov:<uniqid>` or `id:<sha256 of name+birthdate, else doc+number>`) come from the pass, max 3 active bookings per `verified_id`. An expired pass sends the user back to Verify, then to Review. Never store ID photos or log eGov response bodies (national ID, photo, signature). Migration `20261115000000_add_verified_id.sql`; `verified_id` is only written when set, so the table works before it runs.
 - **Month calendar** (Date and time step, Move to another time): `mountCalendar()` in common.js, modelled on NR Photography's booking calendar. `GET /api/availability?officeId=&month=` returns every day (open, closed reason: Past / Weekend / holiday name / outside window, places left of capacity); repository `countActiveByDateTime` does one query per month on Supabase. Levels: many (blue dot), few ≤25% (gold), full (red, disabled), closed (lock). Picking a day shows "N of M places left" and that day's slots.
 - **Demo fee payment** (modelled on Hermit's eGovPay demo): after booking (and on Track a booking) the applicant can pay online through QR Ph, e-wallet, online banking or LANDBANK, or skip online payment and pay at city hall. `POST /api/appointments/{ref}/pay` creates a PENDING `Payment` (txn = ref + `-P` and a code, amount = `amountDue()`: the quote scaled by `SampleCityRates`, same rounding as `scaleQuote`; keep the rates in sync with NCR_CITIES in common.js) → QR (qrcode-generator 1.4.4, SRI) to `/pay.html?txn=` → `POST /api/pay/{txn}/complete` → PAID with `AR-DEMO-YYYYMMDD-XXXXX`; the booking page polls and shows the acknowledgement receipt. The printout combines the confirmation and receipt only after a completed demo payment; otherwise it contains no payment details. Always labelled demo / not an official receipt. Stored in `appointments.payment` jsonb (migration `20261116000000_add_payment.sql`; only written once a payment exists).
+- **Private booking management:** `POST /api/appointments` returns a 32-byte random `managementToken` once. Only its SHA-256 hash is stored (`management_token_hash`); `GET /api/appointments/{ref}` and the cancel, reschedule, and start-payment actions require `X-Management-Token`. The private management link carries the token in a URL fragment that `manage.html` removes before external scripts load. The check-in QR instead carries a separate random `checkin_code`, which only the office-key-protected `/api/office/checkin/{code}` can resolve. Staff may reset a lost or legacy code after verifying the applicant, revoking the old code. Apply `20261118000000_add_booking_credentials.sql` before deploying this code with Supabase; old bookings need staff-assisted recovery. Run `python3 tools/test_booking_access.py` to check the access boundary.
 - **Commits:** author them as `fortyy-tw0` with no `Co-Authored-By` or session trailer lines; the owner wants no assistant listed as a contributor.
 - **Checking the live site:** curl from a sandbox may be blocked. A web-fetch of `/css/style.css` that greps for a new rule worked.
 - **Screenshots:** Playwright (Node) with Chromium. Clear `scroll-behavior` before using `scrollIntoView` in scripts, and re-measure element boxes after hover, because the page height changes as the API data loads.
@@ -89,10 +90,12 @@ GET  /api/quote?serviceId=&industryId=&employees=
 GET  /api/slots?officeId=&date=YYYY-MM-DD
 POST /api/verify/egov                     (exchangeCode) → { pass, fullName, email, mobile, method }
 POST /api/verify/id                       (raw JPEG/PNG/WebP body) → { pass, fullName, method }
-POST /api/appointments                    (form-encoded; + verifyPass when verification is on)
-GET  /api/appointments/{ref}
-POST /api/appointments/{ref}/cancel
-POST /api/appointments/{ref}/reschedule   (date, time)
+POST /api/appointments                    (form-encoded; + verifyPass when verification is on) → managementToken once
+GET  /api/appointments/{ref}              (X-Management-Token)
+POST /api/appointments/{ref}/cancel       (X-Management-Token)
+POST /api/appointments/{ref}/reschedule   (date, time; X-Management-Token)
+GET  /api/office/checkin/{code}           (X-Office-Key)
+POST /api/office/{ref}/reset-management   (X-Office-Key) → new managementToken
 ```
 
 The user asked for one data change: `RetailIndustry.requiredDocuments()` returns `List.of()`, because the "weights and measures calibration" item was removed.
@@ -105,7 +108,7 @@ The user asked for one data change: `RetailIndustry.requiredDocuments()` returns
 src/main/resources/static/
   index.html     landing page (hero, What is MetroMaya, How It Works, Fees/Industries, Fees Estimator, Offices, CTA)
   book.html      5-step booking wizard (Service, Business, Office, Date and time, Review)
-  manage.html    track / cancel / reschedule by reference
+  manage.html    track / cancel / reschedule by reference plus private access code
   css/style.css  one stylesheet (~530 lines); tokens on :root
   js/common.js   shared helpers + all page-wide behaviours (IIFEs)
   js/landing.js  estimator, NCR city picker, industries, size cards, office card

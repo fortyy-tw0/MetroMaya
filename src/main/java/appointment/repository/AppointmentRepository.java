@@ -16,6 +16,9 @@ public interface AppointmentRepository {
 
     Optional<Appointment> findByReference(String referenceNo);
 
+    /** Staff-only lookup by the opaque code printed in a booking's check-in QR. */
+    Optional<Appointment> findByCheckInCode(String checkInCode);
+
     /** Active (non-cancelled) appointments for an office at an exact date and time. */
     long countActive(String officeId, LocalDate date, LocalTime time);
 

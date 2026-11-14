@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@500;600&display=swap">
   <link rel="stylesheet" href="/css/style.css">
   <script>document.documentElement.classList.add('js');try{var s=JSON.parse(localStorage.getItem('metromaya.a11y')||'{}');if(s.fs)document.documentElement.dataset.fs=s.fs;if(s.hc)document.documentElement.dataset.contrast='high';if(s.mp)document.documentElement.dataset.motion='paused';}catch(e){}</script>
+  <script>try{var access=new URLSearchParams(location.hash.slice(1)).get('access');if(access){history.replaceState(null,'',location.pathname+location.search);sessionStorage.setItem('metromaya.incomingAccess',access);}}catch(e){}</script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -53,7 +54,7 @@
       <div class="page-title">
         <div>
           <h1>Track a booking</h1>
-          <p>Enter the reference number from your confirmation to view, move or cancel your slot.</p>
+          <p>Enter your reference number and private access code to view, move or cancel your slot. The reference alone cannot open a booking.</p>
         </div>
         <img src="/img/maya-hey-you.png" alt="" width="383" height="365">
       </div>
@@ -64,8 +65,13 @@
             <label for="ref">Reference number</label>
             <input id="ref" name="ref" placeholder="BPL-20261120-ABCDE" autocomplete="off" autocapitalize="characters" required>
           </div>
+          <div class="field">
+            <label for="access-code">Private access code</label>
+            <input id="access-code" name="access-code" type="password" autocomplete="off" required>
+          </div>
           <button class="btn btn-primary" type="submit">Find booking</button>
         </form>
+        <p class="hint">This code was shown after booking and is included in your private link. If you lost it, ask office staff to issue a new one after they verify your identity.</p>
         <div class="alert alert-error" id="lookup-alert" hidden role="alert"></div>
       </div>
 

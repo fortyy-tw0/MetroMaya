@@ -1,6 +1,7 @@
 (function () {
   const $ = (id) => document.getElementById(id);
   let current = null;       // the booking currently shown
+  let currentToken = null;  // never part of the printed confirmation or public QR
   let config = null;        // today's date and booking window
   let newDate = '';
   let newTime = '';
@@ -36,7 +37,7 @@
     renderPayment($('result-pay'), a, (updated) => {
       current = updated;
       $('result-print').textContent = printActionLabel(updated);
-    });
+    }, currentToken);
 
     $('actions').hidden = a.status !== 'CONFIRMED' || !!a.acceptedAt;
     $('reschedule-box').hidden = true;
@@ -45,11 +46,14 @@
 
   $('result-print').addEventListener('click', () => { if (current) printBooking(current); });
 
-  async function lookup(ref) {
+  async function lookup(ref, token) {
     hideAlert($('lookup-alert'));
     $('result').hidden = true;
+    current = null;
+    currentToken = null;
     try {
-      const { appointment } = await api.get('/api/appointments/' + encodeURIComponent(ref.trim()));
+      const { appointment } = await api.managedGet('/api/appointments/' + encodeURIComponent(ref.trim()), token);
+      currentToken = token;
       render(appointment);
     } catch (e) {
       showAlert($('lookup-alert'), e.message, 'error');
@@ -59,7 +63,8 @@
   $('lookup-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const ref = $('ref').value.trim();
-    if (ref) lookup(ref);
+    const token = $('access-code').value.trim();
+    if (ref && token) lookup(ref, token);
   });
 
   // ---------- cancel ----------
@@ -69,7 +74,7 @@
     const btn = $('cancel-btn');
     btn.disabled = true;
     try {
-      const { appointment } = await api.post('/api/appointments/' + encodeURIComponent(current.referenceNo) + '/cancel');
+      const { appointment } = await api.managedPost('/api/appointments/' + encodeURIComponent(current.referenceNo) + '/cancel', {}, currentToken);
       render(appointment);
       showAlert($('result-alert'), 'Your booking has been cancelled.', 'ok');
     } catch (e) {
@@ -121,9 +126,9 @@
     const btn = $('reschedule-confirm');
     btn.disabled = true;
     try {
-      const { appointment } = await api.post(
+      const { appointment } = await api.managedPost(
         '/api/appointments/' + encodeURIComponent(current.referenceNo) + '/reschedule',
-        { date: newDate, time: newTime });
+        { date: newDate, time: newTime }, currentToken);
       render(appointment);
       showAlert($('result-alert'), 'Your booking has moved to the new time.', 'ok');
     } catch (e) {
@@ -137,6 +142,11 @@
   const ref = new URLSearchParams(location.search).get('ref');
   if (ref) {
     $('ref').value = ref;
-    lookup(ref);
+    const incoming = sessionStorage.getItem('metromaya.incomingAccess');
+    if (incoming) {
+      sessionStorage.removeItem('metromaya.incomingAccess');
+      $('access-code').value = incoming;
+      lookup(ref, incoming);
+    }
   }
 })();

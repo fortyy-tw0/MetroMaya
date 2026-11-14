@@ -28,6 +28,13 @@ public class InMemoryAppointmentRepository implements AppointmentRepository {
     }
 
     @Override
+    public Optional<Appointment> findByCheckInCode(String checkInCode) {
+        if (checkInCode == null || checkInCode.isBlank()) return Optional.empty();
+        return byReference.values().stream()
+                .filter(a -> checkInCode.equals(a.getCheckInCode())).findFirst();
+    }
+
+    @Override
     public long countActive(String officeId, LocalDate date, LocalTime time) {
         return byReference.values().stream()
                 .filter(Appointment::isActive)

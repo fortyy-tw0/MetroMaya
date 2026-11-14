@@ -640,6 +640,12 @@ html { scrollbar-color: var(--line-strong) var(--bg); }
 .checkin-ref { font-family: var(--mono); font-weight: 700; overflow-wrap: anywhere; }
 .checkin-qr { flex: 0 0 168px; }
 @media (max-width: 520px) { .checkin-code { flex-direction: column; align-items: flex-start; } }
+.private-access { margin: 1.25rem 0; padding: 1.1rem 1.25rem; border: 2px solid var(--gov-800); border-radius: var(--r-lg); background: var(--blue-50); }
+.private-access h3 { margin: 0 0 .35rem; }
+.private-access p { margin: 0 0 .8rem; }
+.private-access .field { margin-bottom: .7rem; }
+.private-access input { font-family: var(--mono); font-size: .9rem; }
+.private-access [role="status"] { margin-left: .65rem; font-size: .88rem; }
 .print-sheet { display: none; }
 .office-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: .75rem; align-items: end; }
 .office-form .field { margin: 0; }
