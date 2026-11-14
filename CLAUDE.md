@@ -4,7 +4,7 @@ This is a business-permit appointment system for an OOP course project. It has a
 
 - **Repo:** `fortyy-tw0/OOP_AppointmentSystem` (GitHub). Work on `main`. This file is `CLAUDE.md` at the repo root, so Claude Code loads it automatically.
 - **Live:** https://metro-maya.vercel.app (Vercel project `metro-maya`, team `forty-tw0`, Hobby plan; the GitHub repo is now `fortyy-tw0/MetroMaya`). Vercel auto-deploys from `main` using its Container runtime with the root `Dockerfile`.
-- **Brand:** **MetroMaya**. The slogan is **"Skip the line, get on business."** with a **thin gold line** (`.mark::before`, 0.07em tall, rounded) under "get on business.". It draws in left to right (scaleX, about 0.9s) each time the hero comes into view; `common.js` toggles `.mark.hl`. Under reduced motion it shows without the animation. The user rejected a thick highlighter band, so keep it thin.
+- **Brand:** **MetroMaya**. The slogan is **"Skip the line, get on business."** with a **soft gold wavy underline** under "get on business." (`.mark::before`). It's a repeating SVG wave at 55% opacity, sitting behind the letters and running straight through the descenders, so it looks like `text-decoration-style: wavy` with `text-decoration-skip-ink: none`. It draws in left to right (`clip-path`, about 1s) each time the hero comes into view; `common.js` toggles `.mark.hl`. Under reduced motion it shows without the animation. The user rejected a thick highlighter band and then asked for this wavy, see-through version based on a text-decoration reference.
 - **Disclaimer that must stay visible:** fees are *sample rates for a course project, not official LGU fees*.
 
 ---
