@@ -43,4 +43,12 @@ public class InMemoryAppointmentRepository implements AppointmentRepository {
                 .filter(a -> a.getApplicant().getEmail().equalsIgnoreCase(email))
                 .toList();
     }
+
+    @Override
+    public long countActiveByVerifiedId(String verifiedId) {
+        return byReference.values().stream()
+                .filter(Appointment::isActive)
+                .filter(a -> verifiedId.equals(a.getApplicant().getVerifiedId()))
+                .count();
+    }
 }

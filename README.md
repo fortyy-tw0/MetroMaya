@@ -111,6 +111,15 @@ Without database settings, bookings are kept in memory and reset when the server
 1. Run `supabase/migrations/20261114000000_create_appointments.sql` in your Supabase project (SQL Editor), or let the Supabase GitHub integration apply it.
 2. Set `SUPABASE_URL` (Project Settings → API) and `SUPABASE_SERVICE_ROLE_KEY` (or the newer secret key as `SUPABASE_SECRET_KEY`) as environment variables. Never put this key in the front end.
 
+### Verify before booking (anti-bot)
+
+With eGov settings, `/book.html` opens on a **Verify** screen before the booking steps. The person chooses one of:
+
+- **Verify with eGovPH:** the eGov SSO "Login as eGov" widget (mobile OTP and eGov PIN). Name, email and mobile are filled in. Needs `EGOV_BASE_URL`, `EGOV_PARTNER_CODE`, `EGOV_PARTNER_SECRET` ([eGov SSO](https://platforms.e.gov.ph/api-catalogs/egov-sso)).
+- **Scan your ID:** a photo of a government ID. The server reads its text with [Tesseract](https://github.com/tesseract-ocr/tesseract) OCR, keeping each line's position on the card, then an LLM (default `claude-sonnet-5-5`) through [AssemblyAI's LLM Gateway](https://www.assemblyai.com/docs/llm-gateway/quickstart) sorts the lines into name, birth date, ID number and expiry. The gateway only takes text, so it never sees the photo; the photo is deleted right after OCR. The name is filled in; expired IDs and non-IDs are rejected. Needs `ASSEMBLYAI_API_KEY` and Tesseract (`brew install tesseract` locally; the Dockerfile installs it). Optional: `ID_SCAN_MODEL`, `TESSERACT_PATH`.
+
+Either way the server returns a signed 30-minute pass that booking requires; the booker's name comes from it and can't be edited. Each verified person can hold at most 3 active bookings. Run `supabase/migrations/20261115000000_add_verified_id.sql` first. Without any eGov settings anyone can book, as before. Secrets stay on the server.
+
 ---
 
 ## API
@@ -120,7 +129,12 @@ Without database settings, bookings are kept in memory and reset when the server
 | `GET /api/services`, `/api/industries`, `/api/offices`, `/api/config` | Lists services, types of business, city offices and size tiers |
 | `GET /api/quote?serviceId=&industryId=&employees=` | Fee estimate, inspections, documents and time |
 | `GET /api/slots?officeId=&date=YYYY-MM-DD` | Available time slots for an office and day |
-| `POST /api/appointments` | Books a slot and returns the reference number |
+| `POST /api/verify/egov` | Redeems the eGovPH widget's exchange code; returns a signed 30-minute pass and the person's details |
+| `POST /api/verify/id` | Reads an ID photo (raw JPEG/PNG/WebP body, max 8 MB); returns a pass and the name on the ID |
+| `POST /api/appointments` | Books a slot and returns the reference number (needs `verifyPass` when verification is on) |
 | `GET /api/appointments/{ref}` | Looks up a booking |
 | `POST /api/appointments/{ref}/cancel` | Cancels a booking |
+| `GET /api/availability?officeId=&month=YYYY-MM` | Every day of a month for an office: open or why closed (weekend, holiday, outside the window), places left. Drives the month calendar |
+| `POST /api/appointments/{ref}/pay` | Starts a **demo** fee payment (`channel`); the amount is computed by the server. No money moves |
+| `GET /api/pay/{txn}` · `POST /api/pay/{txn}/complete` | Demo checkout opened from the payment QR (`/pay.html?txn=…`); completing it issues a demo acknowledgement receipt |
 | `POST /api/appointments/{ref}/reschedule` | Moves a booking to a new date and time |

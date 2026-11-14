@@ -4,7 +4,7 @@
 
   const state = {
     step: 0, services: [], industries: [], offices: [], config: null,
-    serviceId: null, form: null, quote: null, city: null, officeId: null, date: '', time: '',
+    serviceId: null, form: null, quote: null, city: null, officeId: null, date: '', time: '', verifyPass: null,
   };
 
   const $ = (id) => document.getElementById(id);
@@ -23,6 +23,9 @@
       const cls = i < state.step ? 'done' : i === state.step ? 'current' : '';
       $('stepper').append(el('li', { class: cls, 'aria-current': i === state.step ? 'step' : false, text: label }));
     });
+    // on a phone the bar scrolls sideways: keep the current step in view
+    const cur = $('stepper').querySelector('.current');
+    if (cur) $('stepper').scrollLeft = Math.max(0, cur.offsetLeft - 16);
   }
 
   function showStep(n) {
@@ -239,6 +242,7 @@
     else if (!/^\d{4}$/.test(form.zip || '')) problems.push('Enter your 4-digit ZIP code.');
     else if (!form.industryId) problems.push('Choose your type of business.');
     else if (!employeesOk(form.employees)) problems.push('Enter the number of employees as a whole number, 1 or more.');
+    else if (state.config.verify && !state.verifyPass) problems.push('Verify it’s you first: reload the page to start again.');
     else if (form.ownerName.length < 2) problems.push('Enter the owner’s full name.');
     else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) problems.push('Enter a valid email address.');
     else if (!/^09\d{9}$/.test(form.phone)) problems.push('Enter an 11-digit mobile number starting with 09, e.g. 09171234567.');
@@ -303,30 +307,173 @@
         state.officeId = o.id;
         next.disabled = false;
       });
-      const maps = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(o.address);
+      const maps = directionsUrl(city, o);
       box.append(el('label', { class: 'choice' + (problem ? ' disabled' : '') }, input,
         el('div', null,
           el('strong', { text: o.name }),
           el('small', { text: o.address }),
           city && city.note ? el('small', { text: city.note }) : null,
           problem && el('small', { text: problem }),
-          el('a', { class: 'directions', href: maps, target: '_blank', rel: 'noopener', text: 'Get directions →' }))));
+          el('a', { class: 'directions', href: maps, target: '_blank', rel: 'noopener', text: 'Open in Google Maps (live traffic) →' }))));
     });
     box.append(el('p', { class: 'hint office-other', text: 'Wrong city? Go back to the Business step and change it.' }));
     next.disabled = !state.officeId;
+    renderMap(mine[0], city);
+  }
+
+  // ---------- the office map: where you are, and the fastest route there ----------
+  // Leaflet + OpenStreetMap tiles show the office (each city's hall has fixed coordinates in NCR_CITIES).
+  // "Use my location" asks the browser for the user's position, and OSRM (OpenStreetMap's router) returns
+  // driving routes; the quickest one is drawn with its distance and time. If location was already allowed
+  // on this site, it's used straight away. The position is never sent to MetroMaya's server or stored.
+
+  let map = null, officeDot = null, meDot = null, routeLine = null, me = null, routeTicket = 0;
+  const routeInfo = (text) => { $('route-info').textContent = text; };
+
+  function directionsUrl(city, office) {
+    if (city && city.at) {
+      const dest = city.at.join(',');
+      return 'https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=' + dest
+        + (me ? '&origin=' + me.map((n) => n.toFixed(5)).join(',') : '');
+    }
+    return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(office.address);
+  }
+
+  function renderMap(office, city) {
+    const panel = $('route-panel');
+    if (!office || !city || !city.at || !window.L) { panel.hidden = true; return; }
+    panel.hidden = false;
+    if (!map) {
+      map = L.map('office-map', { scrollWheelZoom: false, zoomControl: true });
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map);
+    }
+    if (officeDot) officeDot.remove();
+    officeDot = L.circleMarker(city.at, { radius: 10, color: '#1B2248', weight: 3, fillColor: '#2C3A72', fillOpacity: 1 })
+      .addTo(map).bindTooltip(office.name, { direction: 'top', offset: [0, -8] });
+    map.invalidateSize();
+    if (me) {
+      drawRoute(city);
+    } else {
+      map.setView(city.at, 16);
+      routeInfo('This is ' + office.name + '. Use your location to see the fastest way there.');
+      autoLocate();
+    }
+  }
+
+  // Sets the starting point (from the browser or a typed place) and draws the route from it.
+  function setOrigin(pos, label) {
+    me = pos;
+    if (meDot) meDot.remove();
+    meDot = L.circleMarker(me, { radius: 9, color: '#fff', weight: 3, fillColor: '#EDB24A', fillOpacity: 1, className: 'me-dot' })
+      .addTo(map).bindTooltip(label, { direction: 'top', offset: [0, -8] });
+    drawRoute(state.city);
+  }
+
+  // Laptops have no GPS, so a high-accuracy request can time out or come back "unavailable";
+  // one retry with normal (Wi-Fi) accuracy and more time usually works.
+  function locate() {
+    if (!navigator.geolocation) { routeInfo('Your browser can’t share your location. Type where you’re coming from below.'); return; }
+    const btn = $('locate-btn');
+    btn.disabled = true;
+    routeInfo('Finding where you are…');
+    const done = (pos) => {
+      btn.disabled = false;
+      btn.textContent = 'Update my location';
+      setOrigin([pos.coords.latitude, pos.coords.longitude], 'You are here');
+    };
+    const fail = (err) => {
+      btn.disabled = false;
+      routeInfo(err.code === 1
+        ? 'Location is blocked for this site. Click the icon at the left of the address bar to allow it, or type where you’re coming from below.'
+        : err.code === 2
+          ? 'Your device couldn’t work out where you are. On a Mac, turn on Location Services for your browser (System Settings → Privacy & Security → Location Services), or type where you’re coming from below.'
+          : 'Finding your location took too long. Try again, or type where you’re coming from below.');
+    };
+    navigator.geolocation.getCurrentPosition(done, (err) => {
+      if (err.code === 1) { fail(err); return; }
+      navigator.geolocation.getCurrentPosition(done, fail, { enableHighAccuracy: false, timeout: 25000, maximumAge: 300000 });
+    }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+  }
+
+  // Fallback: a typed place, looked up with OpenStreetMap's geocoder (one search per click, as its policy asks).
+  $('route-from').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const q = $('route-from-input').value.trim();
+    if (q.length < 3) { routeInfo('Type a place, landmark or address to start from.'); return; }
+    const btn = e.target.querySelector('button');
+    btn.disabled = true;
+    routeInfo('Looking up “' + q + '”…');
+    try {
+      const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=ph'
+        + '&viewbox=120.85,14.85,121.20,14.30&q=' + encodeURIComponent(q);
+      const hits = await (await fetch(url, { headers: { Accept: 'application/json' } })).json();
+      if (!hits.length) { routeInfo('Couldn’t find “' + q + '”. Try a landmark, mall or street with the city.'); return; }
+      setOrigin([Number(hits[0].lat), Number(hits[0].lon)], hits[0].display_name.split(',').slice(0, 2).join(','));
+    } catch (err) {
+      routeInfo('Couldn’t look that place up right now. Try again, or use Google Maps.');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  $('locate-btn').addEventListener('click', locate);
+
+  // If the user already allowed location for this site, show their route without another click.
+  async function autoLocate() {
+    try {
+      const status = await navigator.permissions.query({ name: 'geolocation' });
+      if (status.state === 'granted' && !me) locate();
+    } catch (e) { /* permissions API unavailable: wait for the button */ }
+  }
+
+  async function drawRoute(city) {
+    const to = city.at;
+    const ticket = ++routeTicket;
+    routeInfo('Finding the fastest route…');
+    $('office-choices').querySelectorAll('.directions').forEach((a) => { a.href = directionsUrl(city, null); });
+    try {
+      const url = 'https://router.project-osrm.org/route/v1/driving/' + me[1] + ',' + me[0] + ';' + to[1] + ',' + to[0]
+        + '?overview=full&geometries=geojson&alternatives=true';
+      const res = await fetch(url);
+      const data = await res.json();
+      if (ticket !== routeTicket) return;
+      if (data.code !== 'Ok' || !data.routes || !data.routes.length) throw new Error('no route');
+      const best = data.routes.reduce((a, b) => (b.duration < a.duration ? b : a));
+      if (routeLine) routeLine.remove();
+      routeLine = L.geoJSON(best.geometry, { style: { color: '#2C3A72', weight: 6, opacity: 0.85 } }).addTo(map);
+      map.fitBounds(routeLine.getBounds().extend(me).extend(to), { padding: [28, 28] });
+      const km = best.distance / 1000;
+      routeInfo('Fastest route: about ' + minutesText(Math.max(1, Math.round(best.duration / 60))) + ' by car ('
+        + (km < 10 ? km.toFixed(1) : Math.round(km)) + ' km)'
+        + (data.routes.length > 1 ? ', the quickest of ' + data.routes.length + ' routes.' : '.'));
+    } catch (e) {
+      if (ticket !== routeTicket) return;
+      if (routeLine) { routeLine.remove(); routeLine = null; }
+      map.fitBounds(L.latLngBounds([me, to]), { padding: [40, 40] });
+      routeInfo('Couldn’t load a route right now. Open Google Maps for directions from where you are.');
+    }
   }
 
   // ---------- step 4: date & time ----------
 
   function setupWhen() {
-    const dateInput = $('date');
-    const min = state.config.today;
-    dateInput.min = min;
-    dateInput.max = state.config.maxDate;
-    dateInput.value = state.date;
-    $('date-hint').textContent = 'Weekdays only, up to ' + state.config.maxMonthsAhead + ' months ahead. '
+    $('date-hint').textContent = 'Pick a weekday up to ' + state.config.maxMonthsAhead + ' months ahead, then a time. '
       + 'Expect about ' + minutesText(state.quote.estimatedMinutes)
-      + (state.serviceId === 'inspection' ? ' on site. ' : ' at the counter. ') + holidayHint(state.config);
+      + (state.serviceId === 'inspection' ? ' on site.' : ' at the counter.');
+    $('day-status').textContent = state.date ? '' : 'Choose a day on the calendar to see its open times.';
+    // the whole month for this office; picking a day shows its times below
+    mountCalendar($('cal'), {
+      officeId: state.officeId, config: state.config, selected: state.date,
+      onSelect: (iso, day) => {
+        state.date = iso;
+        state.time = '';
+        $('day-status').textContent = dayStatusText(iso, day);
+        panels[3].querySelector('[data-next]').disabled = true;
+        refreshSlots();
+      },
+    });
     panels[3].querySelector('[data-next]').disabled = !(state.date && state.time);
     refreshSlots();
   }
@@ -347,13 +494,6 @@
       next.disabled = false;
     });
   }
-
-  $('date').addEventListener('change', (e) => {
-    state.date = e.target.value;
-    state.time = '';
-    panels[3].querySelector('[data-next]').disabled = true;
-    refreshSlots();
-  });
 
   // ---------- step 5: review & submit ----------
 
@@ -392,10 +532,13 @@
         date: state.date,
         time: state.time,
         ...state.form,
+        ...(state.verifyPass ? { verifyPass: state.verifyPass } : {}),
       });
       showDone(appointment);
     } catch (e) {
       showAlert($('submit-alert'), e.message, 'error');
+      // an expired pass: verify again, then come straight back to Review
+      if (state.config.verify && /verify again/i.test(e.message)) showVerify(() => showStep(4));
     } finally {
       btn.disabled = false;
       btn.textContent = 'Confirm booking';
@@ -418,7 +561,132 @@
     renderFee($('done-fee'), doneQuote.fee);
     renderInspections($('done-insp'), doneQuote.inspections);
     renderDocs($('done-docs'), a.quote.requirements);
+    renderPayment($('done-pay'), a);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ---------- step 0: verify it's you (only when the server has eGov settings) ----------
+  // Two ways: eGovPH SSO (the "Login as eGov" widget gives an exchange code the server redeems), or a photo
+  // of a government ID that the server OCRs and an LLM sorts into fields. Either way the server returns a signed 30-minute
+  // pass the booking must carry; the booker's name comes from the pass, so the name field is locked.
+
+  const EGOV_WIDGET = 'https://widgets.e.gov.ph/v1.0.0/egov-login.min.js';
+  let afterVerify = null;
+
+  function showVerify(then) {
+    afterVerify = then;
+    panels.forEach((p) => { p.hidden = true; });
+    donePanel.hidden = true;
+    $('stepper').hidden = true;
+    $('panel-verify').hidden = false;
+    hideAlert($('verify-alert'));
+    if (window.EgovLogin && state.config.verify.egov) renderEgov();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function setupVerify(cfg) {
+    // Data Privacy Act consent comes first: both ways to verify stay inert until it's given
+    const consent = $('verify-consent');
+    const syncConsent = () => {
+      $('verify-options').inert = !consent.checked;
+      $('consent-hint').hidden = consent.checked;
+    };
+    consent.addEventListener('change', syncConsent);
+    syncConsent();
+    $('ownerName').readOnly = true;
+    $('ownerName').placeholder = 'Filled in when you verify';
+    if (cfg.egov) {
+      $('verify-egov').hidden = false;
+      const script = el('script', { src: EGOV_WIDGET });
+      script.addEventListener('load', renderEgov);
+      script.addEventListener('error', () => showAlert($('verify-alert'),
+        'Could not load eGovPH sign-in. Check your connection and reload the page'
+        + (cfg.idScan ? ', or scan your ID instead.' : '.'), 'error'));
+      document.head.append(script);
+    }
+    if (cfg.idScan) {
+      $('verify-id').hidden = false;
+      $('id-file').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        e.target.value = '';
+        if (file) scanId(file);
+      });
+    }
+  }
+
+  function renderEgov() {
+    clear($('egov-login'));
+    window.EgovLogin.render({
+      target: '#egov-login',
+      partnerCode: state.config.verify.egov.partnerCode,
+      host: state.config.verify.egov.host,
+      partnerName: 'MetroMaya',
+      onSuccess: ({ exchangeCode }) => verified(api.post('/api/verify/egov', { exchangeCode })),
+    });
+  }
+
+  function scanId(file) {
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
+      showAlert($('verify-alert'), 'Upload a photo of your ID (JPG, PNG or WebP).', 'error');
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      showAlert($('verify-alert'), 'That file is too large. Use a photo under 8 MB.', 'error');
+      return;
+    }
+    const btn = $('id-file-btn');
+    btn.classList.add('busy');
+    btn.firstChild.textContent = 'Reading your ID…';
+    verified(request('/api/verify/id', { method: 'POST', body: file })).finally(() => {
+      btn.classList.remove('busy');
+      btn.firstChild.textContent = 'Take or upload a photo';
+    });
+  }
+
+  // Prefills the business address from the ID / eGovPH address, only into fields that are still empty,
+  // and only for a Metro Manila address (the City list is NCR only). The user can change any of it.
+  function fillAddress(a) {
+    if (!a) return;
+    const city = detectCity([a.city, a.province].filter(Boolean).join(', '));
+    if (!city) return;
+    const filled = [];
+    if (a.line1 && !$('addressLine1').value.trim()) { $('addressLine1').value = a.line1; filled.push('address'); }
+    if (!citySelect.value) { citySelect.value = city.id; renderBarangays(); filled.push('city'); }
+    if (citySelect.value === city.id && a.barangay && !brgySelect.value) {
+      const bare = (t) => fold(String(t).replace(/^\s*(brgy\.?|barangay)\s*/i, ''));
+      const opt = [...brgySelect.querySelectorAll('option')].find((o) => o.value && bare(o.value) === bare(a.barangay));
+      if (opt) { brgySelect.value = opt.value; suggestZip(); filled.push('barangay'); }
+    }
+    if (a.zip && !zipInput.value.trim()) { zipInput.value = a.zip; zipNote.hidden = true; filled.push('ZIP code'); }
+    if (filled.length) {
+      cityNote.textContent = 'Filled in from your ' + (state.verifyMethod || 'ID') + '. Change it if your business is somewhere else.';
+      cityNote.hidden = false;
+      lastDetected = city.id;
+      refreshLive();
+    }
+  }
+
+  async function verified(pending) {
+    hideAlert($('verify-alert'));
+    try {
+      const v = await pending;
+      state.verifyPass = v.pass;
+      state.verifyMethod = v.method === 'eGovPH' ? 'eGovPH profile' : 'ID';
+      $('ownerName').value = v.fullName;
+      if (v.email && !$('email').value.trim()) $('email').value = v.email;
+      if (v.mobile && !$('phone').value.trim()) $('phone').value = v.mobile;
+      fillAddress(v.address);
+      if (state.form) state.form.ownerName = v.fullName;
+      $('verified-as').textContent = 'Verified as ' + v.fullName + ' (' + v.method + ').';
+      $('verified-box').hidden = false;
+      $('panel-verify').hidden = true;
+      const then = afterVerify;
+      afterVerify = null;
+      then();
+    } catch (e) {
+      showAlert($('verify-alert'), e.message, 'error');
+      if (window.EgovLogin && state.config.verify.egov) renderEgov();
+    }
   }
 
   // ---------- start ----------
@@ -441,8 +709,13 @@
     const preselect = new URLSearchParams(location.search).get('service');
     if (preselect && serviceById(preselect)) state.serviceId = preselect;
     renderServices();
-    showStep(state.serviceId ? 1 : 0);
-    refreshLive();
+    const startWizard = () => { showStep(state.serviceId ? 1 : 0); refreshLive(); };
+    if (config.verify) {
+      setupVerify(config.verify);
+      showVerify(startWizard);
+    } else {
+      startWizard();
+    }
   } catch (e) {
     clear($('service-choices')).append(el('p', { class: 'alert alert-error', text: e.message }));
     renderStepper();

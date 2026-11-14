@@ -31,6 +31,7 @@
     renderFee($('result-fee'), quote.fee);
     renderInspections($('result-insp'), quote.inspections);
     renderDocs($('result-docs'), a.quote.requirements);
+    renderPayment($('result-pay'), a, (updated) => { current = updated; });
 
     $('actions').hidden = a.status !== 'CONFIRMED';
     $('reschedule-box').hidden = true;
@@ -81,21 +82,20 @@
       try { config = await api.get('/api/config'); }
       catch (e) { showAlert($('new-slot-alert'), e.message, 'error'); return; }
     }
-    const input = $('new-date');
-    input.min = config.today;
-    input.max = config.maxDate;
-    $('new-date-hint').textContent = 'Weekdays only, up to ' + config.maxMonthsAhead + ' months ahead. ' + holidayHint(config);
+    $('new-date-hint').textContent = 'Pick a weekday up to ' + config.maxMonthsAhead + ' months ahead, then a time.';
     newDate = '';
     newTime = '';
-    input.value = '';
+    $('new-day-status').textContent = 'Choose a day on the calendar to see its open times.';
+    mountCalendar($('new-cal'), { officeId: current.officeId, config, onSelect: pickNewDate });
     clear($('new-slots'));
     hideAlert($('new-slot-alert'));
     $('reschedule-confirm').disabled = true;
   });
 
-  $('new-date').addEventListener('change', async (e) => {
-    newDate = e.target.value;
+  async function pickNewDate(iso, day) {
+    newDate = iso;
     newTime = '';
+    $('new-day-status').textContent = dayStatusText(iso, day);
     $('reschedule-confirm').disabled = true;
     if (!newDate) { clear($('new-slots')); return; }
     const closed = closedReason(newDate, config);
@@ -108,7 +108,7 @@
       newTime = time;
       $('reschedule-confirm').disabled = false;
     });
-  });
+  }
 
   $('reschedule-confirm').addEventListener('click', async () => {
     const btn = $('reschedule-confirm');

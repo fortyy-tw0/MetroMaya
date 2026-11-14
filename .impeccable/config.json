@@ -1,0 +1,152 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "marquee",
+        "value": "*",
+        "files": [
+          "src/main/resources/static/index.html"
+        ],
+        "createdAt": "2026-11-14T15:41:16.889Z",
+        "reason": "builder: the flagged animation is Maya the mascot's 16-frame wing-flap sprite strip (steps(16) translateX), not scrolling content"
+      },
+      {
+        "rule": "marquee",
+        "value": "*",
+        "files": [
+          "src/main/resources/static/book.html"
+        ],
+        "createdAt": "2026-11-14T15:41:16.914Z",
+        "reason": "builder: the flagged animation is Maya the mascot's 16-frame wing-flap sprite strip (steps(16) translateX), not scrolling content"
+      },
+      {
+        "rule": "marquee",
+        "value": "*",
+        "files": [
+          "src/main/resources/static/manage.html"
+        ],
+        "createdAt": "2026-11-14T15:41:16.937Z",
+        "reason": "builder: the flagged animation is Maya the mascot's 16-frame wing-flap sprite strip (steps(16) translateX), not scrolling content"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/main/resources/static/book.html"
+        ],
+        "createdAt": "2026-11-14T15:41:16.961Z",
+        "reason": "builder: 2px dashed border on .ticket-stub is the perforation line of the permit claim stub, an intentional material detail"
+      },
+      {
+        "rule": "shape-assembled-illustration",
+        "value": "*",
+        "files": [
+          "src/main/resources/static/index.html"
+        ],
+        "createdAt": "2026-11-14T15:41:16.986Z",
+        "reason": "builder: the inline SVG is Maya's drawn eye layer (pupils follow the pointer) over her raster art, part of the existing mascot"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "src/main/resources/static/index.html"
+        ],
+        "createdAt": "2026-11-14T15:48:27.015Z",
+        "reason": "builder: flagged containers (gov-strip, card, ticket-stub, hero-band, cta) inset their content via the .wrap gutter, grid padding or centred content; verified in desktop and 375px renders"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "src/main/resources/static/book.html"
+        ],
+        "createdAt": "2026-11-14T15:48:27.039Z",
+        "reason": "builder: flagged containers (gov-strip, card, ticket-stub, hero-band, cta) inset their content via the .wrap gutter, grid padding or centred content; verified in desktop and 375px renders"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "src/main/resources/static/manage.html"
+        ],
+        "createdAt": "2026-11-14T15:48:27.063Z",
+        "reason": "builder: flagged containers (gov-strip, card, ticket-stub, hero-band, cta) inset their content via the .wrap gutter, grid padding or centred content; verified in desktop and 375px renders"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "src/main/resources/static/privacy.html"
+        ],
+        "createdAt": "2026-11-14T15:48:27.087Z",
+        "reason": "builder: flagged containers (gov-strip, card, ticket-stub, hero-band, cta) inset their content via the .wrap gutter, grid padding or centred content; verified in desktop and 375px renders"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "src/main/resources/static/index.html"
+        ],
+        "createdAt": "2026-11-14T16:01:13.556Z",
+        "reason": "builder: .pay-wait dot pulses only while the page polls the payment status every 2.5s (genuinely live), motion-gated; shared stylesheet makes it appear on every page"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "src/main/resources/static/book.html"
+        ],
+        "createdAt": "2026-11-14T16:01:13.578Z",
+        "reason": "builder: .pay-wait dot pulses only while the page polls the payment status every 2.5s (genuinely live), motion-gated; shared stylesheet makes it appear on every page"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "src/main/resources/static/manage.html"
+        ],
+        "createdAt": "2026-11-14T16:01:13.601Z",
+        "reason": "builder: .pay-wait dot pulses only while the page polls the payment status every 2.5s (genuinely live), motion-gated; shared stylesheet makes it appear on every page"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "src/main/resources/static/privacy.html"
+        ],
+        "createdAt": "2026-11-14T16:01:13.621Z",
+        "reason": "builder: .pay-wait dot pulses only while the page polls the payment status every 2.5s (genuinely live), motion-gated; shared stylesheet makes it appear on every page"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "src/main/resources/static/pay.html"
+        ],
+        "createdAt": "2026-11-14T16:01:13.641Z",
+        "reason": "builder: .pay-wait dot pulses only while the page polls the payment status every 2.5s (genuinely live), motion-gated; shared stylesheet makes it appear on every page"
+      },
+      {
+        "rule": "marquee",
+        "value": "*",
+        "files": [
+          "src/main/resources/static/pay.html"
+        ],
+        "createdAt": "2026-11-14T16:01:13.661Z",
+        "reason": "builder: Maya's 16-frame wing-flap sprite strip (shared stylesheet), not scrolling content"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "src/main/resources/static/pay.html"
+        ],
+        "createdAt": "2026-11-14T16:01:13.683Z",
+        "reason": "builder: notice strip and card inset their content via the .wrap gutter and card padding; verified in 375px render"
+      }
+    ]
+  }
+}

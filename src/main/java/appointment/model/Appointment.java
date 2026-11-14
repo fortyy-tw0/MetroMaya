@@ -22,6 +22,8 @@ public class Appointment {
     private LocalDate date;
     private LocalTime time;
     private AppointmentStatus status = AppointmentStatus.CONFIRMED;
+    /** The demo fee payment, or null when the fees haven't been paid online. */
+    private Payment payment;
 
     public Appointment(String referenceNo, Applicant applicant, Business business, PermitService service,
                        Office office, LocalDate date, LocalTime time, Quote quote, Instant createdAt) {
@@ -74,4 +76,6 @@ public class Appointment {
     public LocalTime getTime() { return time; }
     public AppointmentStatus getStatus() { return status; }
     public Instant getCreatedAt() { return createdAt; }
+    public Payment getPayment() { return payment; }
+    public void setPayment(Payment payment) { this.payment = payment; }
 }

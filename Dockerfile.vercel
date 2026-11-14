@@ -8,6 +8,8 @@ RUN mkdir out \
 
 # Run stage: just a small JRE and the compiled output.
 FROM eclipse-temurin:21-jre-alpine
+# Tesseract OCR (English) for "Scan your ID"; the app turns ID scanning off if it's missing
+RUN apk add --no-cache tesseract-ocr tesseract-ocr-data-eng
 WORKDIR /app
 COPY --from=build /app/out ./out
 

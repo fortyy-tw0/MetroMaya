@@ -22,10 +22,26 @@ public interface AppointmentRepository {
     /** Active appointments belonging to the given email address. */
     List<Appointment> findActiveByEmail(String email);
 
+    /** How many active appointments the verified person with this ID holds. */
+    long countActiveByVerifiedId(String verifiedId);
+
     /**
      * Active appointments for an office on a day, counted per time slot. The default asks
      * {@link #countActive} once per slot; a database repository can answer in one query.
      */
+    /**
+     * Active appointments for an office over a date range, per day and slot (for the month calendar). The default
+     * asks {@link #countActiveByTime} day by day; a database repository can answer in one query.
+     */
+    default Map<LocalDate, Map<LocalTime, Long>> countActiveByDateTime(String officeId, LocalDate from, LocalDate to,
+                                                                       List<LocalTime> times) {
+        Map<LocalDate, Map<LocalTime, Long>> out = new HashMap<>();
+        for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1)) {
+            out.put(d, countActiveByTime(officeId, d, times));
+        }
+        return out;
+    }
+
     default Map<LocalTime, Long> countActiveByTime(String officeId, LocalDate date, List<LocalTime> times) {
         Map<LocalTime, Long> counts = new HashMap<>();
         for (LocalTime time : times) {

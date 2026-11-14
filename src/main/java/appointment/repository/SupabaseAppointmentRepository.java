@@ -8,6 +8,7 @@ import appointment.model.BusinessSize;
 import appointment.model.FeeBreakdown;
 import appointment.model.FeeLine;
 import appointment.model.InspectionType;
+import appointment.model.Payment;
 import appointment.model.Quote;
 import appointment.service.BookingException;
 import appointment.service.CatalogService;
@@ -98,11 +99,28 @@ public class SupabaseAppointmentRepository implements AppointmentRepository {
     }
 
     @Override
+    public Map<LocalDate, Map<LocalTime, Long>> countActiveByDateTime(String officeId, LocalDate from, LocalDate to,
+                                                                      List<LocalTime> times) {
+        Map<LocalDate, Map<LocalTime, Long>> out = new HashMap<>();
+        for (Map<String, Object> row : select("select=appt_date,appt_time&status=eq.CONFIRMED&office_id=eq." + enc(officeId)
+                + "&appt_date=gte." + from + "&appt_date=lte." + to)) {
+            out.computeIfAbsent(LocalDate.parse(str(row, "appt_date")), d -> new HashMap<>())
+                    .merge(LocalTime.parse(str(row, "appt_time")), 1L, Long::sum);
+        }
+        return out;
+    }
+
+    @Override
     public List<Appointment> findActiveByEmail(String email) {
         if (email == null) return List.of();
         return select("status=eq.CONFIRMED&email=eq." + enc(email.trim().toLowerCase())).stream()
                 .map(this::toAppointment)
                 .toList();
+    }
+
+    @Override
+    public long countActiveByVerifiedId(String verifiedId) {
+        return select("select=reference_no&status=eq.CONFIRMED&verified_id=eq." + enc(verifiedId)).size();
     }
 
     // ---------- mapping between rows and objects ----------
@@ -122,6 +140,9 @@ public class SupabaseAppointmentRepository implements AppointmentRepository {
         row.put("owner_name", a.getApplicant().getFullName());
         row.put("email", a.getApplicant().getEmail());
         row.put("phone", a.getApplicant().getPhone());
+        if (a.getApplicant().isVerified()) row.put("verified_id", a.getApplicant().getVerifiedId());
+        // only sent once there is a payment, so bookings keep saving before the payment migration has run
+        if (a.getPayment() != null) row.put("payment", a.getPayment().toMap());
         row.put("quote", quoteToJson(a.getQuote()));
         row.put("created_at", a.getCreatedAt().toString());
         row.put("updated_at", Instant.now().toString());
@@ -131,12 +152,20 @@ public class SupabaseAppointmentRepository implements AppointmentRepository {
     private Appointment toAppointment(Map<String, Object> row) {
         Business business = new Business(str(row, "business_name"), str(row, "business_address"),
                 catalog.getIndustry(str(row, "industry_id")), ((Number) row.get("employees")).intValue());
-        Applicant applicant = new Applicant(str(row, "owner_name"), str(row, "email"), str(row, "phone"));
-        return Appointment.restore(str(row, "reference_no"), applicant, business,
+        Applicant applicant = new Applicant(str(row, "owner_name"), str(row, "email"), str(row, "phone"), str(row, "verified_id"));
+        Appointment restored = Appointment.restore(str(row, "reference_no"), applicant, business,
                 catalog.getService(str(row, "service_id")), catalog.getOffice(str(row, "office_id")),
                 LocalDate.parse(str(row, "appt_date")), LocalTime.parse(str(row, "appt_time")),
                 quoteFromJson(row.get("quote")), OffsetDateTime.parse(str(row, "created_at")).toInstant(),
                 AppointmentStatus.valueOf(str(row, "status")));
+        restored.setPayment(paymentFrom(row.get("payment")));
+        return restored;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Payment paymentFrom(Object value) {
+        if (value == null) return null;
+        return Payment.fromMap((Map<String, Object>) (value instanceof String s ? Json.parse(s) : value));
     }
 
     /** The quote is stored as a snapshot, so a booking keeps the fees it was made with. */

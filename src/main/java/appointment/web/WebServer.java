@@ -1,6 +1,9 @@
 package appointment.web;
 
 import appointment.service.AppointmentService;
+import appointment.service.EgovVerifier;
+import appointment.service.IdScanner;
+import appointment.service.VerificationPass;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
@@ -12,10 +15,11 @@ public class WebServer {
 
     private final HttpServer server;
 
-    public WebServer(int port, AppointmentService appointments) throws IOException {
+    public WebServer(int port, AppointmentService appointments, EgovVerifier egov, IdScanner idScanner,
+                     VerificationPass passes) throws IOException {
         server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/", new StaticHandler());
-        server.createContext("/api/", new ApiHandler(appointments));
+        server.createContext("/api/", new ApiHandler(appointments, egov, idScanner, passes));
         server.setExecutor(Executors.newFixedThreadPool(16));
     }
 

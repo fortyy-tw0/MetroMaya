@@ -119,26 +119,27 @@ function shortInspection(label) {
 // ---- Metro Manila cities and municipalities (shared by the landing page and the booking form) ----
 // hall and brgy are from Wikipedia's list of Metro Manila city/municipal halls; rate is a SAMPLE
 // multiplier for this course project, not any city's official fees.
+// `at` is [lat, lng] of the city (or municipal) hall, from OpenStreetMap (Nominatim), checked Nov 2026.
 const NCR_CITIES = [
-  { id: 'caloocan', name: 'Caloocan', hall: 'Caloocan City Hall', brgy: 'Grace Park East', rate: 0.95 },
-  { id: 'las-pinas', name: 'Las Piñas', hall: 'Las Piñas City Hall', brgy: 'Pamplona Tres', rate: 1.00 },
-  { id: 'makati', name: 'Makati', hall: 'Makati City Hall', brgy: 'Poblacion', rate: 1.30, health: 'Makati Health Department' },
-  { id: 'malabon', name: 'Malabon', hall: 'Malabon City Hall', brgy: 'San Agustin', rate: 0.90 },
-  { id: 'mandaluyong', name: 'Mandaluyong', hall: 'Mandaluyong City Hall', brgy: 'Plainview', rate: 1.15 },
-  { id: 'manila', name: 'Manila', hall: 'Manila City Hall', brgy: 'Ermita', rate: 1.15, bplo: 'Bureau of Permits', health: 'Manila Health Department' },
-  { id: 'marikina', name: 'Marikina', hall: 'Marikina City Hall', brgy: 'Santa Elena', rate: 1.00 },
-  { id: 'muntinlupa', name: 'Muntinlupa', hall: 'Muntinlupa City Hall', brgy: 'Putatan', rate: 1.10 },
-  { id: 'navotas', name: 'Navotas', hall: 'Navotas City Hall', brgy: 'Sipac-Almacen', rate: 0.90 },
-  { id: 'paranaque', name: 'Parañaque', hall: 'Parañaque City Hall', brgy: 'San Antonio', rate: 1.10 },
-  { id: 'pasay', name: 'Pasay', hall: 'Pasay City Hall', brgy: 'Barangay 70, Zone 9', rate: 1.10 },
-  { id: 'pasig', name: 'Pasig', hall: 'Pasig Temporary City Hall', brgy: 'Rosario', rate: 1.20,
+  { id: 'caloocan', at: [14.648854, 120.990608], name: 'Caloocan', hall: 'Caloocan City Hall', brgy: 'Grace Park East', rate: 0.95 },
+  { id: 'las-pinas', at: [14.449699, 120.982604], name: 'Las Piñas', hall: 'Las Piñas City Hall', brgy: 'Pamplona Tres', rate: 1.00 },
+  { id: 'makati', at: [14.570486, 121.027218], name: 'Makati', hall: 'Makati City Hall', brgy: 'Poblacion', rate: 1.30, health: 'Makati Health Department' },
+  { id: 'malabon', at: [14.657705, 120.950940], name: 'Malabon', hall: 'Malabon City Hall', brgy: 'San Agustin', rate: 0.90 },
+  { id: 'mandaluyong', at: [14.577704, 121.033656], name: 'Mandaluyong', hall: 'Mandaluyong City Hall', brgy: 'Plainview', rate: 1.15 },
+  { id: 'manila', at: [14.589296, 120.981641], name: 'Manila', hall: 'Manila City Hall', brgy: 'Ermita', rate: 1.15, bplo: 'Bureau of Permits', health: 'Manila Health Department' },
+  { id: 'marikina', at: [14.633031, 121.098945], name: 'Marikina', hall: 'Marikina City Hall', brgy: 'Santa Elena', rate: 1.00 },
+  { id: 'muntinlupa', at: [14.395108, 121.044190], name: 'Muntinlupa', hall: 'Muntinlupa City Hall', brgy: 'Putatan', rate: 1.10 },
+  { id: 'navotas', at: [14.658193, 120.947806], name: 'Navotas', hall: 'Navotas City Hall', brgy: 'Sipac-Almacen', rate: 0.90 },
+  { id: 'paranaque', at: [14.470542, 121.022305], name: 'Parañaque', hall: 'Parañaque City Hall', brgy: 'San Antonio', rate: 1.10 },
+  { id: 'pasay', at: [14.544306, 120.994292], name: 'Pasay', hall: 'Pasay City Hall', brgy: 'Barangay 70, Zone 9', rate: 1.10 },
+  { id: 'pasig', at: [14.592384, 121.086173], name: 'Pasig', hall: 'Pasig Temporary City Hall', brgy: 'Rosario', rate: 1.20,
     note: 'Pasig is using a temporary city hall while its new one is built.' },
-  { id: 'pateros', name: 'Pateros', hall: 'Pateros Municipal Hall', brgy: 'Aguho', rate: 0.85, municipality: true },
-  { id: 'quezon-city', name: 'Quezon City', hall: 'Quezon City Hall', brgy: 'Central', rate: 1.15,
+  { id: 'pateros', at: [14.542123, 121.064588], name: 'Pateros', hall: 'Pateros Municipal Hall', brgy: 'Aguho', rate: 0.85, municipality: true },
+  { id: 'quezon-city', at: [14.646377, 121.050007], name: 'Quezon City', hall: 'Quezon City Hall', brgy: 'Central', rate: 1.15,
     bplo: 'Business Permits and Licensing Department', health: 'Quezon City Health Department' },
-  { id: 'san-juan', name: 'San Juan', hall: 'San Juan City Hall', brgy: 'Pinaglabanan', rate: 1.10 },
-  { id: 'taguig', name: 'Taguig', hall: 'Taguig City Hall', brgy: 'Tuktukan', rate: 1.25 },
-  { id: 'valenzuela', name: 'Valenzuela', hall: 'Valenzuela City Hall', brgy: 'Karuhatan', rate: 0.95 },
+  { id: 'san-juan', at: [14.605069, 121.029676], name: 'San Juan', hall: 'San Juan City Hall', brgy: 'Pinaglabanan', rate: 1.10 },
+  { id: 'taguig', at: [14.528940, 121.069927], name: 'Taguig', hall: 'Taguig City Hall', brgy: 'Tuktukan', rate: 1.25 },
+  { id: 'valenzuela', at: [14.692744, 120.968146], name: 'Valenzuela', hall: 'Valenzuela City Hall', brgy: 'Karuhatan', rate: 0.95 },
 ];
 
 function cityPlace(c) { return c.municipality ? c.name : (c.name === 'Quezon City' ? c.name : c.name + ' City'); }
@@ -246,13 +247,61 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
   }
 }
 
-// Give the sticky header a hairline once the page scrolls under it.
+// Compress the sticky header once the page scrolls under it, and keep --header-h current
+// (the booking summary panel and jump links sit just below it).
 (function () {
   const header = document.querySelector('.site-header');
   if (!header) return;
-  const update = () => header.classList.toggle('scrolled', window.scrollY > 8);
+  const root = document.documentElement;
+  // on phones the header scrolls away with the page, so nothing sits over the content
+  const measure = () => root.style.setProperty('--header-h', (getComputedStyle(header).position === 'sticky' ? header.offsetHeight : 0) + 'px');
+  const update = () => { header.classList.toggle('scrolled', window.scrollY > 40); };
   window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', measure);
+  header.addEventListener('transitionend', measure);
   update();
+  measure();
+})();
+
+// Notice strip: text size (A / A / A), high contrast and pausing animations, remembered on this device.
+(function () {
+  const root = document.documentElement;
+  const sizeBtns = Array.prototype.slice.call(document.querySelectorAll('.a11y-btn[data-fs]'));
+  const contrastBtn = document.querySelector('.a11y-btn[data-contrast]');
+  const motionBtn = document.querySelector('.a11y-btn[data-motion]');
+  // phones: the tools fold behind one Accessibility button
+  const toggle = document.querySelector('.a11y-toggle');
+  if (toggle) toggle.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') !== 'true';
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.closest('.gov-strip').classList.toggle('a11y-open', open);
+  });
+  if (!sizeBtns.length && !contrastBtn) return;
+  function save() {
+    try {
+      localStorage.setItem('metromaya.a11y', JSON.stringify({ fs: root.dataset.fs || '', hc: root.dataset.contrast === 'high', mp: root.dataset.motion === 'paused' }));
+    } catch (e) { /* storage unavailable: settings last for this page only */ }
+  }
+  function paint() {
+    const fs = root.dataset.fs || '0';
+    sizeBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.fs === fs)));
+    if (contrastBtn) contrastBtn.setAttribute('aria-pressed', String(root.dataset.contrast === 'high'));
+    if (motionBtn) motionBtn.setAttribute('aria-pressed', String(root.dataset.motion === 'paused'));
+  }
+  sizeBtns.forEach((b) => b.addEventListener('click', () => {
+    if (b.dataset.fs === '0') delete root.dataset.fs; else root.dataset.fs = b.dataset.fs;
+    paint(); save(); window.dispatchEvent(new Event('resize'));
+  }));
+  if (contrastBtn) contrastBtn.addEventListener('click', () => {
+    if (root.dataset.contrast === 'high') delete root.dataset.contrast; else root.dataset.contrast = 'high';
+    paint(); save();
+  });
+  // WCAG 2.2.2: Maya's flapping runs for longer than 5 seconds, so it can be paused
+  if (motionBtn) motionBtn.addEventListener('click', () => {
+    if (root.dataset.motion === 'paused') delete root.dataset.motion; else root.dataset.motion = 'paused';
+    paint(); save();
+  });
+  paint();
 })();
 
 // ---- motion: sections appear as the visitor scrolls to them ----
@@ -279,7 +328,7 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
       if (e.isIntersecting) e.target.classList.add('in');
       else if (e.boundingClientRect.top > 0) e.target.classList.remove('in');
     });
-  }, { threshold: 0.18, rootMargin: '0px 0px -10% 0px' });
+  }, { threshold: 0.01, rootMargin: '0px 0px -12% 0px' });  // a sliver is enough: panels taller than a phone screen still arrive
 
   function scan(root) {
     RULES.forEach(([sel, mode]) => {
@@ -455,4 +504,199 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
 function debounce(fn, ms) {
   let t;
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
+
+// ---- demo fee payment (no money moves) ----
+// Renders into `box` for a booking: choose a channel and pay, then a QR / link to the demo checkout while it
+// waits, then the demo acknowledgement receipt. `onUpdate(appointment)` gets the booking after each change.
+const PAY_CHANNELS = [
+  { id: 'qrph', label: 'QR Ph', note: 'Any bank or e-wallet app' },
+  { id: 'ewallet', label: 'E-wallet', note: 'GCash, Maya and others' },
+  { id: 'online-banking', label: 'Online banking', note: 'Pay from your bank account' },
+  { id: 'landbank', label: 'LANDBANK Link.BizPortal', note: 'Government payment portal' },
+  { id: 'otc', label: 'Over the counter', note: 'Pay at the treasurer’s window' },
+];
+
+function renderPayment(box, a, onUpdate) {
+  clear(box);
+  if (box.__poll) { clearInterval(box.__poll); box.__poll = null; }
+  const p = a.payment;
+  const city = detectCity(a.businessAddress);
+  const quote = city ? scaleQuote(a.quote, city.rate) : a.quote;
+  const demoTag = el('span', { class: 'demo-tag', text: 'Demo · no money moves' });
+
+  if (p && p.status === 'PAID') {
+    const dl = el('dl', { class: 'receipt-rows' });
+    const row = (k, v) => dl.append(el('dt', { text: k }), el('dd', { text: v }));
+    row('Receipt no.', p.receiptNo);
+    row('Transaction', p.txn);
+    row('Booking reference', a.referenceNo);
+    row('Paid to', a.officeName);
+    row('For', a.serviceName + ' · ' + a.businessName);
+    row('Channel', p.channel);
+    row('Date paid', new Date(p.paidAt).toLocaleString('en-PH', { dateStyle: 'long', timeStyle: 'short' }));
+    const fee = el('div', { class: 'receipt-fee' });
+    renderFee(fee, quote.fee);
+    box.append(el('div', { class: 'receipt' },
+      el('div', { class: 'receipt-head' },
+        el('div', null, el('p', { class: 'receipt-kind', text: 'Acknowledgement receipt' }), el('p', { class: 'receipt-amount', text: peso(p.amount) })),
+        el('span', { class: 'receipt-paid', text: 'Paid' })),
+      demoTag, dl, fee,
+      el('p', { class: 'hint receipt-note', text: 'Demo receipt from a prototype. No money moved, and this is not an official receipt. In production the city treasurer’s office would issue the official receipt.' }),
+      el('div', { class: 'receipt-actions no-print' },
+        el('button', { type: 'button', class: 'btn btn-outline btn-small', onclick: () => window.print(), text: 'Print or save receipt' }))));
+    return;
+  }
+  if (a.status !== 'CONFIRMED') return;
+
+  if (p && p.status === 'PENDING') {
+    const url = location.origin + '/pay.html?txn=' + encodeURIComponent(p.txn);
+    const qrBox = el('div', { class: 'qr', role: 'img', 'aria-label': 'QR code that opens the demo payment page' });
+    if (window.qrcode) {
+      const q = qrcode(0, 'M'); q.addData(url); q.make();
+      qrBox.innerHTML = q.createSvgTag({ cellSize: 5, margin: 2, scalable: true });
+    }
+    const status = el('p', { class: 'pay-wait', role: 'status', text: 'Waiting for payment…' });
+    box.append(el('div', { class: 'pay-panel pay-pending' },
+      el('div', { class: 'pay-panel-head' }, el('h3', { text: 'Scan to pay ' + peso(p.amount) }), demoTag),
+      el('div', { class: 'pay-qr-row' }, qrBox,
+        el('div', null,
+          el('p', { text: 'Scan with your phone camera to open the payment page, or open it here. Channel: ' + p.channel + '.' }),
+          el('a', { class: 'btn btn-primary', href: url, target: '_blank', rel: 'noopener', text: 'Open payment page' }),
+          status,
+          el('button', { type: 'button', class: 'link-btn', text: 'Choose another way to pay', onclick: () => renderPayment(box, Object.assign({}, a, { payment: null }), onUpdate) })))));
+    box.__poll = setInterval(async () => {
+      if (!document.body.contains(box)) { clearInterval(box.__poll); return; }
+      try {
+        const { payment } = await api.get('/api/pay/' + encodeURIComponent(p.txn));
+        if (payment.status === 'PAID') {
+          clearInterval(box.__poll);
+          const { appointment } = await api.get('/api/appointments/' + encodeURIComponent(a.referenceNo));
+          renderPayment(box, appointment, onUpdate);
+          if (onUpdate) onUpdate(appointment);
+        }
+      } catch (e) { /* keep waiting */ }
+    }, 2500);
+    return;
+  }
+
+  // not paid yet: choose a channel
+  const name = 'pay-channel-' + a.referenceNo;
+  const choices = el('div', { class: 'pay-channels', role: 'radiogroup', 'aria-label': 'How to pay' });
+  PAY_CHANNELS.forEach((c, i) => {
+    choices.append(el('label', { class: 'pay-channel' },
+      el('input', { type: 'radio', name, value: c.id, checked: i === 0 }),
+      el('span', null, el('b', { text: c.label }), el('small', { text: c.note }))));
+  });
+  const alertNode = el('div', { class: 'alert alert-error', hidden: true, role: 'alert' });
+  const btn = el('button', { type: 'button', class: 'btn btn-primary', text: 'Pay ' + peso(a.amountDue) + ' (demo)' });
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    hideAlert(alertNode);
+    try {
+      const channel = choices.querySelector('input:checked').value;
+      const { appointment } = await api.post('/api/appointments/' + encodeURIComponent(a.referenceNo) + '/pay', { channel });
+      renderPayment(box, appointment, onUpdate);
+      if (onUpdate) onUpdate(appointment);
+    } catch (e) {
+      showAlert(alertNode, e.message, 'error');
+      btn.disabled = false;
+    }
+  });
+  box.append(el('div', { class: 'pay-panel' },
+    el('div', { class: 'pay-panel-head' }, el('h3', { text: 'Pay your fees online' }), demoTag),
+    el('p', { class: 'hint', text: 'Pay the estimated ' + peso(a.amountDue) + ' now, or pay at the city hall on the day of your visit.' }),
+    choices, alertNode, el('div', { class: 'pay-actions' }, btn)));
+}
+
+// ---- month calendar (pick a day, see its time slots) ----
+// A whole month at a glance for one office: closed days (weekends, regular holidays, outside the booking window)
+// are locked, open days show how many places are left across their slots, and picking a day calls
+// onSelect(iso, day). Availability comes from /api/availability, one request per month.
+function mountCalendar(container, opts) {
+  const { officeId, config, onSelect } = opts;
+  let selected = opts.selected || '';
+  const ym = (iso) => iso.slice(0, 7);
+  let month = ym(selected || config.today);
+  const cache = {};
+  const CHEV = (d) => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
+
+  const title = el('strong', { 'aria-live': 'polite' });
+  const prev = el('button', { type: 'button', class: 'cal-nav', 'aria-label': 'Previous month' });
+  const next = el('button', { type: 'button', class: 'cal-nav', 'aria-label': 'Next month' });
+  prev.innerHTML = CHEV('M15 6l-6 6 6 6'); next.innerHTML = CHEV('M9 6l6 6-6 6');
+  const grid = el('div', { class: 'cal-days' });
+  const weekdays = el('div', { class: 'cal-weekdays', 'aria-hidden': 'true' },
+    ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => el('span', { text: d })));
+  const legend = el('div', { class: 'cal-legend' },
+    el('span', null, el('i', { class: 'cal-dot lvl-many' }), 'Many places'),
+    el('span', null, el('i', { class: 'cal-dot lvl-few' }), 'Few left'),
+    el('span', null, el('i', { class: 'cal-dot lvl-full' }), 'Fully booked'),
+    el('span', null, el('i', { class: 'cal-lock-key', 'aria-hidden': 'true' }), 'Closed'));
+  clear(container).append(el('div', { class: 'cal' },
+    el('div', { class: 'cal-head' }, prev, title, next), weekdays, grid, legend));
+
+  const shift = (m, by) => { const [y, mo] = m.split('-').map(Number); const d = new Date(y, mo - 1 + by, 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
+  prev.addEventListener('click', () => { month = shift(month, -1); draw(); });
+  next.addEventListener('click', () => { month = shift(month, 1); draw(); });
+
+  function level(d) {
+    if (!d.capacity || d.remaining === 0) return 'full';
+    return d.remaining / d.capacity <= 0.25 ? 'few' : 'many';
+  }
+
+  async function draw() {
+    const [y, m] = month.split('-').map(Number);
+    title.textContent = new Date(y, m - 1, 1).toLocaleDateString('en-PH', { month: 'long', year: 'numeric' });
+    prev.disabled = month <= ym(config.today);
+    next.disabled = month >= ym(config.maxDate);
+    grid.setAttribute('aria-busy', 'true');
+    const want = month;   // a slow month must not draw over the one the user moved on to
+    let days;
+    try {
+      days = cache[month] || (cache[month] = (await api.get('/api/availability?officeId=' + encodeURIComponent(officeId) + '&month=' + month)).days);
+    } catch (e) {
+      clear(grid).append(el('p', { class: 'alert alert-error cal-error', text: e.message }));
+      return;
+    }
+    if (want !== month) return;
+    clear(grid).removeAttribute('aria-busy');
+    const lead = new Date(y, m - 1, 1).getDay();
+    for (let i = 0; i < lead; i++) grid.append(el('span', { class: 'cal-blank', 'aria-hidden': 'true' }));
+    days.forEach((d) => {
+      const n = Number(d.date.slice(8));
+      const long = new Date(y, m - 1, n).toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric' });
+      const lvl = d.open ? level(d) : null;
+      const status = !d.open ? (d.reason === 'Past' ? 'past' : 'closed, ' + d.reason)
+        : lvl === 'full' ? 'fully booked' : d.remaining + ' of ' + d.capacity + ' places left';
+      const btn = el('button', {
+        type: 'button',
+        class: 'cal-day' + (d.open ? ' lvl-' + lvl : ' is-closed') + (d.date === config.today ? ' is-today' : '') + (d.date === selected ? ' is-selected' : '') + (d.reason === 'Past' ? ' is-past' : ''),
+        'aria-pressed': d.date === selected ? 'true' : 'false',
+        'aria-label': long + ', ' + status,
+        disabled: !d.open || lvl === 'full',
+        title: d.open ? (lvl === 'full' ? 'Fully booked' : d.remaining + ' of ' + d.capacity + ' places left') : (d.reason === 'Past' ? '' : 'Closed: ' + d.reason),
+      }, el('span', { class: 'cal-num', text: String(n) }));
+      if (d.open && lvl !== 'full') btn.append(el('span', { class: 'cal-left', text: d.remaining + ' left' }), el('i', { class: 'cal-dot lvl-' + lvl, 'aria-hidden': 'true' }));
+      else if (d.open) btn.append(el('span', { class: 'cal-left', text: 'Full' }));
+      else if (d.reason !== 'Past' && d.reason !== 'Weekend') btn.append(el('span', { class: 'cal-left cal-holiday', text: d.reason.length > 14 ? 'Holiday' : d.reason }));
+      btn.addEventListener('click', () => {
+        selected = d.date;
+        grid.querySelectorAll('.cal-day').forEach((b) => { b.classList.remove('is-selected'); b.setAttribute('aria-pressed', 'false'); });
+        btn.classList.add('is-selected');
+        btn.setAttribute('aria-pressed', 'true');
+        onSelect(d.date, d);
+      });
+      grid.append(btn);
+    });
+  }
+  draw();
+  return { refresh() { delete cache[month]; draw(); } };
+}
+
+// "Thursday, November 20 · 18 of 32 places left" under the calendar
+function dayStatusText(iso, d) {
+  const [y, m, n] = iso.split('-').map(Number);
+  const day = new Date(y, m - 1, n).toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric' });
+  return day + ' · ' + d.remaining + ' of ' + d.capacity + ' places left. Pick a time:';
 }

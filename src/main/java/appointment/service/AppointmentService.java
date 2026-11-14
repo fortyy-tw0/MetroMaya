@@ -3,7 +3,9 @@ package appointment.service;
 import appointment.model.Applicant;
 import appointment.model.Appointment;
 import appointment.model.Business;
+import appointment.model.FeeLine;
 import appointment.model.Office;
+import appointment.model.Payment;
 import appointment.model.PermitService;
 import appointment.model.Quote;
 import appointment.repository.AppointmentRepository;
@@ -16,6 +18,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +26,7 @@ import java.util.Map;
  * All booking rules live here:
  * weekdays that aren't regular holidays, up to 3 months ahead, fixed hourly slots, per-slot capacity,
  * offices that only offer some services and serve some business sizes,
- * and one active booking per business per service.
+ * one active booking per business per service, and at most 3 active bookings per verified person (eGovPH or ID scan).
  */
 public class AppointmentService {
 
@@ -34,6 +37,9 @@ public class AppointmentService {
     public static final List<LocalTime> SLOT_TIMES = List.of(
             LocalTime.of(8, 0), LocalTime.of(9, 0), LocalTime.of(10, 0), LocalTime.of(11, 0),
             LocalTime.of(13, 0), LocalTime.of(14, 0), LocalTime.of(15, 0), LocalTime.of(16, 0));
+
+    /** A verified person may hold at most this many active bookings at once (anti-spam). */
+    public static final int MAX_ACTIVE_PER_PERSON = 3;
 
     private static final String REF_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -103,6 +109,12 @@ public class AppointmentService {
                     + business.getSize().getLabel().toLowerCase() + " businesses. Please choose the main office.");
         }
         validateSlot(office, date, time);
+
+        if (applicant.isVerified()
+                && repository.countActiveByVerifiedId(applicant.getVerifiedId()) >= MAX_ACTIVE_PER_PERSON) {
+            throw new BookingException("You already have " + MAX_ACTIVE_PER_PERSON + " active bookings. "
+                    + "Cancel one on Track a booking to book another.");
+        }
 
         String businessKey = business.getName().toLowerCase();
         boolean alreadyBooked = repository.findActiveByEmail(applicant.getEmail()).stream()
@@ -180,6 +192,112 @@ public class AppointmentService {
         if (taken >= office.getCapacityPerSlot()) {
             throw new BookingException("That time slot is full. Please pick another.");
         }
+    }
+
+    // ---- month calendar ----
+
+    /** One day on the booking calendar: whether the office is open, why not, and places left across its slots. */
+    public record DayAvailability(LocalDate date, boolean open, String closedReason, int remaining, int capacity) {}
+
+    /** Every day of a month for an office: closed days with their reason, open days with places left. */
+    public List<DayAvailability> monthAvailability(String officeId, java.time.YearMonth month) {
+        Office office = catalog.getOffice(officeId);
+        LocalDate first = month.atDay(1), last = month.atEndOfMonth();
+        Map<LocalDate, Map<LocalTime, Long>> taken = repository.countActiveByDateTime(office.getId(), first, last, SLOT_TIMES);
+        LocalDate today = today();
+        LocalDateTime now = LocalDateTime.now(clock);
+        int cap = office.getCapacityPerSlot();
+        List<DayAvailability> days = new ArrayList<>();
+        for (LocalDate d = first; !d.isAfter(last); d = d.plusDays(1)) {
+            String reason = null;
+            if (d.isBefore(today)) reason = "Past";
+            else if (d.isAfter(lastBookableDate())) reason = "Not open for booking yet";
+            else if (d.getDayOfWeek() == DayOfWeek.SATURDAY || d.getDayOfWeek() == DayOfWeek.SUNDAY) reason = "Weekend";
+            else {
+                java.util.Optional<HolidayCalendar.Holiday> h = holidays.holidayOn(d);
+                if (h.isPresent()) reason = h.get().name();
+            }
+            int remaining = 0, capacity = 0;
+            if (reason == null) {
+                Map<LocalTime, Long> byTime = taken.getOrDefault(d, Map.of());
+                for (LocalTime t : SLOT_TIMES) {
+                    if (LocalDateTime.of(d, t).isBefore(now)) continue;   // slots already gone today
+                    capacity += cap;
+                    remaining += Math.max(0, cap - byTime.getOrDefault(t, 0L).intValue());
+                }
+                if (capacity == 0) reason = "No slots left today";
+            }
+            days.add(new DayAvailability(d, reason == null, reason, remaining, capacity));
+        }
+        return days;
+    }
+
+    // ---- demo fee payment (no money moves) ----
+
+    /** The ways to pay a real LGU e-payment page usually offers; here they only label the demo receipt. */
+    public static final Map<String, String> PAYMENT_CHANNELS = paymentChannels();
+
+    private static Map<String, String> paymentChannels() {
+        Map<String, String> m = new LinkedHashMap<>();
+        m.put("qrph", "QR Ph");
+        m.put("ewallet", "E-wallet");
+        m.put("online-banking", "Online banking");
+        m.put("landbank", "LANDBANK Link.BizPortal");
+        m.put("otc", "Over the counter");
+        return m;
+    }
+
+    /** What the applicant owes: the booking's fee snapshot scaled by its city's sample rate, rounded like the page. */
+    public double amountDue(Appointment a) {
+        double rate = SampleCityRates.of(a.getOffice().getId());
+        double total = 0;
+        for (FeeLine line : a.getQuote().fee().getLines()) {
+            total += Math.round(line.amount() * rate * 100) / 100.0;
+        }
+        return Math.round(total * 100) / 100.0;
+    }
+
+    /** Starts (or restarts) a demo payment for a confirmed, unpaid booking through the chosen channel. */
+    public synchronized Appointment startPayment(String referenceNo, String channelId) {
+        Appointment a = find(referenceNo);
+        if (!a.isActive()) throw new BookingException("A cancelled booking can't be paid.");
+        if (a.getPayment() != null && a.getPayment().isPaid()) throw new BookingException("This booking is already paid.");
+        String channel = PAYMENT_CHANNELS.get(channelId);
+        if (channel == null) throw new BookingException("Choose how you'd like to pay.");
+        String txn = a.getReferenceNo() + "-P" + randomCode(4);
+        a.setPayment(new Payment(txn, channel, amountDue(a), Instant.now(clock)));
+        repository.save(a);
+        return a;
+    }
+
+    /** The booking a payment transaction belongs to. Transaction ids are the booking reference plus "-P" and a code. */
+    public Appointment findByPaymentTxn(String txn) {
+        String t = txn == null ? "" : txn.trim().toUpperCase();
+        int cut = t.lastIndexOf("-P");
+        Appointment a = cut > 0 ? repository.findByReference(t.substring(0, cut)).orElse(null) : null;
+        if (a == null || a.getPayment() == null || !a.getPayment().getTransactionId().equals(t)) {
+            throw new NotFoundException("This payment link isn't valid or has expired.");
+        }
+        return a;
+    }
+
+    /** Marks a demo payment paid and issues a demo acknowledgement receipt number. Paying twice changes nothing. */
+    public synchronized Appointment completePayment(String txn) {
+        Appointment a = findByPaymentTxn(txn);
+        if (!a.isActive()) throw new BookingException("This booking was cancelled, so it can't be paid.");
+        Payment p = a.getPayment();
+        if (!p.isPaid()) {
+            LocalDate today = today();
+            p.markPaid("AR-DEMO-" + today.toString().replace("-", "") + "-" + randomCode(5), Instant.now(clock));
+            repository.save(a);
+        }
+        return a;
+    }
+
+    private String randomCode(int length) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) sb.append(REF_ALPHABET.charAt(random.nextInt(REF_ALPHABET.length())));
+        return sb.toString();
     }
 
     private String newReference(LocalDate date) {

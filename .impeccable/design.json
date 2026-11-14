@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-14T00:00:00Z",
+  "title": "Design System: MetroMaya",
+  "extensions": {
+    "colorMeta": {
+      "gov-950": { "role": "primary", "displayName": "Night Blue", "tonalRamp": ["#030C1D", "#071A3A", "#0A2552", "#0B2E6B", "#093F8F", "#0B4FB3", "#D6E3F7", "#EDF3FC"] },
+      "gov-900": { "role": "primary", "displayName": "Nav Blue", "tonalRamp": ["#030C1D", "#071A3A", "#0A2552", "#0B2E6B", "#093F8F", "#0B4FB3", "#D6E3F7", "#EDF3FC"] },
+      "gov-800": { "role": "primary", "displayName": "Masthead Blue", "tonalRamp": ["#030C1D", "#071A3A", "#0A2552", "#0B2E6B", "#093F8F", "#0B4FB3", "#D6E3F7", "#EDF3FC"] },
+      "blue": { "role": "primary", "displayName": "Action Blue", "tonalRamp": ["#071A3A", "#0A2552", "#0B2E6B", "#093F8F", "#0B4FB3", "#5C8AD0", "#D6E3F7", "#EDF3FC"] },
+      "blue-700": { "role": "primary", "displayName": "Pressed Blue" },
+      "blue-100": { "role": "neutral", "displayName": "Blue Track" },
+      "blue-50": { "role": "neutral", "displayName": "Blue Wash" },
+      "gold": { "role": "secondary", "displayName": "Seal Gold", "tonalRamp": ["#4A3600", "#6B4E00", "#9C7400", "#D9A800", "#F4C430", "#F1DD9B", "#FFF0B8", "#FFF6D6"] },
+      "gold-50": { "role": "secondary", "displayName": "Gold Wash" },
+      "red": { "role": "tertiary", "displayName": "Error Red", "tonalRamp": ["#4A0E09", "#7A170F", "#B42318", "#D2493E", "#E8857C", "#F4C7C2", "#F9DDDA", "#FDECEA"] },
+      "red-50": { "role": "tertiary", "displayName": "Error Wash" },
+      "green": { "role": "tertiary", "displayName": "Confirmed Green", "tonalRamp": ["#05291A", "#0A4429", "#12663E", "#2E8A5C", "#6DB58F", "#BFE3CD", "#D6EEE0", "#E5F4EC"] },
+      "green-50": { "role": "tertiary", "displayName": "Confirmed Wash" },
+      "ink": { "role": "neutral", "displayName": "Ink" },
+      "ink-2": { "role": "neutral", "displayName": "Ink 2" },
+      "muted": { "role": "neutral", "displayName": "Muted" },
+      "line": { "role": "neutral", "displayName": "Rule" },
+      "line-strong": { "role": "neutral", "displayName": "Strong Rule" },
+      "bg": { "role": "neutral", "displayName": "Counter Gray", "tonalRamp": ["#14213A", "#3B4A63", "#56647A", "#8794A8", "#B4C0D0", "#DCE3EC", "#F3F6FA", "#FFFFFF"] },
+      "white": { "role": "neutral", "displayName": "White" },
+      "on-dark": { "role": "neutral", "displayName": "On Dark" },
+      "on-dark-muted": { "role": "neutral", "displayName": "On Dark Muted" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page H1, gold rule above, about 16ch in the hero." },
+      "headline": { "displayName": "Headline", "purpose": "Section H2s in a two-column section head." },
+      "title": { "displayName": "Title", "purpose": "H3s, row, choice and service names." },
+      "body": { "displayName": "Body", "purpose": "Copy; leads 52-54ch, prose 72ch." },
+      "label": { "displayName": "Label", "purpose": "Uppercase panel header bars, tile labels, footer heads, ticket and status labels." },
+      "figure": { "displayName": "Figure", "purpose": "Prices, estimate tiles, totals; always tabular." },
+      "reference": { "displayName": "Reference", "purpose": "Booking reference numbers only." }
+    },
+    "shadows": [
+      { "name": "shadow", "value": "0 1px 2px rgba(7, 26, 58, .06), 0 10px 28px -8px rgba(7, 26, 58, .14)", "purpose": "Hero services panel only." },
+      { "name": "shadow-sm", "value": "0 1px 2px rgba(7, 26, 58, .06), 0 4px 12px -4px rgba(7, 26, 58, .10)", "purpose": "Estimator, office directory, booking card." },
+      { "name": "header-scrolled", "value": "0 1px 0 #DCE3EC, 0 10px 24px -14px rgba(7, 26, 58, .35)", "purpose": "Sticky header after scrolling." },
+      { "name": "focus-ring", "value": "outline: 3px solid #F4C430; outline-offset: 2px; box-shadow: 0 0 0 5px #071A3A", "purpose": "Global :focus-visible; inputs use the outline at 0 offset with a night-blue border." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(.16, 1, .3, 1)", "purpose": "Reveals, nav underline, masthead tighten, panel-in." },
+      { "name": "press", "value": "scale .96, .15s ease-out", "purpose": "Button :active, only under prefers-reduced-motion: no-preference." },
+      { "name": "reveal", "value": "opacity + translateY(22px), .7s ease-out", "purpose": "Sections reveal on scroll down and hide again on scroll up; fade only under reduced motion." },
+      { "name": "hero-rise", "value": "rise .3s ease-out, 100ms stagger", "purpose": "Hero copy entrance; motion-gated." },
+      { "name": "maya-flap", "value": "flap-strip .8s steps(16) infinite", "purpose": "Maya's seamless sprite flap; 1.6s under reduced motion; paused by html[data-motion=paused]." },
+      { "name": "cta-lift", "value": "translateY(-42px), .6s cubic-bezier(.3, .8, .3, 1)", "purpose": "The one sanctioned Maya movement, on CTA hover/focus." }
+    ],
+    "breakpoints": [
+      { "name": "xs", "value": "460px" },
+      { "name": "sm", "value": "560px" },
+      { "name": "strip", "value": "640px" },
+      { "name": "nav", "value": "760px" },
+      { "name": "md", "value": "860px" },
+      { "name": "hero", "value": "900px" },
+      { "name": "lg", "value": "960px" }
+    ],
+    "modes": [
+      { "name": "text-size", "selector": "html[data-fs=\"1\"], html[data-fs=\"2\"]", "value": "112.5%, 125% root size" },
+      { "name": "high-contrast", "selector": "html[data-contrast=\"high\"]", "value": "black ink and rules, #0033A0 action, #FFD400 gold, no shadows or guilloche, #FFF6B3 selected fills" },
+      { "name": "pause-animations", "selector": "html[data-motion=\"paused\"]", "value": "animation-play-state: paused on everything" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main action: Book a slot, Continue.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Book a slot</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; gap: .5rem; font-family: \"Public Sans\", system-ui, sans-serif; font-weight: 700; font-size: 1rem; line-height: 1.1; padding: .85rem 1.35rem; border-radius: 6px; border: 2px solid transparent; cursor: pointer; transition: background-color .15s ease-out, border-color .15s ease-out, color .15s ease-out, scale .15s ease-out; } .ds-btn-primary { background: var(--blue, #0B4FB3); color: #fff; } @media (hover: hover) { .ds-btn-primary:hover { background: var(--blue-700, #093F8F); } } .ds-btn:focus-visible { outline: 3px solid #F4C430; outline-offset: 2px; box-shadow: 0 0 0 5px #071A3A; } @media (prefers-reduced-motion: no-preference) { .ds-btn:active { scale: .96; } }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action beside a primary.",
+      "html": "<button class=\"ds-btn-outline\">Estimate my fees</button>",
+      "css": ".ds-btn-outline { font-family: \"Public Sans\", system-ui, sans-serif; font-weight: 700; font-size: 1rem; line-height: 1.1; padding: .85rem 1.35rem; border-radius: 6px; border: 2px solid #0B4FB3; background: #fff; color: #0B4FB3; cursor: pointer; transition: background-color .15s ease-out, color .15s ease-out, scale .15s ease-out; } @media (hover: hover) { .ds-btn-outline:hover { background: #EDF3FC; color: #093F8F; } } .ds-btn-outline:focus-visible { outline: 3px solid #F4C430; outline-offset: 2px; box-shadow: 0 0 0 5px #071A3A; } @media (prefers-reduced-motion: no-preference) { .ds-btn-outline:active { scale: .96; } }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Sturdy 2px-bordered field with bold label and help line.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Business name</span><input class=\"ds-input\" placeholder=\"e.g. Dela Cruz Sari-Sari Store\"><span class=\"ds-field-help\">As written on your DTI or SEC registration.</span></label>",
+      "css": ".ds-field { display: block; font-family: \"Public Sans\", system-ui, sans-serif; } .ds-field-label { display: block; font-weight: 700; font-size: .93rem; margin-bottom: .35rem; color: #14213A; } .ds-input { font: inherit; font-size: 1rem; font-weight: 500; color: #14213A; width: 100%; padding: .72rem .9rem; border: 2px solid #B4C0D0; border-radius: 6px; background: #fff; transition: border-color .15s ease; } @media (hover: hover) { .ds-input:hover { border-color: #8E9CB1; } } .ds-input:focus { border-color: #071A3A; outline: 3px solid #F4C430; outline-offset: 0; } .ds-field-help { display: block; font-size: .86rem; color: #56647A; margin-top: .3rem; }"
+    },
+    {
+      "name": "Navigation Bar",
+      "kind": "nav",
+      "refersTo": "nav-bar",
+      "description": "Nav-blue bar under a gold rule; current item gets a gold underline, never a pill.",
+      "html": "<nav class=\"ds-nav\"><a href=\"#\" aria-current=\"page\">Home</a><a href=\"#\">How It Works</a><a href=\"#\">Fees</a><a href=\"#\">Offices</a></nav>",
+      "css": ".ds-nav { display: flex; background: #0A2552; border-top: 3px solid #F4C430; font-family: \"Public Sans\", system-ui, sans-serif; } .ds-nav a { position: relative; color: #DCE6F7; text-decoration: none; font-weight: 600; font-size: .95rem; padding: .78rem 1rem; transition: background-color .2s ease, color .2s ease; } .ds-nav a::after { content: \"\"; position: absolute; left: 1rem; right: 1rem; bottom: 0; height: 3px; background: #F4C430; transform: scaleX(0); transform-origin: left; transition: transform .35s cubic-bezier(.16, 1, .3, 1); } .ds-nav a[aria-current=\"page\"] { color: #fff; background: rgba(255, 255, 255, .1); } .ds-nav a[aria-current=\"page\"]::after { transform: scaleX(1); } @media (hover: hover) { .ds-nav a:hover { color: #fff; background: rgba(255, 255, 255, .07); } .ds-nav a:hover::after { transform: scaleX(.35); } } .ds-nav a:focus-visible { outline: 3px solid #F4C430; outline-offset: -3px; }"
+    },
+    {
+      "name": "Fee Schedule",
+      "kind": "card",
+      "refersTo": "panel-head",
+      "description": "A printed schedule: header bar with sample tag, striped ruled rows, tabular prices.",
+      "html": "<div class=\"ds-schedule\"><div class=\"ds-schedule-head\"><span>Type of business</span><span>Base permit fee <span class=\"ds-sample-tag\">Sample rates</span></span></div><div class=\"ds-row\"><div><b>Retail store</b><small>Sari-sari, grocery, boutique</small></div><span class=\"ds-price\">₱1,500</span></div><div class=\"ds-row\"><div><b>Food service</b><small>Carinderia, cafe, restaurant</small></div><span class=\"ds-price\">₱2,200</span></div></div>",
+      "css": ".ds-schedule { font-family: \"Public Sans\", system-ui, sans-serif; background: #fff; border: 1px solid #B4C0D0; border-radius: 10px; overflow: hidden; } .ds-schedule-head { display: flex; justify-content: space-between; gap: 1rem; padding: .7rem 1.25rem; background: #0B2E6B; color: #fff; font-size: .8rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; } .ds-sample-tag { margin-left: .5rem; font-size: .72rem; font-weight: 800; letter-spacing: .1em; color: #071A3A; background: #F4C430; padding: .2rem .55rem; border-radius: 4px; } .ds-row { display: flex; justify-content: space-between; gap: 1.5rem; padding: 1.15rem 1.25rem; border-bottom: 1px solid #DCE3EC; transition: background-color .2s ease; } .ds-row:nth-child(odd) { background: #F8FAFD; } .ds-row:last-child { border-bottom: 0; } .ds-row b { display: block; color: #0B2E6B; } .ds-row small { color: #3B4A63; } .ds-price { font-weight: 800; font-size: 1.3rem; font-variant-numeric: tabular-nums; color: #0B2E6B; } @media (hover: hover) { .ds-row:hover { background: #F5F8FD; } }"
+    },
+    {
+      "name": "Choice Row",
+      "kind": "custom",
+      "refersTo": "choice-selected",
+      "description": "2px-bordered radio row for service and office choices.",
+      "html": "<label class=\"ds-choice\"><input type=\"radio\" name=\"ds-svc\" checked><span><strong>New business permit</strong><small>Apply for a permit to open a new business</small></span></label>",
+      "css": ".ds-choice { display: flex; gap: .9rem; align-items: flex-start; padding: 1rem 1.15rem; border: 2px solid #DCE3EC; border-radius: 10px; background: #fff; cursor: pointer; font-family: \"Public Sans\", system-ui, sans-serif; transition: border-color .15s ease, background-color .15s ease; } .ds-choice input { margin-top: .25rem; width: 20px; height: 20px; accent-color: #0B4FB3; } .ds-choice:has(input:checked) { border-color: #0B4FB3; background: #EDF3FC; } .ds-choice:has(input:focus-visible) { outline: 3px solid #F4C430; outline-offset: 2px; } @media (hover: hover) { .ds-choice:hover { border-color: #0B4FB3; } } .ds-choice strong { display: block; color: #0B2E6B; } .ds-choice small { display: block; color: #56647A; }"
+    },
+    {
+      "name": "Time Slot",
+      "kind": "button",
+      "refersTo": "slot-selected",
+      "description": "Toggle button in the slot grid; dashed when unavailable.",
+      "html": "<button class=\"ds-slot\" aria-pressed=\"true\"><b>9:00 AM</b><span>3 left</span></button><button class=\"ds-slot\"><b>10:00 AM</b><span>5 left</span></button><button class=\"ds-slot\" disabled><b>11:00 AM</b><span>Full</span></button>",
+      "css": ".ds-slot { font-family: \"Public Sans\", system-ui, sans-serif; width: 116px; margin: 0 .3rem; padding: .75rem .5rem; border: 2px solid #B4C0D0; border-radius: 6px; background: #fff; cursor: pointer; text-align: center; transition: border-color .15s ease, background-color .15s ease; } .ds-slot b { display: block; font-variant-numeric: tabular-nums; color: #0B2E6B; } .ds-slot span { font-size: .8rem; color: #56647A; } .ds-slot[aria-pressed=\"true\"] { background: #0B4FB3; border-color: #0B4FB3; } .ds-slot[aria-pressed=\"true\"] b { color: #fff; } .ds-slot[aria-pressed=\"true\"] span { color: #D6E3F7; } .ds-slot:disabled { cursor: not-allowed; background: #F3F6FA; border-style: dashed; } .ds-slot:disabled b, .ds-slot:disabled span { color: #8794A8; } @media (hover: hover) { .ds-slot:hover:not(:disabled):not([aria-pressed=\"true\"]) { border-color: #0B4FB3; background: #EDF3FC; } } .ds-slot:focus-visible { outline: 3px solid #F4C430; outline-offset: 2px; box-shadow: 0 0 0 5px #071A3A; }"
+    },
+    {
+      "name": "Permit Stub",
+      "kind": "custom",
+      "refersTo": "reference",
+      "description": "Booking confirmation: guilloche print, mono reference, green stamp, perforated stub.",
+      "html": "<div class=\"ds-ticket\"><div class=\"ds-ticket-main\"><div class=\"ds-ticket-label\">Reference number</div><div class=\"ds-ticket-ref\">BPL-20261116-ABCDE</div><span class=\"ds-ticket-status\">Confirmed</span></div><div class=\"ds-ticket-stub\"><span>Permit stub</span></div></div>",
+      "css": ".ds-ticket { display: grid; grid-template-columns: minmax(0, 1fr) auto; border: 2px solid #0B2E6B; border-radius: 10px; overflow: hidden; font-family: \"Public Sans\", system-ui, sans-serif; background: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='36' viewBox='0 0 120 36'%3E%3Cg fill='none' stroke='%230B4FB3' stroke-width='.7' opacity='.14'%3E%3Cpath d='M0 18c15-15 45-15 60 0s45 15 60 0'/%3E%3Cpath d='M0 18c15 15 45 15 60 0s45-15 60 0'/%3E%3Cpath d='M0 10c15-8 45-8 60 8s45 8 60-8'/%3E%3Cpath d='M0 26c15 8 45 8 60-8s45-8 60 8'/%3E%3C/g%3E%3C/svg%3E\") 0 0 / 120px 36px, #EDF3FC; } .ds-ticket-main { padding: 1.1rem 1.4rem; } .ds-ticket-label { font-size: .8rem; color: #3B4A63; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; } .ds-ticket-ref { font-family: \"JetBrains Mono\", ui-monospace, Menlo, monospace; font-size: 1.6rem; font-weight: 600; color: #0B2E6B; letter-spacing: .04em; margin: .2rem 0 .5rem; } .ds-ticket-status { display: inline-block; font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #12663E; background: #E5F4EC; border: 1.5px solid #12663E; border-radius: 4px; padding: .2rem .55rem; } .ds-ticket-stub { display: grid; place-items: center; width: 54px; background: #0B2E6B linear-gradient(#fff 50%, transparent 0) 0 0 / 2px 10px repeat-y; } .ds-ticket-stub span { writing-mode: vertical-rl; transform: rotate(180deg); color: #fff; font-size: .7rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Counter, Put Online",
+    "overview": "MetroMaya is a Philippine LGU business-permits counter moved onto the web. It follows GOV.PH and eGovPH public-service conventions top to bottom: a dark notice strip carrying the prototype disclaimer and the accessibility tools (text size, high contrast, pause animations), a white masthead with an emblem, a deep blue navigation bar under a gold rule, sturdy bordered forms, and an institutional dark footer. It is clearly unofficial: the emblem is Maya's own head in a ringed badge, never a seal, the GOVPH mark or an agency logo.\n\nThe ground is white panels on cool government gray. Information is laid out the way a city hall prints it: fee schedules with striped rows, a computation sheet for the estimator, an office directory, numbered stations for the process, a permit stub for the confirmation. Density is moderate and plain; every screen is meant to work on a cheap phone in plain language. Maya, the sparrow mail carrier, is the guide beside forms and help. She is never the centrepiece.\n\nThe page refuses the startup-landing default: no giant slogan hero, no floating rounded card grids, no mascot hero.",
+    "keyCharacteristics": [
+      "Notice strip, emblem masthead, blue nav bar with 3px gold top rule, dark footer with 4px gold top rule.",
+      "Schedules, sheets and directories (bordered panels with a gov-blue header bar) instead of card grids.",
+      "2px-bordered inputs, choices and slots; 4/6/10px corners.",
+      "Gold is a rule, a focus ring and the sample-rate tag. It is never a fill for actions.",
+      "Guilloche security print on the hero's right edge and on the booking reference stub.",
+      "Three user-controlled modes on <html>: data-fs, data-contrast=\"high\", data-motion=\"paused\"."
+    ],
+    "rules": [
+      { "name": "The Gold Is A Rule Rule", "body": "Gold draws lines, rings and tags. No button, panel or banner is filled gold. (.btn-gold exists in the stylesheet but no page uses it; it is not part of the system.)", "section": "colors" },
+      { "name": "The Status Colors Rule", "body": "Red and green appear only for state: errors, required marks, confirmed, cancelled, done. They are never decorative.", "section": "colors" },
+      { "name": "The Tabular Figures Rule", "body": "Every number that is compared or totalled (fees, tiles, slot times, inspection meta) sets font-variant-numeric: tabular-nums. Body copy keeps proportional figures.", "section": "typography" },
+      { "name": "The Mono For Codes Rule", "body": "JetBrains Mono is used only for booking reference numbers such as BPL-20261116-ABCDE.", "section": "typography" },
+      { "name": "The Border First Rule", "body": "A panel is defined by its 1px line-strong border and its gov-blue header bar. A shadow is optional and never stands in for a border.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do put the gold 44 by 4px rule above every H1 and section H2, and the 3px gold rule on the nav bar.",
+      "Do lay out fees, offices and steps as schedules, sheets, directories and numbered stations with header bars and ruled rows.",
+      "Do keep the \"Sample rates\" tag on every fee header and the sample-fee disclaimer visible in the footer and booking pages.",
+      "Do keep the \"Prototype e-service, not an official government website\" notice in the strip on every page.",
+      "Do place every :hover rule inside @media (hover: hover).",
+      "Do gate motion on prefers-reduced-motion: no-preference (press scale .96, hero rise, panel-in), with fade only under reduce, and honor html[data-motion=\"paused\"] by pausing every animation.",
+      "Do reveal sections on scroll and hide them again on scroll back up.",
+      "Do check every new color and state in html[data-contrast=\"high\"] and at html[data-fs=\"1\"] and \"2\".",
+      "Do require consent before identity verification starts."
+    ],
+    "donts": [
+      "Don't use the Republic of the Philippines seal, the GOVPH mark, or DICT or LGU logos, or anything implying endorsement.",
+      "Don't fill a button or panel with gold, or use red and green for decoration.",
+      "Don't use JetBrains Mono for anything but booking references.",
+      "Don't make Maya a hero centrepiece, scale her, move her, or crop her wings (beyond the CTA lift).",
+      "Don't add glow effects or a pill-shaped nav highlight.",
+      "Don't add kicker or eyebrow lines above headings."
+    ]
+  }
+}

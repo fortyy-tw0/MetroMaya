@@ -8,10 +8,15 @@ import appointment.model.FeeLine;
 import appointment.model.Industry;
 import appointment.model.InspectionType;
 import appointment.model.Office;
+import appointment.model.Payment;
 import appointment.model.PermitService;
 import appointment.model.Quote;
 import appointment.service.AppointmentService;
 import appointment.service.BookingException;
+import appointment.service.EgovVerifier;
+import appointment.service.IdScanner;
+import appointment.service.VerificationPass;
+import appointment.service.VerifiedPerson;
 import appointment.service.NotFoundException;
 import appointment.service.SlotInfo;
 import appointment.util.Json;
@@ -39,19 +44,32 @@ import java.util.Map;
  *   GET  /api/offices
  *   GET  /api/quote?serviceId=&industryId=&employees=
  *   GET  /api/slots?officeId=&date=YYYY-MM-DD
- *   POST /api/appointments                  (form-encoded body)
+ *   GET  /api/availability?officeId=&month=YYYY-MM   every day of the month: open or why closed, places left
+ *   POST /api/verify/egov                   (exchangeCode from the eGovPH widget) → pass + name, email, mobile
+ *   POST /api/verify/id                     (raw ID photo or PDF as the body) → pass + name read from the ID
+ *   POST /api/appointments                  (form-encoded body; needs verifyPass when verification is on)
  *   GET  /api/appointments/{ref}
  *   POST /api/appointments/{ref}/cancel
  *   POST /api/appointments/{ref}/reschedule (date, time)
+ *   POST /api/appointments/{ref}/pay        (channel) → starts a DEMO fee payment (no money moves)
+ *   GET  /api/pay/{txn}                     demo checkout details (opened by scanning the payment QR)
+ *   POST /api/pay/{txn}/complete            marks the demo payment paid and issues a demo receipt
  */
 class ApiHandler implements HttpHandler {
 
     private static final int MAX_BODY_BYTES = 16 * 1024;
 
     private final AppointmentService appointments;
+    /** Each null when its credentials aren't set. When either is on, booking needs a pass from {@link #passes}. */
+    private final EgovVerifier egov;
+    private final IdScanner idScanner;
+    private final VerificationPass passes;
 
-    ApiHandler(AppointmentService appointments) {
+    ApiHandler(AppointmentService appointments, EgovVerifier egov, IdScanner idScanner, VerificationPass passes) {
         this.appointments = appointments;
+        this.egov = egov;
+        this.idScanner = idScanner;
+        this.passes = passes;
     }
 
     @Override
@@ -90,7 +108,50 @@ class ApiHandler implements HttpHandler {
                 case "offices" -> { respond(exchange, 200, officesJson()); return; }
                 case "quote" -> { respond(exchange, 200, quoteResponse(exchange)); return; }
                 case "slots" -> { respond(exchange, 200, slotsJson(exchange)); return; }
+                case "availability" -> { respond(exchange, 200, availabilityJson(exchange)); return; }
                 default -> { }
+            }
+        }
+
+        if (head.equals("verify") && method.equals("POST") && parts.length == 2) {
+            VerifiedPerson person = switch (parts[1]) {
+                case "egov" -> egov == null ? null : egov.redeem(readForm(exchange).get("exchangeCode"));
+                case "id" -> idScanner == null ? null : idScanner.scan(readUpload(exchange));
+                default -> null;
+            };
+            if (person == null) {
+                respond(exchange, 404, Map.of("error", "That verification method is not turned on."));
+                return;
+            }
+            Map<String, Object> out = new LinkedHashMap<>();
+            out.put("pass", passes.issue(person));
+            out.put("fullName", person.fullName());
+            out.put("email", person.email());
+            out.put("mobile", person.mobile());
+            out.put("method", person.method());
+            if (person.address() != null) {
+                // only to prefill the form; the address is not part of the pass and is not stored here
+                VerifiedPerson.Address a = person.address();
+                Map<String, Object> addr = new LinkedHashMap<>();
+                addr.put("line1", a.line1());
+                addr.put("barangay", a.barangay());
+                addr.put("city", a.city());
+                addr.put("province", a.province());
+                addr.put("zip", a.zip());
+                out.put("address", addr);
+            }
+            respond(exchange, 200, out);
+            return;
+        }
+
+        if (head.equals("pay") && parts.length >= 2) {
+            if (method.equals("GET") && parts.length == 2) {
+                respond(exchange, 200, checkoutJson(appointments.findByPaymentTxn(parts[1])));
+                return;
+            }
+            if (method.equals("POST") && parts.length == 3 && parts[2].equals("complete")) {
+                respond(exchange, 200, checkoutJson(appointments.completePayment(parts[1])));
+                return;
             }
         }
 
@@ -105,6 +166,11 @@ class ApiHandler implements HttpHandler {
             }
             if (method.equals("POST") && parts.length == 3 && parts[2].equals("cancel")) {
                 respond(exchange, 200, appointmentJson(appointments.cancel(parts[1])));
+                return;
+            }
+            if (method.equals("POST") && parts.length == 3 && parts[2].equals("pay")) {
+                Appointment started = appointments.startPayment(parts[1], readForm(exchange).get("channel"));
+                respond(exchange, 200, appointmentJson(started));
                 return;
             }
             if (method.equals("POST") && parts.length == 3 && parts[2].equals("reschedule")) {
@@ -126,7 +192,14 @@ class ApiHandler implements HttpHandler {
                 form.get("businessAddress"),
                 industry,
                 parseEmployees(form.get("employees")));
-        Applicant applicant = new Applicant(form.get("ownerName"), form.get("email"), form.get("phone"));
+        Applicant applicant;
+        if (passes != null) {
+            // the booker's name and ID come from the signed pass, never from the form
+            VerifiedPerson p = passes.check(form.get("verifyPass"));
+            applicant = new Applicant(p.fullName(), form.get("email"), form.get("phone"), p.id());
+        } else {
+            applicant = new Applicant(form.get("ownerName"), form.get("email"), form.get("phone"));
+        }
         return appointments.book(
                 form.get("serviceId"),
                 form.get("officeId"),
@@ -162,6 +235,13 @@ class ApiHandler implements HttpHandler {
             sizes.add(m);
         }
         cfg.put("sizes", sizes);
+        if (passes != null) {
+            // verification comes first on the booking page; the widget needs partnerCode and host (secrets stay here)
+            Map<String, Object> verify = new LinkedHashMap<>();
+            verify.put("egov", egov == null ? null : Map.of("partnerCode", egov.getPartnerCode(), "host", egov.getBaseUrl()));
+            verify.put("idScan", idScanner != null);
+            cfg.put("verify", verify);
+        }
         return cfg;
     }
 
@@ -303,11 +383,66 @@ class ApiHandler implements HttpHandler {
         m.put("employees", a.getBusiness().getEmployeeCount());
         m.put("ownerName", a.getApplicant().getFullName());
         m.put("email", a.getApplicant().getEmail());
+        m.put("verified", a.getApplicant().isVerified());
         m.put("quote", quoteJson(a.getQuote()));
+        m.put("amountDue", appointments.amountDue(a));
+        m.put("payment", paymentJson(a.getPayment()));
         return Map.of("appointment", m);
     }
 
+    private Map<String, Object> availabilityJson(HttpExchange exchange) {
+        Map<String, String> q = parseQuery(exchange.getRequestURI().getRawQuery());
+        java.time.YearMonth month;
+        try {
+            month = java.time.YearMonth.parse(q.getOrDefault("month", ""));
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Month must look like 2026-11.");
+        }
+        List<Map<String, Object>> days = new ArrayList<>();
+        for (AppointmentService.DayAvailability d : appointments.monthAvailability(q.get("officeId"), month)) {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("date", d.date().toString());
+            m.put("open", d.open());
+            m.put("reason", d.closedReason());
+            m.put("remaining", d.remaining());
+            m.put("capacity", d.capacity());
+            days.add(m);
+        }
+        return Map.of("month", month.toString(), "days", days);
+    }
+
+    private static Map<String, Object> paymentJson(Payment p) {
+        if (p == null) return null;
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("txn", p.getTransactionId());
+        m.put("channel", p.getChannel());
+        m.put("amount", p.getAmount());
+        m.put("status", p.getStatus().name());
+        m.put("receiptNo", p.getReceiptNo());
+        m.put("paidAt", p.getPaidAt() == null ? null : p.getPaidAt().toString());
+        m.put("demo", true);
+        return m;
+    }
+
+    /** What the demo checkout page shows: just enough to pay, no personal details beyond the business name. */
+    private Map<String, Object> checkoutJson(Appointment a) {
+        Map<String, Object> m = new LinkedHashMap<>(paymentJson(a.getPayment()));
+        m.put("referenceNo", a.getReferenceNo());
+        m.put("description", a.getService().getName() + " · " + a.getBusiness().getName());
+        m.put("payTo", a.getOffice().getName());
+        m.put("bookingActive", a.isActive());
+        return Map.of("payment", m);
+    }
+
     // ---- HTTP helpers ----
+
+    private byte[] readUpload(HttpExchange exchange) throws IOException {
+        byte[] body = exchange.getRequestBody().readNBytes(IdScanner.MAX_BYTES + 1);
+        if (body.length > IdScanner.MAX_BYTES) {
+            throw new IllegalArgumentException("That file is too large. Use a photo under 8 MB.");
+        }
+        return body;
+    }
 
     private Map<String, String> readForm(HttpExchange exchange) throws IOException {
         byte[] body = exchange.getRequestBody().readNBytes(MAX_BODY_BYTES + 1);

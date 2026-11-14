@@ -12,8 +12,14 @@ public class Applicant {
     private final String fullName;
     private final String email;
     private final String phone;
+    /** Who verified before booking ("egov:…" or "id:…"), or null when verification is off. */
+    private final String verifiedId;
 
     public Applicant(String fullName, String email, String phone) {
+        this(fullName, email, phone, null);
+    }
+
+    public Applicant(String fullName, String email, String phone, String verifiedId) {
         if (fullName == null || fullName.trim().length() < 2) {
             throw new IllegalArgumentException("Please enter the owner's full name.");
         }
@@ -26,9 +32,12 @@ public class Applicant {
         this.fullName = fullName.trim();
         this.email = email.trim().toLowerCase();
         this.phone = phone.trim();
+        this.verifiedId = verifiedId == null || verifiedId.isBlank() ? null : verifiedId.trim();
     }
 
     public String getFullName() { return fullName; }
     public String getEmail() { return email; }
     public String getPhone() { return phone; }
+    public String getVerifiedId() { return verifiedId; }
+    public boolean isVerified() { return verifiedId != null; }
 }
