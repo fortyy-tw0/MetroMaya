@@ -194,8 +194,12 @@
     });
     if (a.queueNumber) details.append(el('dt', { text: 'Office queue' }), el('dd', { text: '#' + a.queueNumber }));
     const p = a.payment;
-    $('checkin-payment').textContent = p && p.status === 'PAID'
-      ? 'Demo online payment recorded · Receipt ' + p.receiptNo + ' · ' + peso(p.amount)
+    const paymentDetails = [];
+    if (a.counterPayment) paymentDetails.push('City hall payment verified · Official receipt '
+      + a.counterPayment.officialReceiptNo + ' · ' + peso(a.counterPayment.amount));
+    if (p && p.status === 'PAID') paymentDetails.push('Online demo payment recorded · Acknowledgement '
+      + p.receiptNo + ' · ' + peso(p.amount) + ' · No real money moved');
+    $('checkin-payment').textContent = paymentDetails.length ? paymentDetails.join(' | ')
       : 'No verified payment is recorded. Check with the treasurer before issuing an official receipt.';
     $('accept-booking').disabled = a.status !== 'CONFIRMED' || !!a.acceptedAt;
     $('accept-booking').textContent = a.acceptedAt ? 'Already accepted' : 'Accept at office';

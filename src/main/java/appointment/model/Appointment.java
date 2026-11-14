@@ -28,7 +28,7 @@ public class Appointment {
     private Instant acceptedAt;
     /** Secret management credential is stored only as a hash. Null on bookings made before this feature. */
     private String managementTokenHash;
-    /** Opaque office lookup code. It grants no access without the office key. */
+    /** Opaque office lookup code. It grants no access without a scoped staff login. */
     private String checkInCode;
     /** Staff-arrival sequence, unique within the office and appointment date. */
     private Integer queueNumber;

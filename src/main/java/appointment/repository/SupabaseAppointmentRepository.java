@@ -108,8 +108,10 @@ public class SupabaseAppointmentRepository implements AppointmentRepository {
 
     @Override
     public boolean officialReceiptExists(String officeId, String officialReceiptNo) {
+        // Exact match avoids treating an underscore in a receipt number as an ILIKE wildcard.
+        // The case-insensitive unique index catches case variants when the row is saved.
         return !select("select=reference_no&office_id=eq." + enc(officeId)
-                + "&" + enc("counter_payment->>officialReceiptNo") + "=ilike." + enc(officialReceiptNo) + "&limit=1").isEmpty();
+                + "&" + enc("counter_payment->>officialReceiptNo") + "=eq." + enc(officialReceiptNo) + "&limit=1").isEmpty();
     }
 
     @Override
