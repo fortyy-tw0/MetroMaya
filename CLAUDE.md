@@ -135,6 +135,7 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
   - Jump links are handled in JS (`jumpTop` in `common.js`). They **centre** the section's content (its direct `.wrap` child, so padding doesn't count) in the screen area below the header. If the content is taller than that area (the Fees estimator, and most sections on phones), its top lands 16px under the header instead. The result is clamped to the page's scroll range. Measuring uses `offsetTop`/`offsetHeight`, so sections still mid-reveal don't throw it off. `main section[id] { scroll-margin-top: 88px }` is the no-JS fallback.
   - **Home** and the logo on the home page smooth-scroll to the top instead of reloading. On other pages they navigate to `/` as normal.
   - The scrollspy line is the centre of that same area, so the highlighted tab always matches where a jump lands.
+- **book.html / manage.html header (`.site-header.page-header`):** always has a divider (1px `--line-strong` plus a soft shadow). The tabs (Home, Book a slot, Track a booking) have 1rem gaps and sit in the true centre (grid `1fr auto 1fr`). The right-hand button repeats a tab, so it's hidden above 900px and only shows on phones, where the tabs are hidden.
 - `body { overflow-x: clip }` guards against horizontal scroll.
 - **Dropdowns** (`.field select`, `.control select`) use `appearance: none` with a custom chevron 1rem from the right edge and `padding-right: 2.9rem`, so text never runs into it. The chevron turns navy on focus and faint when disabled.
 

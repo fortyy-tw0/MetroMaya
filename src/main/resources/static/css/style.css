@@ -573,3 +573,15 @@ em { font-style: normal; }
 .link-btn:hover { color: var(--navy-deep); }
 .choice .directions { display: inline-block; margin-top: .45rem; font-weight: 600; font-size: .88rem; }
 .office-other { margin: .25rem 0 0; font-size: .88rem; }
+
+/* ---------- Book a slot / Track a booking: a clear divider under the header, roomy tabs ---------- */
+.page-header, .page-header.scrolled { border-bottom: 1px solid var(--line-strong); box-shadow: 0 6px 18px -14px rgba(62, 36, 22, .35); }
+.page-header .nav-links { gap: 1rem; }
+.page-header .nav-links a { padding: .55rem 1rem; }
+/* the right-hand button repeats a tab, so it only shows on phones, where the tabs are hidden */
+@media (min-width: 901px) {
+  .page-header .nav-actions { display: none; }
+  /* logo | tabs | empty column of the same width, so the tabs sit in the true centre of the page */
+  .page-header .nav { display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem; }
+  .page-header .brand { justify-self: start; }
+}
