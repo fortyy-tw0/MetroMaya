@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Staff workspace · MetroMaya</title><link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
+  <link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/staff.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <div class="gov-strip"><div class="wrap gov-strip-inner"><p class="gov-notice"><b>Prototype e-service.</b> MetroMaya is not an official government website.</p></div></div>
+  <header class="site-header page-header"><div class="wrap masthead">
+    <a class="brand" href="/" aria-label="MetroMaya home"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text"><span class="brand-name">MetroMaya</span><span class="brand-sub">Staff workspace · Business permit appointments</span></span></a>
+    <div class="staff-session" id="session-info" hidden><span id="session-label"></span><button id="sign-out" class="btn btn-outline btn-small" type="button">Sign out</button></div>
+  </div></header>
+  <main id="main" class="staff-main wrap">
+    <section id="login-view" class="staff-login card" aria-labelledby="login-title">
+      <span class="eyebrow">Authorized personnel</span><h1 id="login-title">Sign in to your office</h1><p>See appointments, check in visitors, and use tools assigned to your role.</p>
+      <form id="login-form" class="staff-form"><div class="field"><label for="username">Username</label><input id="username" autocomplete="username" required></div>
+        <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+        <button class="btn btn-primary" type="submit">Sign in</button></form><div id="login-error" class="alert alert-error" role="alert" hidden></div>
+    </section>
+    <div id="workspace" hidden>
+      <div class="staff-heading"><div><span class="eyebrow" id="role-label"></span><h1 id="workspace-title">Office overview</h1><p id="office-subtitle"></p></div>
+        <div class="staff-office-select" id="office-picker" hidden><label for="office-select">Office</label><select id="office-select"></select></div></div>
+      <nav class="staff-tabs" aria-label="Staff workspace sections">
+        <button type="button" class="staff-tab" data-tab="today" aria-current="page">Daily appointments</button>
+        <button type="button" class="staff-tab" data-tab="checkin" id="checkin-tab">Check-in</button>
+        <button type="button" class="staff-tab" data-tab="analytics" id="analytics-tab" hidden>Traffic analytics</button>
+        <button type="button" class="staff-tab" data-tab="payments" id="payments-tab" hidden>Payments</button>
+        <button type="button" class="staff-tab" data-tab="settings" id="settings-tab" hidden>Office settings</button>
+        <button type="button" class="staff-tab" data-tab="accounts" id="accounts-tab" hidden>IT accounts</button>
+      </nav>
+      <section class="staff-panel" id="panel-today" aria-labelledby="today-title">
+        <div class="staff-panel-head"><div><h2 id="today-title">Appointments</h2><p>Live records for the selected office and date.</p></div>
+          <form id="date-form" class="staff-inline-form"><label for="day-select">Date</label><input type="date" id="day-select" required><button class="btn btn-outline btn-small" type="submit">View day</button></form></div>
+        <div id="daily-error" class="alert alert-error" role="alert" hidden></div><div class="staff-metrics" id="daily-metrics" aria-label="Daily totals"></div>
+        <details class="staff-walkin card" id="walkin-section"><summary>Record a walk-in visitor</summary><p>A walk-in joins today’s office queue without using an online appointment slot.</p>
+          <form id="walkin-form" class="staff-form staff-walkin-form">
+            <div class="field"><label for="walkin-service">Service</label><select id="walkin-service" required></select></div>
+            <div class="field"><label for="walkin-industry">Business type</label><select id="walkin-industry" required></select></div>
+            <div class="field"><label for="walkin-employees">Employees</label><input id="walkin-employees" type="number" min="1" max="100000" required></div>
+            <div class="field"><label for="walkin-business">Business name</label><input id="walkin-business" required></div>
+            <div class="field"><label for="walkin-address">Business address</label><input id="walkin-address" required></div>
+            <div class="field"><label for="walkin-owner">Applicant name</label><input id="walkin-owner" required></div>
+            <div class="field"><label for="walkin-email">Email</label><input id="walkin-email" type="email" required></div>
+            <div class="field"><label for="walkin-phone">Mobile number</label><input id="walkin-phone" inputmode="numeric" pattern="09[0-9]{9}" required></div>
+            <button class="btn btn-primary" type="submit">Add to office queue</button>
+          </form><div id="walkin-message" class="alert" role="status" hidden></div>
+        </details>
+        <div class="staff-table-wrap"><table class="staff-table"><thead><tr><th scope="col">Time / reference</th><th scope="col">Applicant and business</th><th scope="col">Service</th><th scope="col">Status / queue</th><th scope="col">Payment</th><th scope="col">Action</th></tr></thead><tbody id="daily-rows"></tbody></table></div>
+        <p id="daily-empty" class="staff-empty" hidden>No appointments for this day.</p>
+      </section>
+      <section class="staff-panel" id="panel-checkin" aria-labelledby="checkin-title" hidden>
+        <div class="staff-panel-head"><div><h2 id="checkin-title">Check in a visitor</h2><p>Scan their confirmation QR or enter the reference. Verify their identity before accepting.</p></div></div>
+        <div class="staff-checkin-grid"><div class="card"><form id="checkin-form" class="staff-form"><div class="field"><label for="checkin-code">Check-in code or booking reference</label><input id="checkin-code" autocomplete="off" required></div><button class="btn btn-primary" type="submit">Find booking</button></form>
+          <button type="button" class="btn btn-outline" id="camera-toggle">Scan with camera</button><div class="staff-camera" id="camera-box" hidden><video id="camera-video" autoplay muted playsinline aria-label="Camera preview for scanning a booking QR"></video><p id="camera-hint">Point the camera at the booking QR code.</p></div><div id="checkin-error" class="alert alert-error" role="alert" hidden></div></div>
+          <div class="card" id="checkin-result" hidden><div class="staff-checkin-head"><h3 id="checkin-ref"></h3><span class="badge" id="checkin-status"></span></div><dl class="summary" id="checkin-details"></dl><div id="checkin-payment" class="staff-payment"></div><button type="button" class="btn btn-primary" id="accept-booking">Accept at office</button><div id="checkin-success" class="alert alert-ok" role="status" hidden></div>
+            <div id="head-move" class="staff-head-move" hidden><h4>Move this appointment</h4><p>Choose an open time. The applicant receives an email when notifications are configured.</p>
+              <form id="head-move-form" class="staff-inline-form"><div class="field"><label for="head-move-date">New date</label><input id="head-move-date" type="date" required></div>
+                <div class="field"><label for="head-move-time">New time</label><select id="head-move-time" required></select></div><button type="submit" class="btn btn-outline btn-small">Move booking</button></form>
+              <div id="head-move-message" class="alert" role="status" hidden></div></div></div></div>
+      </section>
+      <section class="staff-panel" id="panel-analytics" aria-labelledby="analytics-title" hidden>
+        <div class="staff-panel-head"><div><h2 id="analytics-title">Office traffic</h2><p>Appointments and arrivals by day. Counts reflect the live booking record.</p></div>
+          <form id="month-form" class="staff-inline-form"><label for="month-select">Month</label><input type="month" id="month-select" required><button class="btn btn-outline btn-small" type="submit">View month</button></form></div>
+        <div id="analytics-error" class="alert alert-error" role="alert" hidden></div><div class="staff-metrics" id="monthly-metrics"></div>
+        <div class="staff-chart-card"><div class="staff-chart-heading"><h3>Daily traffic</h3><div class="staff-legend"><span><i class="legend-booked"></i>Booked</span><span><i class="legend-arrived"></i>Checked in</span></div></div><div id="traffic-chart" class="staff-chart" role="img" aria-label="Daily bookings and check-ins"></div></div>
+        <div class="staff-table-wrap"><table class="staff-table staff-day-table"><thead><tr><th scope="col">Day</th><th scope="col">Booked</th><th scope="col">Active</th><th scope="col">Checked in</th><th scope="col">No-shows</th><th scope="col">Walk-ins</th><th scope="col">Online paid</th></tr></thead><tbody id="traffic-rows"></tbody></table></div>
+      </section>
+      <section class="staff-panel" id="panel-accounts" aria-labelledby="accounts-title" hidden>
+        <div class="staff-panel-head"><div><h2 id="accounts-title">Access and accounts</h2><p>Create staff identities and provision one district head for each city or municipality.</p></div></div>
+        <div class="staff-admin-grid"><div class="card"><h3>Create an account</h3><form id="account-form" class="staff-form">
+          <div class="field"><label for="new-username">Username</label><input id="new-username" pattern="[a-z0-9][a-z0-9._-]{2,39}" required></div>
+          <div class="field"><label for="new-password">Temporary password</label><input id="new-password" type="text" minlength="12" autocomplete="off" required></div>
+          <div class="field"><label for="new-role">Role</label><select id="new-role"><option value="STAFF">Office staff</option><option value="DISTRICT_HEAD">District head</option><option value="TREASURER">Treasurer</option><option value="ADMIN">IT administrator</option></select></div>
+          <div class="field"><label for="new-office">Office</label><select id="new-office"></select></div><button type="submit" class="btn btn-primary">Create account</button></form><div id="account-message" class="alert" role="status" hidden></div></div>
+          <div class="card"><h3>District heads</h3><p>Create a separate district head account for every Metro Manila office. Save the temporary passwords before leaving this page; they are shown only once.</p><button type="button" id="seed-heads" class="btn btn-outline">Create missing district heads</button><div id="seed-message" class="alert" role="status" hidden></div><div id="seed-result" class="staff-seed-result" hidden></div></div>
+          <div class="card"><h3>Fully booked day simulation</h3><p>Add clearly marked demo bookings until every remaining slot is full. This works only when a test server has <code>ALLOW_DEMO_SEED=true</code>.</p>
+            <form id="simulation-form" class="staff-form"><div class="field"><label for="simulation-date">Open date</label><input id="simulation-date" type="date" required></div><button type="submit" class="btn btn-outline">Fill this day with demo bookings</button></form>
+            <div id="simulation-message" class="alert" role="status" hidden></div></div>
+          <div class="card"><h3>Reminder delivery</h3><p>Reminder checks run hourly when email is configured. You can run the check now for tomorrow’s appointments.</p>
+            <button type="button" id="send-reminders" class="btn btn-outline">Check tomorrow’s reminders</button><div id="reminder-message" class="alert" role="status" hidden></div></div>
+          <div class="card"><h3>System status</h3><p>Connection settings are controlled by server environment variables; secrets are never shown here.</p><dl id="system-status" class="summary"></dl></div>
+          <div class="card"><h3>Manage an account</h3><p>Disabling an account or resetting its password ends its current sessions.</p>
+            <form id="manage-account-form" class="staff-form"><div class="field"><label for="manage-username">Username</label><select id="manage-username"></select></div>
+              <div class="field"><label for="manage-action">Action</label><select id="manage-action"><option value="disable">Disable account</option><option value="enable">Enable account</option><option value="reset-password">Reset password</option></select></div>
+              <div class="field" id="manage-password-field" hidden><label for="manage-password">New password</label><input id="manage-password" type="password" minlength="12" autocomplete="new-password"></div>
+              <button type="submit" class="btn btn-outline">Apply account change</button></form><div id="manage-account-message" class="alert" role="status" hidden></div></div></div>
+        <h3 class="staff-list-title">Current accounts</h3><div class="staff-table-wrap"><table class="staff-table"><thead><tr><th scope="col">Username</th><th scope="col">Role</th><th scope="col">Office</th><th scope="col">Status</th></tr></thead><tbody id="account-rows"></tbody></table></div>
+      </section>
+      <section class="staff-panel" id="panel-settings" aria-labelledby="settings-title" hidden>
+        <div class="staff-panel-head"><div><h2 id="settings-title">Office settings</h2><p>District heads set local appointment hours, closures, and documents for their office.</p></div></div>
+        <div id="settings-error" class="alert alert-error" role="alert" hidden></div>
+        <div class="staff-admin-grid">
+          <div class="card"><h3>Hours and capacity</h3><p>Enter the appointment start times offered on weekdays. Existing bookings keep their original time.</p>
+            <form id="schedule-form" class="staff-form"><div class="field"><label for="schedule-times">Times, comma separated</label><input id="schedule-times" placeholder="08:00, 09:00, 10:00" required></div>
+              <div class="field"><label for="schedule-capacity">Bookings per time</label><input id="schedule-capacity" type="number" min="1" max="50" required></div>
+              <button class="btn btn-primary" type="submit">Save schedule</button></form><div id="schedule-message" class="alert" role="status" hidden></div></div>
+          <div class="card"><h3>Local holidays and emergency closures</h3><p>New bookings are blocked for a closed day. Review and contact applicants who already have a slot.</p>
+            <form id="closure-form" class="staff-form"><div class="field"><label for="closure-date">Date</label><input id="closure-date" type="date" required></div>
+              <div class="field"><label for="closure-kind">Closure type</label><select id="closure-kind"><option value="LOCAL_HOLIDAY">Local holiday</option><option value="EMERGENCY">Emergency closure</option></select></div>
+              <div class="field"><label for="closure-reason">Reason shown to applicants</label><input id="closure-reason" maxlength="160" required></div>
+              <button class="btn btn-primary" type="submit">Close this day</button></form><div id="closure-message" class="alert" role="status" hidden></div><div id="closure-affected" class="staff-affected" hidden></div>
+            <h4>Upcoming office closures</h4><ul id="closure-list" class="staff-closure-list"></ul></div>
+          <div class="card"><h3>Service-specific checklist</h3><p>Add documents and instructions applicants should see for this office. The list shows the last update date.</p>
+            <form id="checklist-form" class="staff-form"><div class="field"><label for="checklist-service">Service</label><select id="checklist-service"></select></div>
+              <div class="field"><label for="checklist-documents">Additional documents, one per line</label><textarea id="checklist-documents" rows="6"></textarea></div>
+              <div class="field"><label for="checklist-instructions">Office instructions</label><textarea id="checklist-instructions" rows="4" maxlength="2000"></textarea></div>
+              <button class="btn btn-primary" type="submit">Save checklist</button></form><p id="checklist-updated" class="hint"></p><div id="checklist-message" class="alert" role="status" hidden></div></div>
+        </div>
+      </section>
+      <section class="staff-panel" id="panel-payments" aria-labelledby="payments-title" hidden>
+        <div class="staff-panel-head"><div><h2 id="payments-title">Payment reconciliation</h2><p>Online checkout is a demo record. City hall payments are verified by a treasurer against an official receipt number.</p></div>
+          <form id="reconcile-date-form" class="staff-inline-form"><label for="reconcile-date">Appointment date</label><input id="reconcile-date" type="date" required><button type="submit" class="btn btn-outline btn-small">View payments</button></form></div>
+        <div id="reconcile-error" class="alert alert-error" role="alert" hidden></div><div class="staff-metrics" id="reconcile-metrics"></div>
+        <div class="staff-table-wrap"><table class="staff-table"><thead><tr><th scope="col">Reference / applicant</th><th scope="col">Online demo</th><th scope="col">City hall verified</th><th scope="col">Official receipt</th><th scope="col">Recorded by</th></tr></thead><tbody id="reconcile-rows"></tbody></table></div>
+        <div class="staff-admin-grid staff-payment-entry" id="treasurer-tools" hidden><div class="card"><h3>Record a city hall payment</h3><p>Enter a receipt only after verifying the treasurer’s actual payment record.</p>
+            <form id="counter-payment-form" class="staff-form"><div class="field"><label for="counter-ref">Booking reference</label><input id="counter-ref" required></div>
+              <div class="field"><label for="counter-amount">Amount paid (₱)</label><input id="counter-amount" type="number" min="0.01" step="0.01" required></div>
+              <div class="field"><label for="counter-receipt">Official receipt number</label><input id="counter-receipt" required></div>
+              <button type="submit" class="btn btn-primary">Verify and record</button></form><div id="counter-message" class="alert" role="status" hidden></div></div>
+          <div class="card"><h3>Import receipt records</h3><p>Choose a CSV with columns <code>referenceNo,amount,officialReceiptNo</code>. Each row is checked separately; review the result before leaving.</p>
+            <div class="field"><label for="receipt-csv">CSV file</label><input id="receipt-csv" type="file" accept=".csv,text/csv"></div>
+            <button type="button" id="import-receipts" class="btn btn-outline">Import verified receipts</button><div id="import-message" class="alert" role="status" hidden></div></div></div>
+      </section>
+    </div>
+  </main>
+  <script src="/js/common.js"></script><script src="/js/staff.js"></script>
+</body>
+</html>

@@ -14,15 +14,14 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OFFICE_KEY = "test-office-key"
 
 
-def request(base, path, form=None, management=None, office=None):
+def request(base, path, form=None, management=None, bearer=None):
     headers = {}
     if management is not None:
         headers["X-Management-Token"] = management
-    if office is not None:
-        headers["X-Office-Key"] = office
+    if bearer is not None:
+        headers["Authorization"] = "Bearer " + bearer
     if form is not None:
         headers["Content-Type"] = "application/x-www-form-urlencoded"
     body = urllib.parse.urlencode(form).encode() if form is not None else None
@@ -45,7 +44,8 @@ def main():
         for key in ("SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_SECRET_KEY",
                     "EGOV_BASE_URL", "EGOV_PARTNER_CODE", "EGOV_PARTNER_SECRET", "ASSEMBLYAI_API_KEY"):
             env.pop(key, None)
-        env.update(PORT=str(port), OFFICE_ACCESS_KEY=OFFICE_KEY)
+        env.update(PORT=str(port), STAFF_ADMIN_PASSWORD="strong-admin-test-password",
+                   STAFF_SESSION_SECRET="staff-test-session-secret-with-more-than-32-characters")
         server = subprocess.Popen(["java", "-cp", classes, "appointment.Main"], env=env,
                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         base = f"http://127.0.0.1:{port}"
@@ -93,10 +93,22 @@ def main():
             assert request(base, path + "/reschedule", {"date": day, "time": time_slot})[0] == 404
             assert request(base, path + "/pay", {"channel": "qrph"})[0] == 404
 
-            checkin = "/api/office/checkin/" + code
+            status, admin_login = request(base, "/api/staff/login",
+                                          {"username": "admin", "password": env["STAFF_ADMIN_PASSWORD"]})
+            assert status == 200
+            status, created = request(base, "/api/staff/users", {
+                "username": "clerk.caloocan", "password": "strong-clerk-test-password",
+                "role": "STAFF", "officeId": "caloocan"}, bearer=admin_login["token"])
+            assert status == 201, created
+            status, clerk_login = request(base, "/api/staff/login",
+                                          {"username": "clerk.caloocan", "password": "strong-clerk-test-password"})
+            assert status == 200
+            clerk = clerk_login["token"]
+            checkin = "/api/staff/checkin/" + code
             assert request(base, checkin)[0] == 401
-            assert request(base, checkin, office=OFFICE_KEY)[0] == 200
-            status, reset = request(base, "/api/office/" + ref + "/reset-management", {}, office=OFFICE_KEY)
+            assert request(base, checkin, bearer=clerk)[0] == 200
+            assert request(base, "/api/office/checkin/" + code)[0] == 404
+            status, reset = request(base, "/api/staff/bookings/" + ref + "/reset-management", {}, bearer=clerk)
             assert status == 200, reset
             new_token = reset["managementToken"]
             assert new_token != token

@@ -3,12 +3,24 @@ package appointment;
 import appointment.repository.AppointmentRepository;
 import appointment.repository.InMemoryAppointmentRepository;
 import appointment.repository.SupabaseAppointmentRepository;
+import appointment.repository.StaffAccountRepository;
+import appointment.repository.InMemoryStaffAccountRepository;
+import appointment.repository.SupabaseStaffAccountRepository;
+import appointment.repository.OfficePolicyRepository;
+import appointment.repository.InMemoryOfficePolicyRepository;
+import appointment.repository.SupabaseOfficePolicyRepository;
+import appointment.repository.NotificationEventRepository;
+import appointment.repository.InMemoryNotificationEventRepository;
+import appointment.repository.SupabaseNotificationEventRepository;
 import appointment.service.AppointmentService;
 import appointment.service.CatalogService;
 import appointment.service.EgovVerifier;
 import appointment.service.IdScanner;
 import appointment.service.PhilippineHolidayCalendar;
 import appointment.service.VerificationPass;
+import appointment.service.StaffAuthService;
+import appointment.service.ManagementLinkVault;
+import appointment.service.NotificationService;
 import appointment.web.WebServer;
 
 import java.time.Clock;
@@ -31,11 +43,14 @@ public class Main {
         ZoneId zone = ZoneId.of(System.getenv().getOrDefault("APP_TIMEZONE", "Asia/Manila"));
 
         CatalogService catalog = new CatalogService();
+        ManagementLinkVault linkVault = new ManagementLinkVault(env("MANAGEMENT_LINK_KEY"));
         AppointmentService service = new AppointmentService(
                 repository(catalog),
                 catalog,
                 Clock.system(zone),
-                new PhilippineHolidayCalendar());
+                new PhilippineHolidayCalendar(),
+                policyRepository(),
+                linkVault);
 
         Clock clock = Clock.system(zone);
         EgovVerifier egov = egov();
@@ -52,7 +67,13 @@ public class Main {
         } else {
             System.out.println("No eGov settings: anyone can book without verifying.");
         }
-        new WebServer(port, service, egov, ids, passes, env("OFFICE_ACCESS_KEY")).start();
+        StaffAuthService staff = new StaffAuthService(staffRepository(), catalog, clock,
+                env("STAFF_ADMIN_USERNAME"), env("STAFF_ADMIN_PASSWORD"), env("STAFF_SESSION_SECRET"));
+        NotificationService notifications = new NotificationService(service, notificationRepository(), linkVault, clock,
+                env("RESEND_API_KEY"), env("RESEND_FROM_EMAIL"), env("PUBLIC_BASE_URL"), env("RESEND_API_URL"));
+        if (!staff.configured()) System.out.println("Staff login is off until STAFF_ADMIN_PASSWORD and a 32-character STAFF_SESSION_SECRET are set.");
+        if (!notifications.configured()) System.out.println("Booking email is off until Resend, PUBLIC_BASE_URL and MANAGEMENT_LINK_KEY are configured.");
+        new WebServer(port, service, egov, ids, passes, staff, notifications).start();
         System.out.println("Appointment system running on http://localhost:" + port);
     }
 
@@ -66,6 +87,30 @@ public class Main {
         }
         System.out.println("SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set: bookings are kept in memory only.");
         return new InMemoryAppointmentRepository();
+    }
+
+    private static StaffAccountRepository staffRepository() {
+        String url = env("SUPABASE_URL");
+        String key = env("SUPABASE_SERVICE_ROLE_KEY");
+        if (key == null) key = env("SUPABASE_SECRET_KEY");
+        return url != null && key != null ? new SupabaseStaffAccountRepository(url, key)
+                : new InMemoryStaffAccountRepository();
+    }
+
+    private static OfficePolicyRepository policyRepository() {
+        String url = env("SUPABASE_URL");
+        String key = env("SUPABASE_SERVICE_ROLE_KEY");
+        if (key == null) key = env("SUPABASE_SECRET_KEY");
+        return url != null && key != null ? new SupabaseOfficePolicyRepository(url, key)
+                : new InMemoryOfficePolicyRepository();
+    }
+
+    private static NotificationEventRepository notificationRepository() {
+        String url = env("SUPABASE_URL");
+        String key = env("SUPABASE_SERVICE_ROLE_KEY");
+        if (key == null) key = env("SUPABASE_SECRET_KEY");
+        return url != null && key != null ? new SupabaseNotificationEventRepository(url, key)
+                : new InMemoryNotificationEventRepository();
     }
 
     /** "Verify with eGovPH" (eGov SSO), when EGOV_BASE_URL, EGOV_PARTNER_CODE and EGOV_PARTNER_SECRET are set. */

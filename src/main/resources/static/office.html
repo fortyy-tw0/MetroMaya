@@ -1,44 +1,9 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Office check-in · MetroMaya</title>
-  <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="/css/style.css">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Office check-in · MetroMaya</title><link rel="icon" href="data:,">
+  <script>location.replace('/staff.html' + location.search);</script>
 </head>
-<body>
-  <div class="gov-strip"><div class="wrap gov-strip-inner"><p class="gov-notice"><b>Prototype e-service.</b> MetroMaya is not an official government website.</p></div></div>
-  <header class="site-header page-header"><div class="wrap masthead"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text"><span class="brand-name">MetroMaya</span><span class="brand-sub">Business Permit Appointments · Metro Manila</span></span></a></div></header>
-  <main class="page" id="main"><div class="page-narrow">
-    <div class="page-title"><div><h1>Office check-in</h1><p>Scan the applicant’s check-in QR or enter a reference to verify the live booking and payment record.</p></div></div>
-    <div class="card">
-      <form id="office-form" class="office-form">
-        <div class="field"><label for="office-ref">Booking reference (if entering manually)</label><input id="office-ref" autocomplete="off" autocapitalize="characters" placeholder="BPL-20261120-ABCDE"></div>
-        <div class="field"><label for="office-key">Office access key</label><input id="office-key" type="password" required autocomplete="off" placeholder="Enter office access key"></div>
-        <button class="btn btn-primary" type="submit">Check booking</button>
-      </form>
-      <div class="alert alert-error" id="office-error" hidden role="alert"></div>
-    </div>
-    <div class="card office-result" id="office-result" hidden>
-      <div class="office-result-head"><h2 id="office-result-ref"></h2><span class="badge" id="office-result-status"></span></div>
-      <dl class="summary" id="office-details"></dl>
-      <div class="office-payment" id="office-payment" role="status"></div>
-      <div class="alert alert-ok" id="office-success" hidden role="status"></div>
-      <button class="btn btn-primary" type="button" id="office-accept">Accept booking at office</button>
-      <button class="btn btn-outline" type="button" id="office-refresh">Refresh status</button>
-      <button class="btn btn-outline" type="button" id="office-recover">Issue new private access code</button>
-      <div class="private-access" id="office-access-result" hidden>
-        <h3>New private booking access</h3>
-        <p>Give this code or link only to the applicant after checking their identity. The previous private code no longer works.</p>
-        <div class="field"><label for="office-new-code">Private access code</label><input id="office-new-code" readonly autocomplete="off"></div>
-        <button class="btn btn-outline btn-small" id="office-copy-link" type="button">Copy private link</button>
-        <span id="office-copy-status" role="status"></span>
-      </div>
-      <p class="hint">Accepting records office check-in. It does not mark an unpaid booking as paid. All payments in this prototype are demo records.</p>
-    </div>
-  </div></main>
-  <script src="/js/common.js"></script>
-  <script src="/js/office.js"></script>
-</body>
+<body><p>Office check-in has moved to <a href="/staff.html">the staff workspace</a>.</p></body>
 </html>

@@ -3,12 +3,15 @@ package appointment.service;
 import appointment.model.Applicant;
 import appointment.model.Appointment;
 import appointment.model.Business;
+import appointment.model.CounterPayment;
 import appointment.model.FeeLine;
 import appointment.model.Office;
+import appointment.model.OfficePolicy;
 import appointment.model.Payment;
 import appointment.model.PermitService;
 import appointment.model.Quote;
 import appointment.repository.AppointmentRepository;
+import appointment.repository.OfficePolicyRepository;
 
 import java.security.SecureRandom;
 import java.security.MessageDigest;
@@ -52,21 +55,62 @@ public class AppointmentService {
     private final CatalogService catalog;
     private final Clock clock;
     private final HolidayCalendar holidays;
+    private final OfficePolicyRepository policies;
+    private final ManagementLinkVault linkVault;
     private final SecureRandom random = new SecureRandom();
 
     /** The raw management token is returned once; only its SHA-256 hash is stored. */
     public record BookingResult(Appointment appointment, String managementToken) {}
 
     public AppointmentService(AppointmentRepository repository, CatalogService catalog, Clock clock,
-                              HolidayCalendar holidays) {
+                              HolidayCalendar holidays, OfficePolicyRepository policies, ManagementLinkVault linkVault) {
         this.repository = repository;
         this.catalog = catalog;
         this.clock = clock;
         this.holidays = holidays;
+        this.policies = policies;
+        this.linkVault = linkVault;
     }
 
     public CatalogService getCatalog() {
         return catalog;
+    }
+
+    public OfficePolicy policy(String officeId) {
+        Office office = catalog.getOffice(officeId);
+        return policies.find(officeId).orElseGet(() ->
+                new OfficePolicy(officeId, SLOT_TIMES, office.getCapacityPerSlot(), Map.of(), Map.of()));
+    }
+
+    public synchronized OfficePolicy updateSchedule(String officeId, List<LocalTime> times, int capacity) {
+        OfficePolicy updated = policy(officeId).withSchedule(times, capacity);
+        policies.save(updated);
+        return updated;
+    }
+
+    public synchronized OfficePolicy updateClosure(String officeId, LocalDate date, OfficePolicy.Closure closure) {
+        if (date == null || date.isBefore(today().minusDays(1)) || date.isAfter(today().plusYears(1)))
+            throw new IllegalArgumentException("Choose a closure date within the next year.");
+        OfficePolicy updated = policy(officeId).withClosure(date, closure);
+        policies.save(updated);
+        return updated;
+    }
+
+    public synchronized OfficePolicy updateChecklist(String officeId, String serviceId,
+                                                       List<String> documents, String instructions) {
+        catalog.getService(serviceId);
+        OfficePolicy updated = policy(officeId).withChecklist(serviceId,
+                new OfficePolicy.Checklist(documents, instructions, today()));
+        policies.save(updated);
+        return updated;
+    }
+
+    /** Office-scoped staff view. Authorization is enforced by the API before calling this method. */
+    public List<Appointment> listForOffice(String officeId, LocalDate from, LocalDate to) {
+        catalog.getOffice(officeId);
+        if (from == null || to == null || from.isAfter(to) || to.isAfter(from.plusMonths(12)))
+            throw new IllegalArgumentException("Choose a valid date range up to one year.");
+        return repository.listByOfficeRange(officeId, from, to);
     }
 
     public LocalDate today() {
@@ -89,16 +133,26 @@ public class AppointmentService {
         return service.quote(Business.forEstimate(catalog.getIndustry(industryId), employees));
     }
 
+    private Quote quoteForOffice(PermitService service, Business business, String officeId) {
+        Quote base = service.quote(business);
+        OfficePolicy.Checklist checklist = policy(officeId).checklists().get(service.getId());
+        if (checklist == null || checklist.documents().isEmpty()) return base;
+        List<String> requirements = new ArrayList<>(base.requirements());
+        for (String document : checklist.documents()) if (!requirements.contains(document)) requirements.add(document);
+        return new Quote(base.size(), base.fee(), base.inspections(), List.copyOf(requirements), base.estimatedMinutes());
+    }
+
     public List<SlotInfo> getSlots(String officeId, LocalDate date) {
         Office office = catalog.getOffice(officeId);
-        validateDate(date);
-        Map<LocalTime, Long> takenByTime = repository.countActiveByTime(office.getId(), date, SLOT_TIMES);
+        OfficePolicy policy = policy(officeId);
+        validateDate(office, policy, date);
+        Map<LocalTime, Long> takenByTime = repository.countActiveByTime(office.getId(), date, policy.slotTimes());
         List<SlotInfo> slots = new ArrayList<>();
-        for (LocalTime time : SLOT_TIMES) {
+        for (LocalTime time : policy.slotTimes()) {
             int taken = takenByTime.getOrDefault(time, 0L).intValue();
-            int remaining = Math.max(0, office.getCapacityPerSlot() - taken);
+            int remaining = Math.max(0, policy.capacityPerSlot() - taken);
             boolean inFuture = !LocalDateTime.of(date, time).isBefore(LocalDateTime.now(clock));
-            slots.add(new SlotInfo(time, office.getCapacityPerSlot(), remaining, inFuture && remaining > 0));
+            slots.add(new SlotInfo(time, policy.capacityPerSlot(), remaining, inFuture && remaining > 0));
         }
         return slots;
     }
@@ -134,9 +188,10 @@ public class AppointmentService {
         }
 
         Appointment appointment = new Appointment(newReference(date), applicant, business, service, office,
-                date, time, service.quote(business), Instant.now(clock));
+                date, time, quoteForOffice(service, business, office.getId()), Instant.now(clock));
         String managementToken = newSecret(32);
         appointment.setManagementTokenHash(hashToken(managementToken));
+        appointment.setManagementTokenCiphertext(linkVault.encrypt(managementToken));
         appointment.setCheckInCode(newSecret(24));
         repository.save(appointment);
         return new BookingResult(appointment, managementToken);
@@ -171,6 +226,7 @@ public class AppointmentService {
         Appointment a = find(referenceNo);
         String managementToken = newSecret(32);
         a.setManagementTokenHash(hashToken(managementToken));
+        a.setManagementTokenCiphertext(linkVault.encrypt(managementToken));
         if (a.getCheckInCode() == null) a.setCheckInCode(newSecret(24));
         repository.save(a);
         return new BookingResult(a, managementToken);
@@ -197,9 +253,22 @@ public class AppointmentService {
         return appointment;
     }
 
+    /** District-head initiated move, with the same capacity and acceptance protections as applicant moves. */
+    public synchronized Appointment moveAtOffice(String referenceNo, LocalDate date, LocalTime time) {
+        Appointment appointment = find(referenceNo);
+        if (!appointment.isActive() || appointment.getAcceptedAt() != null || appointment.isWalkIn())
+            throw new BookingException("Only an unaccepted scheduled booking can be moved.");
+        if (date.equals(appointment.getDate()) && time.equals(appointment.getTime()))
+            throw new BookingException("Choose a different date or time.");
+        validateSlot(appointment.getOffice(), date, time);
+        appointment.moveTo(date, time);
+        repository.save(appointment);
+        return appointment;
+    }
+
     // ---- rules ----
 
-    private void validateDate(LocalDate date) {
+    private void validateDate(Office office, OfficePolicy policy, LocalDate date) {
         if (date == null) {
             throw new BookingException("Please choose a date.");
         }
@@ -218,18 +287,21 @@ public class AppointmentService {
         holidays.holidayOn(date).ifPresent(h -> {
             throw new BookingException("Offices are closed on " + h.name() + ", a regular holiday. Please choose another day.");
         });
+        OfficePolicy.Closure closure = policy.closures().get(date);
+        if (closure != null) throw new BookingException(office.getName() + " is closed: " + closure.reason());
     }
 
     private void validateSlot(Office office, LocalDate date, LocalTime time) {
-        validateDate(date);
-        if (time == null || !SLOT_TIMES.contains(time)) {
+        OfficePolicy policy = policy(office.getId());
+        validateDate(office, policy, date);
+        if (time == null || !policy.slotTimes().contains(time)) {
             throw new BookingException("Please choose one of the available time slots.");
         }
         if (LocalDateTime.of(date, time).isBefore(LocalDateTime.now(clock))) {
             throw new BookingException("That time has already passed.");
         }
         long taken = repository.countActive(office.getId(), date, time);
-        if (taken >= office.getCapacityPerSlot()) {
+        if (taken >= policy.capacityPerSlot()) {
             throw new BookingException("That time slot is full. Please pick another.");
         }
     }
@@ -242,11 +314,12 @@ public class AppointmentService {
     /** Every day of a month for an office: closed days with their reason, open days with places left. */
     public List<DayAvailability> monthAvailability(String officeId, java.time.YearMonth month) {
         Office office = catalog.getOffice(officeId);
+        OfficePolicy policy = policy(officeId);
         LocalDate first = month.atDay(1), last = month.atEndOfMonth();
-        Map<LocalDate, Map<LocalTime, Long>> taken = repository.countActiveByDateTime(office.getId(), first, last, SLOT_TIMES);
+        Map<LocalDate, Map<LocalTime, Long>> taken = repository.countActiveByDateTime(office.getId(), first, last, policy.slotTimes());
         LocalDate today = today();
         LocalDateTime now = LocalDateTime.now(clock);
-        int cap = office.getCapacityPerSlot();
+        int cap = policy.capacityPerSlot();
         List<DayAvailability> days = new ArrayList<>();
         for (LocalDate d = first; !d.isAfter(last); d = d.plusDays(1)) {
             String reason = null;
@@ -257,10 +330,11 @@ public class AppointmentService {
                 java.util.Optional<HolidayCalendar.Holiday> h = holidays.holidayOn(d);
                 if (h.isPresent()) reason = h.get().name();
             }
+            if (reason == null && policy.closures().containsKey(d)) reason = policy.closures().get(d).reason();
             int remaining = 0, capacity = 0;
             if (reason == null) {
                 Map<LocalTime, Long> byTime = taken.getOrDefault(d, Map.of());
-                for (LocalTime t : SLOT_TIMES) {
+                for (LocalTime t : policy.slotTimes()) {
                     if (LocalDateTime.of(d, t).isBefore(now)) continue;   // slots already gone today
                     capacity += cap;
                     remaining += Math.max(0, cap - byTime.getOrDefault(t, 0L).intValue());
@@ -312,12 +386,76 @@ public class AppointmentService {
     /** Office check-in is idempotent; payment remains a separate, live status. */
     public synchronized Appointment acceptAtOffice(String referenceNo) {
         Appointment a = find(referenceNo);
-        if (!a.isActive()) throw new BookingException("A cancelled booking cannot be accepted.");
-        if (a.getAcceptedAt() == null) {
-            a.accept(Instant.now(clock));
-            repository.save(a);
-        }
+        if (!a.isActive()) throw new BookingException("This booking cannot be accepted.");
+        return repository.acceptAtOffice(a, Instant.now(clock));
+    }
+
+    public synchronized Appointment markNoShow(String referenceNo) {
+        Appointment a = find(referenceNo);
+        if (LocalDateTime.now(clock).isBefore(a.getDate().atTime(a.getTime()).plusMinutes(30)))
+            throw new BookingException("Wait at least 30 minutes after the appointment time before marking a no-show.");
+        a.markNoShow(Instant.now(clock));
+        repository.save(a);
         return a;
+    }
+
+    /** Treasurer-verified city hall payment. Online demo payments remain a separate record. */
+    public synchronized Appointment recordCounterPayment(String referenceNo, double amount,
+                                                           String officialReceiptNo, String treasurer) {
+        Appointment a = find(referenceNo);
+        if (!a.isActive()) throw new BookingException("Payment cannot be recorded for a closed booking.");
+        if (a.getCounterPayment() != null)
+            throw new BookingException("A city hall payment is already recorded for this booking.");
+        if (officialReceiptNo != null && repository.officialReceiptExists(a.getOffice().getId(), officialReceiptNo.trim()))
+            throw new BookingException("This official receipt number is already recorded for this office.");
+        a.setCounterPayment(new CounterPayment(amount, officialReceiptNo, Instant.now(clock), treasurer));
+        repository.save(a);
+        return a;
+    }
+
+    /** Records an arriving visitor without consuming an online appointment slot. */
+    public synchronized Appointment createWalkIn(String serviceId, String officeId, Applicant applicant, Business business) {
+        PermitService service = catalog.getService(serviceId);
+        Office office = catalog.getOffice(officeId);
+        if (!office.offers(serviceId) || !office.serves(business.getSize()))
+            throw new BookingException("This office does not serve the chosen service or business size.");
+        LocalDate day = today();
+        LocalTime arrivedAt = LocalTime.now(clock).withSecond(0).withNano(0);
+        Appointment a = new Appointment(newReference(day), applicant, business, service, office,
+                day, arrivedAt, quoteForOffice(service, business, officeId), Instant.now(clock));
+        a.setWalkIn(true);
+        repository.save(a);
+        return repository.acceptAtOffice(a, Instant.now(clock));
+    }
+
+    /** Admin-only demo data: fill every remaining slot on an open day with clearly synthetic records. */
+    public synchronized int seedFullyBookedDay(String officeId, LocalDate date) {
+        Office office = catalog.getOffice(officeId);
+        OfficePolicy policy = policy(officeId);
+        validateDate(office, policy, date);
+        if ((long) policy.slotTimes().size() * policy.capacityPerSlot() > 200)
+            throw new BookingException("For a demo seed, set no more than 200 total daily places.");
+        int created = 0;
+        for (LocalTime time : policy.slotTimes()) {
+            if (LocalDateTime.of(date, time).isBefore(LocalDateTime.now(clock))) continue;
+            while (repository.countActive(officeId, date, time) < policy.capacityPerSlot()) {
+                int number = ++created;
+                String suffix = date.toString().replace("-", "") + "-" + time.toString().replace(":", "") + "-" + number;
+                Applicant applicant = new Applicant("Demo Visitor " + number,
+                        "demo-" + officeId + "-" + suffix + "@example.invalid", "09123456789");
+                Business business = new Business("Demo Business " + suffix, "Simulation record only, " + office.getName(),
+                        catalog.getIndustry("retail"), 2);
+                Appointment a = new Appointment(newReference(date), applicant, business,
+                        catalog.getService("new-permit"), office, date, time,
+                        quoteForOffice(catalog.getService("new-permit"), business, officeId), Instant.now(clock));
+                String access = newSecret(32);
+                a.setManagementTokenHash(hashToken(access));
+                a.setCheckInCode(newSecret(24));
+                a.setDemoRecord(true);
+                repository.save(a);
+            }
+        }
+        return created;
     }
 
     /** The booking a payment transaction belongs to. Transaction ids are the booking reference plus "-P" and a code. */

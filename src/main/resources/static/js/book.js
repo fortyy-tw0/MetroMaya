@@ -4,7 +4,7 @@
 
   const state = {
     step: 0, services: [], industries: [], offices: [], config: null,
-    serviceId: null, form: null, quote: null, city: null, officeId: null, date: '', time: '', verifyPass: null,
+    serviceId: null, form: null, quote: null, city: null, officeId: null, officeChecklist: null, date: '', time: '', verifyPass: null,
   };
 
   const $ = (id) => document.getElementById(id);
@@ -305,6 +305,7 @@
       input.addEventListener('change', () => {
         if (state.officeId !== o.id) { state.date = ''; state.time = ''; }
         state.officeId = o.id;
+        loadOfficeChecklist();
         next.disabled = false;
       });
       const maps = directionsUrl(city, o);
@@ -319,6 +320,33 @@
     box.append(el('p', { class: 'hint office-other', text: 'Wrong city? Go back to the Business step and change it.' }));
     next.disabled = !state.officeId;
     renderMap(mine[0], city);
+    loadOfficeChecklist();
+  }
+
+  async function loadOfficeChecklist() {
+    const box = clear($('office-checklist'));
+    state.officeChecklist = null;
+    box.hidden = !state.officeId;
+    if (!state.officeId) return;
+    const officeId = state.officeId, serviceId = state.serviceId;
+    box.append(el('h3', { text: 'Office instructions' }), el('p', { text: 'Loading the current office checklist…' }));
+    try {
+      const { checklist } = await api.get('/api/checklist?officeId=' + encodeURIComponent(officeId)
+        + '&serviceId=' + encodeURIComponent(serviceId));
+      if (state.officeId !== officeId || state.serviceId !== serviceId) return;
+      state.officeChecklist = checklist;
+      clear(box).append(el('h3', { text: 'Office instructions' }));
+      if (checklist.instructions) box.append(el('p', { text: checklist.instructions }));
+      if (checklist.documents.length) {
+        box.append(el('h4', { text: 'Additional documents required here' }));
+        const list = el('ul', { class: 'doc-list' });
+        checklist.documents.forEach((document) => list.append(el('li', { text: document })));
+        box.append(list);
+      }
+      box.append(el('p', { class: 'hint', text: checklist.updatedAt
+        ? 'Checklist last updated ' + formatDate(checklist.updatedAt) : 'No extra documents or instructions set by this office.' }));
+      if (!panels[4].hidden) renderDocs($('review-docs'), [...new Set([...state.quote.requirements, ...checklist.documents])]);
+    } catch (error) { clear(box).append(el('p', { class: 'hint', text: 'Office instructions are temporarily unavailable.' })); }
   }
 
   // ---------- the office map: where you are, and the fastest route there ----------
@@ -516,7 +544,8 @@
     addRow(dl, 'Contact', f.ownerName + ', ' + f.email + ', ' + f.phone);
     renderFee($('review-fee'), state.quote.fee);
     renderInspections($('review-insp'), state.quote.inspections);
-    renderDocs($('review-docs'), state.quote.requirements);
+    renderDocs($('review-docs'), [...new Set([...state.quote.requirements,
+      ...(state.officeChecklist ? state.officeChecklist.documents : [])])]);
     hideAlert($('submit-alert'));
   }
 

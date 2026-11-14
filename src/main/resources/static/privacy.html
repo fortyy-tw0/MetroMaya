@@ -80,7 +80,7 @@
         <p>To check that a real person is booking, to keep out spam and duplicate bookings, to book and manage your appointment, and to show you the fees, inspections and documents for your visit.</p>
 
         <h2>Where it is kept</h2>
-        <p>Bookings are stored in a database (Supabase) that only MetroMaya’s server can read or change. To view or manage a booking, you need both its reference number and the private access code issued when you booked. The server stores only a hash of that code. The office check-in QR contains a separate lookup code that works only with staff access.</p>
+        <p>Bookings are stored in a database (Supabase) that only MetroMaya’s server can read or change. To view or manage a booking, you need both its reference number and the private access code issued when you booked. The server stores a hash of that code for access checks. When email reminders are enabled, it also stores an encrypted copy so it can send your private link. The office check-in QR contains a separate lookup code that works only after authorized staff sign in. Staff check-ins, queue numbers, no-shows, and treasurer-verified city hall receipt records are stored with the booking. If email is configured, your address and booking details are sent to the email provider for confirmations and reminders.</p>
 
         <h2>How long we keep it</h2>
         <p class="placeholder">[To be set by the adopting office: how long bookings and verification references are kept after the appointment date.]</p>

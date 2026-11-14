@@ -5,6 +5,7 @@ import appointment.model.Appointment;
 import appointment.model.AppointmentStatus;
 import appointment.model.Business;
 import appointment.model.BusinessSize;
+import appointment.model.CounterPayment;
 import appointment.model.FeeBreakdown;
 import appointment.model.FeeLine;
 import appointment.model.InspectionType;
@@ -68,6 +69,10 @@ public class SupabaseAppointmentRepository implements AppointmentRepository {
                 .header("Prefer", "resolution=merge-duplicates,return=minimal")
                 .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8)));
         if (res.statusCode() == 409) {
+            if (res.body().contains("appointments_official_receipt_idx"))
+                throw new BookingException("This official receipt number is already recorded for this office.");
+            if (res.body().contains("appointments_office_queue_idx"))
+                throw new BookingException("The office queue changed while accepting this booking. Refresh and try again.");
             // the database's own guard: one active booking per email + business + service
             throw new BookingException("You already have an active booking for this business and service. "
                     + "Cancel it first to book a new one.");
@@ -90,15 +95,50 @@ public class SupabaseAppointmentRepository implements AppointmentRepository {
     }
 
     @Override
+    public List<Appointment> listByOfficeRange(String officeId, LocalDate from, LocalDate to) {
+        List<Appointment> out = new ArrayList<>();
+        String filter = "office_id=eq." + enc(officeId) + "&appt_date=gte." + from
+                + "&appt_date=lte." + to + "&order=appt_date.asc,appt_time.asc,reference_no.asc";
+        for (int offset = 0; ; offset += 500) {
+            List<Map<String, Object>> page = select(filter + "&limit=500&offset=" + offset);
+            page.stream().map(this::toAppointment).forEach(out::add);
+            if (page.size() < 500) return out;
+        }
+    }
+
+    @Override
+    public boolean officialReceiptExists(String officeId, String officialReceiptNo) {
+        return !select("select=reference_no&office_id=eq." + enc(officeId)
+                + "&" + enc("counter_payment->>officialReceiptNo") + "=ilike." + enc(officialReceiptNo) + "&limit=1").isEmpty();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Appointment acceptAtOffice(Appointment appointment, Instant when) {
+        String endpoint = restUrl.replace("/appointments", "/rpc/office_accept_booking");
+        String body = Json.stringify(Map.of("p_reference_no", appointment.getReferenceNo(),
+                "p_accepted_at", when.toString()));
+        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(endpoint)).timeout(TIMEOUT)
+                .header("apikey", apiKey).header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8));
+        if (apiKey.startsWith("eyJ")) builder.header("Authorization", "Bearer " + apiKey);
+        HttpResponse<String> response = send(builder);
+        check(response, "accept the booking");
+        List<Object> rows = (List<Object>) Json.parse(response.body());
+        if (rows.isEmpty()) throw new IllegalStateException("The booking was not accepted.");
+        return toAppointment((Map<String, Object>) rows.get(0));
+    }
+
+    @Override
     public long countActive(String officeId, LocalDate date, LocalTime time) {
-        return select("select=reference_no&status=eq.CONFIRMED&office_id=eq." + enc(officeId)
+        return select("select=reference_no&status=eq.CONFIRMED&walk_in=eq.false&office_id=eq." + enc(officeId)
                 + "&appt_date=eq." + date + "&appt_time=eq." + time).size();
     }
 
     @Override
     public Map<LocalTime, Long> countActiveByTime(String officeId, LocalDate date, List<LocalTime> times) {
         Map<LocalTime, Long> counts = new HashMap<>();
-        for (Map<String, Object> row : select("select=appt_time&status=eq.CONFIRMED&office_id=eq." + enc(officeId)
+        for (Map<String, Object> row : select("select=appt_time&status=eq.CONFIRMED&walk_in=eq.false&office_id=eq." + enc(officeId)
                 + "&appt_date=eq." + date)) {
             counts.merge(LocalTime.parse(str(row, "appt_time")), 1L, Long::sum);
         }
@@ -109,8 +149,10 @@ public class SupabaseAppointmentRepository implements AppointmentRepository {
     public Map<LocalDate, Map<LocalTime, Long>> countActiveByDateTime(String officeId, LocalDate from, LocalDate to,
                                                                       List<LocalTime> times) {
         Map<LocalDate, Map<LocalTime, Long>> out = new HashMap<>();
-        for (Map<String, Object> row : select("select=appt_date,appt_time&status=eq.CONFIRMED&office_id=eq." + enc(officeId)
-                + "&appt_date=gte." + from + "&appt_date=lte." + to)) {
+        String filter = "select=reference_no,appt_date,appt_time&status=eq.CONFIRMED&walk_in=eq.false&office_id=eq."
+                + enc(officeId) + "&appt_date=gte." + from + "&appt_date=lte." + to
+                + "&order=appt_date.asc,appt_time.asc,reference_no.asc";
+        for (Map<String, Object> row : selectPaged(filter)) {
             out.computeIfAbsent(LocalDate.parse(str(row, "appt_date")), d -> new HashMap<>())
                     .merge(LocalTime.parse(str(row, "appt_time")), 1L, Long::sum);
         }
@@ -120,14 +162,14 @@ public class SupabaseAppointmentRepository implements AppointmentRepository {
     @Override
     public List<Appointment> findActiveByEmail(String email) {
         if (email == null) return List.of();
-        return select("status=eq.CONFIRMED&email=eq." + enc(email.trim().toLowerCase())).stream()
+        return select("status=eq.CONFIRMED&walk_in=eq.false&email=eq." + enc(email.trim().toLowerCase())).stream()
                 .map(this::toAppointment)
                 .toList();
     }
 
     @Override
     public long countActiveByVerifiedId(String verifiedId) {
-        return select("select=reference_no&status=eq.CONFIRMED&verified_id=eq." + enc(verifiedId)).size();
+        return select("select=reference_no&status=eq.CONFIRMED&walk_in=eq.false&verified_id=eq." + enc(verifiedId)).size();
     }
 
     // ---------- mapping between rows and objects ----------
@@ -152,7 +194,13 @@ public class SupabaseAppointmentRepository implements AppointmentRepository {
         if (a.getPayment() != null) row.put("payment", a.getPayment().toMap());
         if (a.getAcceptedAt() != null) row.put("accepted_at", a.getAcceptedAt().toString());
         if (a.getManagementTokenHash() != null) row.put("management_token_hash", a.getManagementTokenHash());
+        if (a.getManagementTokenCiphertext() != null) row.put("management_token_ciphertext", a.getManagementTokenCiphertext());
         if (a.getCheckInCode() != null) row.put("checkin_code", a.getCheckInCode());
+        if (a.getQueueNumber() != null) row.put("queue_number", a.getQueueNumber());
+        if (a.isWalkIn()) row.put("walk_in", true);
+        if (a.isDemoRecord()) row.put("demo_record", true);
+        if (a.getCounterPayment() != null) row.put("counter_payment", a.getCounterPayment().toMap());
+        if (a.getNoShowAt() != null) row.put("no_show_at", a.getNoShowAt().toString());
         row.put("quote", quoteToJson(a.getQuote()));
         row.put("created_at", a.getCreatedAt().toString());
         row.put("updated_at", Instant.now().toString());
@@ -171,7 +219,16 @@ public class SupabaseAppointmentRepository implements AppointmentRepository {
         restored.setPayment(paymentFrom(row.get("payment")));
         if (row.get("accepted_at") != null) restored.setAcceptedAt(OffsetDateTime.parse(str(row, "accepted_at")).toInstant());
         restored.setManagementTokenHash(str(row, "management_token_hash"));
+        restored.setManagementTokenCiphertext(str(row, "management_token_ciphertext"));
         restored.setCheckInCode(str(row, "checkin_code"));
+        if (row.get("queue_number") != null) restored.setQueueNumber(((Number) row.get("queue_number")).intValue());
+        restored.setWalkIn(Boolean.TRUE.equals(row.get("walk_in")));
+        restored.setDemoRecord(Boolean.TRUE.equals(row.get("demo_record")));
+        if (row.get("counter_payment") instanceof Map<?, ?> payment) {
+            @SuppressWarnings("unchecked") Map<String, Object> values = (Map<String, Object>) payment;
+            restored.setCounterPayment(CounterPayment.fromMap(values));
+        }
+        if (row.get("no_show_at") != null) restored.setNoShowAt(OffsetDateTime.parse(str(row, "no_show_at")).toInstant());
         return restored;
     }
 
@@ -220,6 +277,15 @@ public class SupabaseAppointmentRepository implements AppointmentRepository {
         List<Map<String, Object>> rows = new ArrayList<>();
         for (Object o : (List<Object>) Json.parse(res.body())) rows.add((Map<String, Object>) o);
         return rows;
+    }
+
+    private List<Map<String, Object>> selectPaged(String query) {
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (int offset = 0; ; offset += 500) {
+            List<Map<String, Object>> page = select(query + "&limit=500&offset=" + offset);
+            rows.addAll(page);
+            if (page.size() < 500) return rows;
+        }
     }
 
     private HttpRequest.Builder request(String query) {

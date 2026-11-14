@@ -2,5 +2,6 @@ package appointment.model;
 
 public enum AppointmentStatus {
     CONFIRMED,
-    CANCELLED
+    CANCELLED,
+    NO_SHOW
 }

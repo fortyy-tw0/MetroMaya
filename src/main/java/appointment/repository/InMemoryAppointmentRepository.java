@@ -4,6 +4,7 @@ import appointment.model.Appointment;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,9 +36,26 @@ public class InMemoryAppointmentRepository implements AppointmentRepository {
     }
 
     @Override
+    public List<Appointment> listByOfficeRange(String officeId, LocalDate from, LocalDate to) {
+        return byReference.values().stream()
+                .filter(a -> a.getOffice().getId().equals(officeId))
+                .filter(a -> !a.getDate().isBefore(from) && !a.getDate().isAfter(to))
+                .sorted(Comparator.comparing(Appointment::getDate).thenComparing(Appointment::getTime)
+                        .thenComparing(Appointment::getReferenceNo)).toList();
+    }
+
+    @Override
+    public boolean officialReceiptExists(String officeId, String officialReceiptNo) {
+        return byReference.values().stream().anyMatch(a -> a.getOffice().getId().equals(officeId)
+                && a.getCounterPayment() != null
+                && a.getCounterPayment().officialReceiptNo().equalsIgnoreCase(officialReceiptNo));
+    }
+
+    @Override
     public long countActive(String officeId, LocalDate date, LocalTime time) {
         return byReference.values().stream()
                 .filter(Appointment::isActive)
+                .filter(a -> !a.isWalkIn())
                 .filter(a -> a.getOffice().getId().equals(officeId))
                 .filter(a -> a.getDate().equals(date) && a.getTime().equals(time))
                 .count();
@@ -47,6 +65,7 @@ public class InMemoryAppointmentRepository implements AppointmentRepository {
     public List<Appointment> findActiveByEmail(String email) {
         return byReference.values().stream()
                 .filter(Appointment::isActive)
+                .filter(a -> !a.isWalkIn())
                 .filter(a -> a.getApplicant().getEmail().equalsIgnoreCase(email))
                 .toList();
     }
@@ -55,6 +74,7 @@ public class InMemoryAppointmentRepository implements AppointmentRepository {
     public long countActiveByVerifiedId(String verifiedId) {
         return byReference.values().stream()
                 .filter(Appointment::isActive)
+                .filter(a -> !a.isWalkIn())
                 .filter(a -> verifiedId.equals(a.getApplicant().getVerifiedId()))
                 .count();
     }

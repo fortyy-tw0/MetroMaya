@@ -30,6 +30,13 @@ public class Appointment {
     private String managementTokenHash;
     /** Opaque office lookup code. It grants no access without the office key. */
     private String checkInCode;
+    /** Staff-arrival sequence, unique within the office and appointment date. */
+    private Integer queueNumber;
+    private boolean walkIn;
+    private Instant noShowAt;
+    private boolean demoRecord;
+    private CounterPayment counterPayment;
+    private String managementTokenCiphertext;
 
     public Appointment(String referenceNo, Applicant applicant, Business business, PermitService service,
                        Office office, LocalDate date, LocalTime time, Quote quote, Instant createdAt) {
@@ -59,7 +66,7 @@ public class Appointment {
 
     public void cancel() {
         if (!isActive()) {
-            throw new BookingException("This booking has already been cancelled.");
+            throw new BookingException("This booking is no longer active.");
         }
         if (acceptedAt != null) throw new BookingException("This booking was accepted at the office and cannot be cancelled online.");
         status = AppointmentStatus.CANCELLED;
@@ -77,6 +84,13 @@ public class Appointment {
     public void accept(Instant when) {
         if (!isActive()) throw new BookingException("A cancelled booking cannot be accepted.");
         if (acceptedAt == null) acceptedAt = when;
+    }
+
+    public void markNoShow(Instant when) {
+        if (!isActive() || acceptedAt != null || walkIn)
+            throw new BookingException("Only an unaccepted scheduled booking can be marked as a no-show.");
+        status = AppointmentStatus.NO_SHOW;
+        noShowAt = when;
     }
 
     public String getReferenceNo() { return referenceNo; }
@@ -97,4 +111,16 @@ public class Appointment {
     public void setManagementTokenHash(String managementTokenHash) { this.managementTokenHash = managementTokenHash; }
     public String getCheckInCode() { return checkInCode; }
     public void setCheckInCode(String checkInCode) { this.checkInCode = checkInCode; }
+    public Integer getQueueNumber() { return queueNumber; }
+    public void setQueueNumber(Integer queueNumber) { this.queueNumber = queueNumber; }
+    public boolean isWalkIn() { return walkIn; }
+    public void setWalkIn(boolean walkIn) { this.walkIn = walkIn; }
+    public Instant getNoShowAt() { return noShowAt; }
+    public void setNoShowAt(Instant noShowAt) { this.noShowAt = noShowAt; }
+    public boolean isDemoRecord() { return demoRecord; }
+    public void setDemoRecord(boolean demoRecord) { this.demoRecord = demoRecord; }
+    public CounterPayment getCounterPayment() { return counterPayment; }
+    public void setCounterPayment(CounterPayment counterPayment) { this.counterPayment = counterPayment; }
+    public String getManagementTokenCiphertext() { return managementTokenCiphertext; }
+    public void setManagementTokenCiphertext(String managementTokenCiphertext) { this.managementTokenCiphertext = managementTokenCiphertext; }
 }

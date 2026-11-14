@@ -4,6 +4,7 @@ import appointment.model.Appointment;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,23 @@ public interface AppointmentRepository {
 
     /** Staff-only lookup by the opaque code printed in a booking's check-in QR. */
     Optional<Appointment> findByCheckInCode(String checkInCode);
+
+    /** All appointments (including cancelled) in one office and inclusive date range, for staff operations. */
+    List<Appointment> listByOfficeRange(String officeId, LocalDate from, LocalDate to);
+
+    boolean officialReceiptExists(String officeId, String officialReceiptNo);
+
+    /** Atomically assigns the next office queue number on arrival. */
+    default Appointment acceptAtOffice(Appointment appointment, Instant when) {
+        if (appointment.getAcceptedAt() != null) return appointment;
+        int next = listByOfficeRange(appointment.getOffice().getId(), appointment.getDate(), appointment.getDate())
+                .stream().map(Appointment::getQueueNumber).filter(n -> n != null)
+                .mapToInt(Integer::intValue).max().orElse(0) + 1;
+        appointment.accept(when);
+        appointment.setQueueNumber(next);
+        save(appointment);
+        return appointment;
+    }
 
     /** Active (non-cancelled) appointments for an office at an exact date and time. */
     long countActive(String officeId, LocalDate date, LocalTime time);

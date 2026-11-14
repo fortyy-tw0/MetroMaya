@@ -630,10 +630,10 @@ function renderPayment(box, a, onUpdate, managementToken) {
       } }), btn)));
 }
 
-// The office QR carries only an opaque lookup code. Staff must enter their server-side access key
-// before the live booking and payment status can be viewed or the booking accepted.
+// The office QR carries only an opaque lookup code. Staff must sign in before they can
+// view the live booking and payment status or accept the booking.
 function checkInUrl(a) {
-  return location.origin + '/office.html?code=' + encodeURIComponent(a.checkInCode);
+  return location.origin + '/staff.html?code=' + encodeURIComponent(a.checkInCode);
 }
 
 function checkInQr(a) {
