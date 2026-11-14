@@ -1,51 +1,122 @@
 # MetroMaya
 
-> **A modernized, citizen-first digital civic portal and Local Government Unit (LGU) service prototype.**
+> **Skip the line, get on business.**
 
-**MetroMaya** is a modern web application designed to reimagine how citizens interact with Local Government Unit (LGU) services in Metro Manila. Built with speed, accessibility, and clean user experience at its core, MetroMaya eliminates the visual clutter, fragmented sub-portals, and slow load times common in legacy government websites—demonstrating an end-to-end digital service workflow aligned with modern e-governance standards.
+MetroMaya is a business permit appointment website for Metro Manila. Business owners see their permit fees, inspections and required documents before they go, then book a time slot at their city hall's business permits office. It was built as a course project for Object-Oriented Programming.
 
-**Live Demo:** [https://metro-maya.vercel.app/](https://metro-maya.vercel.app/)
+**Live site:** [metro-maya.vercel.app](https://metro-maya.vercel.app)
 
----
-
-## How MetroMaya Differs from Traditional LGU Portals
-
-| Feature Area | Legacy LGU Websites | MetroMaya |
-| :--- | :--- | :--- |
-| **Architecture & Speed** | Monolithic CMS/legacy backends prone to slow load times during peak traffic. | Edge-cached frontend deployment on **Vercel** for instant loading and responsive navigation. |
-| **UI / UX Design** | Cluttered layouts, buried navigation menus, and desktop-first forms. | Clean, consumer-grade, mobile-first interface with clear visual hierarchy. |
-| **Service Discovery** | Static tables and downloadable PDF checklists. | Interactive, guided service workflows and quick-access civic directories. |
-| **Transaction Flow** | Fragmented redirects to external payment pages without live status sync. | Unified end-to-end dashboard tracking applications from submission to fulfillment. |
+> Fees shown on the site are **sample rates for a course project, not official LGU fees**. City hall addresses, barangays and ZIP codes are real.
 
 ---
 
-## Core & Planned Features
+## Purpose
 
-### Civic Utility & Information
-- **Unified Service Directory:** Instant search and categorization for local government permits, clearances, and community programs.
-- **Emergency & Public Hotline Hub:** One-tap access to local emergency response units, police precincts, fire stations, and public health facilities.
-- **Announcements & Advisories:** Clean, readable feed for local ordinances, public notices, and community alerts.
+Applicants usually find out what a business permit costs, which inspections they need and which documents to bring only when they reach the counter, which often means more than one trip. MetroMaya puts that information up front and gives each applicant a confirmed time slot, so one prepared visit is enough.
 
-### End-to-End Digital Permit Workflow *(Sandbox / Prototype)*
-- **Guided Application Wizard:** Step-by-step digital intake for business permits, barangay/city clearances, and local requests.
-- **Simulated Online Payment Gateway:** Interactive sandbox checkout supporting familiar local payment channels (QRPh, GCash, Maya, and online bank transfers) with instant status updates.
-- **Digital Permits & QR Verification:** Auto-generated Electronic Official Receipts (e-OR) and digital permits embedded with unique verification QR codes.
-- **Pickup vs. Door-to-Door Delivery:** Flexible fulfillment options allowing users to book a City Hall appointment slot or opt for courier delivery with live status tracking (*Submitted → Assessed → Paid → Out for Delivery*).
+It covers the 16 cities of Metro Manila and the municipality of Pateros, and three services:
+
+- **New business permit**
+- **Annual renewal**
+- **Inspection visit**
+
+Maya, a tree sparrow dressed as a mail carrier, is the site's guide and mascot.
 
 ---
 
-## Getting Started
+## How to use it
 
-To run a local copy of MetroMaya for development or testing, follow these steps.
+### 1. Check your fees (home page)
 
-### Prerequisites
-- **Node.js** (v18.0 or higher recommended)
-- **npm**, **yarn**, **pnpm**, or **bun**
-- **Git**
+- **Fees:** pick your city and business size to see the base permit fee, inspections and extra charges for each type of business.
+- **Fees Estimator:** choose a service, your type of business, number of employees and city to get an estimated total, a fee breakdown, the inspections, the time needed and the documents to bring.
+- **Offices:** see your city hall's address and the four desks a permit passes through: the Business Permits and Licensing Office, the Treasurer's Office, the Bureau of Fire Protection desk and the Health Office.
 
-### Installation
+### 2. Book a slot (`/book.html`)
 
-1. **Clone the repository:**
-   ```bash
-   git clone [https://github.com/fortyy-tw0/MetroMaya.git](https://github.com/fortyy-tw0/MetroMaya.git)
-   cd MetroMaya
+1. **Service:** new permit, renewal or inspection visit.
+2. **Business:** business name, Address Line 1, then City, Barangay and ZIP code, your type of business, number of employees, and the owner's contact details. An estimate appears once the city, type of business and employees are filled in.
+3. **Office:** your city's business permits office is selected for you, with its address and directions.
+4. **Date and time:** a weekday up to 30 days ahead. Slots run hourly from 8:00 to 16:00, with no 12:00 slot.
+5. **Review and confirm:** you get a reference number such as `BPL-20261116-ABCDE`.
+
+No account is needed.
+
+### 3. Track a booking (`/manage.html`)
+
+Enter your reference number to see the booking, move it to another free slot, or cancel it.
+
+---
+
+## Tech stack
+
+| Part | Technology |
+| --- | --- |
+| Backend | **Java 21**, using the JDK's built-in HTTP server (`com.sun.net.httpserver`). No frameworks, no build tool, no external libraries. |
+| Frontend | **HTML, CSS and vanilla JavaScript**. Static pages served by the Java server. |
+| Fonts | Lexend, Figtree and JetBrains Mono (Google Fonts) |
+| Data | Bookings are kept in memory. Barangays come from the PSA's PSGC list and ZIP codes from the PHLPost directory. |
+| Mascot assets | Python 3 (NumPy, SciPy, Pillow) scripts in `tools/maya/` generate Maya's animation frames |
+| Hosting | **Vercel**, using its container runtime with the root `Dockerfile` |
+
+### Object-oriented design
+
+The Java model is built around three class hierarchies:
+
+| What varies | Design | Classes |
+| --- | --- | --- |
+| Type of business | Abstract class with subclasses | `Industry` → `RetailIndustry`, `FoodIndustry`, `ManufacturingIndustry`, `ProfessionalServicesIndustry`, `HealthcareIndustry` |
+| Business size | Enum with constant-specific methods | `BusinessSize`: `MICRO`, `SMALL`, `MEDIUM`, `LARGE` |
+| Service | Abstract class with a final template method `quote()` | `PermitService` → `NewPermitService`, `RenewalService`, `InspectionVisitService` |
+
+Storage goes through the `AppointmentRepository` interface, implemented by `InMemoryAppointmentRepository`. A full walkthrough of the code is in [`docs/MetroMaya-How-the-Code-Works.pdf`](docs/MetroMaya-How-the-Code-Works.pdf).
+
+---
+
+## Project structure
+
+```
+src/main/java/appointment/
+  Main.java        starts the web server
+  model/           industries, business sizes, services, offices, fees, appointments
+  service/         booking rules, catalog, slot availability
+  repository/      AppointmentRepository and its in-memory implementation
+  web/             HTTP server, API routes, static file handler, JSON
+src/main/resources/static/
+  index.html       home page
+  book.html        booking wizard
+  manage.html      track, move or cancel a booking
+  css/, js/, img/  styles, scripts and Maya's images
+tools/             scripts that build Maya's animations and the barangay/ZIP data
+docs/              the code guide (PDF)
+```
+
+---
+
+## Running it locally
+
+**Requirements:** Java 21 (JDK).
+
+```bash
+git clone https://github.com/fortyy-tw0/MetroMaya.git
+cd MetroMaya
+./run.sh
+```
+
+Then open [http://localhost:8080](http://localhost:8080). Set the `PORT` environment variable to use another port.
+
+Bookings are stored in memory, so they reset whenever the server restarts.
+
+---
+
+## API
+
+| Method and path | What it does |
+| --- | --- |
+| `GET /api/services`, `/api/industries`, `/api/offices`, `/api/config` | Lists services, types of business, city offices and size tiers |
+| `GET /api/quote?serviceId=&industryId=&employees=` | Fee estimate, inspections, documents and time |
+| `GET /api/slots?officeId=&date=YYYY-MM-DD` | Available time slots for an office and day |
+| `POST /api/appointments` | Books a slot and returns the reference number |
+| `GET /api/appointments/{ref}` | Looks up a booking |
+| `POST /api/appointments/{ref}/cancel` | Cancels a booking |
+| `POST /api/appointments/{ref}/reschedule` | Moves a booking to a new date and time |
