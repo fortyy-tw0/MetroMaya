@@ -66,6 +66,10 @@ def main():
             admin = admin_login["token"]
             assert request(base, "/api/staff/users")[0] == 401
             assert request(base, "/api/staff/users", bearer="bad")[0] == 401
+            assert request(base, "/api/staff/bookings?officeId=manila&from=" + day + "&to=" + day,
+                           bearer=admin)[0] == 403
+            assert request(base, "/api/staff/analytics?officeId=manila&month=" + day[:7],
+                           bearer=admin)[0] == 403
             status, seeded = request(base, "/api/staff/seed-heads", {}, bearer=admin)
             assert status == 200 and len(seeded["issued"]) == 17, seeded
             assert request(base, "/api/staff/seed-heads", {}, bearer=admin)[1]["issued"] == []

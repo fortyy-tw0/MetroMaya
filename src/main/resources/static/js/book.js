@@ -306,7 +306,6 @@
         if (state.officeId !== o.id) { state.date = ''; state.time = ''; }
         state.officeId = o.id;
         loadOfficeChecklist();
-        next.disabled = false;
       });
       const maps = directionsUrl(city, o);
       box.append(el('label', { class: 'choice' + (problem ? ' disabled' : '') }, input,
@@ -325,7 +324,9 @@
 
   async function loadOfficeChecklist() {
     const box = clear($('office-checklist'));
+    const next = panels[2].querySelector('[data-next]');
     state.officeChecklist = null;
+    next.disabled = true;
     box.hidden = !state.officeId;
     if (!state.officeId) return;
     const officeId = state.officeId, serviceId = state.serviceId;
@@ -335,6 +336,7 @@
         + '&serviceId=' + encodeURIComponent(serviceId));
       if (state.officeId !== officeId || state.serviceId !== serviceId) return;
       state.officeChecklist = checklist;
+      next.disabled = false;
       clear(box).append(el('h3', { text: 'Office instructions' }));
       if (checklist.instructions) box.append(el('p', { text: checklist.instructions }));
       if (checklist.documents.length) {
@@ -346,7 +348,11 @@
       box.append(el('p', { class: 'hint', text: checklist.updatedAt
         ? 'Checklist last updated ' + formatDate(checklist.updatedAt) : 'No extra documents or instructions set by this office.' }));
       if (!panels[4].hidden) renderDocs($('review-docs'), [...new Set([...state.quote.requirements, ...checklist.documents])]);
-    } catch (error) { clear(box).append(el('p', { class: 'hint', text: 'Office instructions are temporarily unavailable.' })); }
+    } catch (error) {
+      if (state.officeId !== officeId || state.serviceId !== serviceId) return;
+      clear(box).append(el('p', { class: 'hint', text: 'Office requirements could not load. Try again before continuing.' }),
+        el('button', { type: 'button', class: 'btn btn-outline btn-small', text: 'Retry requirements', onclick: loadOfficeChecklist }));
+    }
   }
 
   // ---------- the office map: where you are, and the fastest route there ----------

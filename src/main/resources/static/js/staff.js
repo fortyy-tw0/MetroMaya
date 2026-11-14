@@ -47,11 +47,13 @@
   }
 
   function showTab(name) {
-    if (name === 'analytics' && !['DISTRICT_HEAD', 'ADMIN'].includes(user.role)) name = 'today';
-    if (name === 'accounts' && user.role !== 'ADMIN') name = 'today';
-    if (name === 'settings' && user.role !== 'DISTRICT_HEAD') name = 'today';
-    if (name === 'payments' && !['DISTRICT_HEAD', 'TREASURER'].includes(user.role)) name = 'today';
-    if (name === 'checkin' && !['STAFF', 'DISTRICT_HEAD'].includes(user.role)) name = 'today';
+    const home = user.role === 'ADMIN' ? 'accounts' : 'today';
+    if (name === 'today' && user.role === 'ADMIN') name = home;
+    if (name === 'analytics' && user.role !== 'DISTRICT_HEAD') name = home;
+    if (name === 'accounts' && user.role !== 'ADMIN') name = home;
+    if (name === 'settings' && user.role !== 'DISTRICT_HEAD') name = home;
+    if (name === 'payments' && !['DISTRICT_HEAD', 'TREASURER'].includes(user.role)) name = home;
+    if (name === 'checkin' && !['STAFF', 'DISTRICT_HEAD'].includes(user.role)) name = home;
     document.querySelectorAll('.staff-tab').forEach((button) => {
       if (button.dataset.tab === name) button.setAttribute('aria-current', 'page');
       else button.removeAttribute('aria-current');
@@ -75,7 +77,8 @@
     $('session-info').hidden = false;
     $('session-label').textContent = account.username;
     $('role-label').textContent = ROLE_NAMES[account.role];
-    $('analytics-tab').hidden = !['DISTRICT_HEAD', 'ADMIN'].includes(account.role);
+    document.querySelector('[data-tab="today"]').hidden = account.role === 'ADMIN';
+    $('analytics-tab').hidden = account.role !== 'DISTRICT_HEAD';
     $('checkin-tab').hidden = !['STAFF', 'DISTRICT_HEAD'].includes(account.role);
     $('payments-tab').hidden = !['DISTRICT_HEAD', 'TREASURER'].includes(account.role);
     $('treasurer-tools').hidden = account.role !== 'TREASURER';
@@ -83,7 +86,7 @@
     $('accounts-tab').hidden = account.role !== 'ADMIN';
     $('settings-tab').hidden = account.role !== 'DISTRICT_HEAD';
     if (account.role === 'ADMIN') {
-      $('workspace-title').textContent = 'Metro Manila operations';
+      $('workspace-title').textContent = 'IT administration';
       $('office-picker').hidden = false;
       clear($('office-select'));
       clear($('new-office'));
@@ -102,7 +105,7 @@
     services.services.forEach((service) => $('walkin-service').append(el('option', { value: service.id, text: service.name })));
     services.services.forEach((service) => $('checklist-service').append(el('option', { value: service.id, text: service.name })));
     industries.industries.forEach((industry) => $('walkin-industry').append(el('option', { value: industry.id, text: industry.name })));
-    $('office-subtitle').textContent = account.role === 'ADMIN' ? 'Choose an office to see its live appointments.' : 'Bookings and arrivals for your office.';
+    $('office-subtitle').textContent = account.role === 'ADMIN' ? 'Manage access and choose an office for test simulations.' : 'Bookings and arrivals for your office.';
     const config = await api.get('/api/config');
     $('day-select').value = config.today;
     $('month-select').value = config.today.slice(0, 7);
@@ -113,12 +116,12 @@
       $('checkin-code').value = scanCode;
       history.replaceState(null, '', location.pathname);
       if (['STAFF', 'DISTRICT_HEAD'].includes(account.role)) { showTab('checkin'); lookup(); }
-      else showTab('today');
-    } else showTab('today');
+      else showTab(account.role === 'ADMIN' ? 'accounts' : 'today');
+    } else showTab(account.role === 'ADMIN' ? 'accounts' : 'today');
   }
 
   async function loadDay() {
-    if (!user || !officeId()) return;
+    if (!user || user.role === 'ADMIN' || !officeId()) return;
     hideAlert($('daily-error'));
     try {
       const day = $('day-select').value;
@@ -239,7 +242,7 @@
   }
 
   async function loadMonth() {
-    if (!user || user.role === 'STAFF') return;
+    if (!user || user.role !== 'DISTRICT_HEAD') return;
     hideAlert($('analytics-error'));
     try {
       const month = $('month-select').value;
@@ -432,7 +435,6 @@
   });
   $('month-form').addEventListener('submit', (event) => { event.preventDefault(); loadMonth(); });
   $('reconcile-date-form').addEventListener('submit', (event) => { event.preventDefault(); loadReconciliation(); });
-  $('office-select').addEventListener('change', () => { loadDay(); loadMonth(); });
   $('checkin-form').addEventListener('submit', (event) => { event.preventDefault(); lookup(); });
   $('head-move-date').addEventListener('change', loadMoveSlots);
   $('head-move-form').addEventListener('submit', async (event) => {
@@ -551,7 +553,6 @@
       const result = await staffRequest('/api/staff/simulate-full-day', { officeId: officeId(), date });
       showAlert($('simulation-message'), result.created + ' demo bookings created. The day is fully booked.', 'ok');
       $('day-select').value = date;
-      loadDay();
     } catch (error) { showAlert($('simulation-message'), error.message, 'error'); }
   });
   $('send-reminders').addEventListener('click', async () => {

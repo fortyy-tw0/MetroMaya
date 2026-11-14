@@ -262,6 +262,7 @@ class ApiHandler implements HttpHandler {
             }
         }
         if (method.equals("GET") && parts.length == 2 && parts[1].equals("bookings")) {
+            staff.requireRole(user, StaffAccount.Role.STAFF, StaffAccount.Role.DISTRICT_HEAD, StaffAccount.Role.TREASURER);
             Map<String, String> query = parseQuery(exchange.getRequestURI().getRawQuery());
             String officeId = staff.officeFor(user, query.get("officeId"));
             LocalDate from = LocalDate.parse(query.getOrDefault("from", appointments.today().toString()));
@@ -301,6 +302,7 @@ class ApiHandler implements HttpHandler {
             return;
         }
         if (parts.length >= 3 && parts[1].equals("bookings")) {
+            staff.requireRole(user, StaffAccount.Role.STAFF, StaffAccount.Role.DISTRICT_HEAD, StaffAccount.Role.TREASURER);
             Appointment booking = appointments.find(parts[2]);
             staff.requireOffice(user, booking.getOffice().getId());
             if (method.equals("GET") && parts.length == 3) {
@@ -343,7 +345,7 @@ class ApiHandler implements HttpHandler {
             }
         }
         if (method.equals("GET") && parts.length == 2 && parts[1].equals("analytics")) {
-            staff.requireRole(user, StaffAccount.Role.DISTRICT_HEAD, StaffAccount.Role.ADMIN);
+            staff.requireRole(user, StaffAccount.Role.DISTRICT_HEAD);
             Map<String, String> query = parseQuery(exchange.getRequestURI().getRawQuery());
             String officeId = staff.officeFor(user, query.get("officeId"));
             YearMonth month = YearMonth.parse(query.getOrDefault("month", YearMonth.from(appointments.today()).toString()));
