@@ -641,13 +641,18 @@ function printBooking(a) {
     el('div', { class: 'print-masthead' },
       el('span', { class: 'brand' }, 'MetroMaya', el('b', { text: '.' })),
       el('span', { class: 'print-document-type', text: paid ? 'Prototype confirmation + demo receipt · Not official' : 'Prototype booking confirmation · Not official' })),
-    el('div', { class: 'ticket print-ticket' },
-      el('div', { class: 'ticket-main' },
-        el('div', { class: 'label', text: 'Booking reference' }),
+    // a plain confirmation: the reference and, right beside it, the check-in code staff scan at the office
+    el('div', { class: 'print-top' },
+      el('div', { class: 'print-ref' + (a.status === 'CANCELLED' ? ' is-cancelled' : '') },
+        el('div', { class: 'print-ref-head' },
+          el('span', { class: 'label', text: 'Booking reference' }),
+          el('span', { class: 'print-status', text: a.status === 'CANCELLED' ? 'Cancelled' : a.acceptedAt ? 'Accepted' : 'Confirmed' })),
         el('div', { class: 'ref', text: a.referenceNo }),
-        el('div', { class: 'ticket-sub', text: 'Show this at the business permits office' })),
-      el('div', { class: 'ticket-stub', 'aria-hidden': 'true' }, el('span', { text: 'Claim stub' })),
-      el('span', { class: 'ticket-status' + (a.status === 'CANCELLED' ? ' print-ticket-cancelled' : ''), text: a.status === 'CANCELLED' ? 'Cancelled' : a.acceptedAt ? 'Accepted' : 'Confirmed' })),
+        el('div', { class: 'print-ref-sub', text: 'Show this confirmation at the business permits office.' })),
+      el('div', { class: 'checkin-code print-checkin' },
+        checkInQr(a),
+        el('div', null, el('h3', { text: 'Office check-in code' }),
+          el('p', { text: paid ? 'Staff scan this to check the booking and the demo payment.' : 'Staff scan this to check the booking.' })))),
     summary);
 
   if (paid) {
@@ -680,12 +685,7 @@ function printBooking(a) {
   sheet.append(
     el('div', { class: 'print-requirements' },
       el('section', null, el('h2', { text: 'Documents to bring' }), docs),
-      el('section', null, el('h2', { text: 'Inspections' }), inspections,
-        el('div', { class: 'checkin-code print-checkin' },
-          checkInQr(a),
-          el('div', null, el('h3', { text: 'Office check-in code' }),
-            el('p', { text: paid ? 'Staff scan to verify the booking and demo payment.' : 'Staff scan to verify the booking.' }),
-            el('p', { class: 'checkin-ref', text: a.referenceNo }))))));
+      el('section', null, el('h2', { text: 'Inspections' }), inspections)));
 
   requestAnimationFrame(() => window.print());
 }
@@ -760,7 +760,14 @@ function mountCalendar(container, opts) {
       }, el('span', { class: 'cal-num', text: String(n) }));
       if (d.open && lvl !== 'full') btn.append(el('span', { class: 'cal-left', text: d.remaining + ' left' }), el('i', { class: 'cal-dot lvl-' + lvl, 'aria-hidden': 'true' }));
       else if (d.open) btn.append(el('span', { class: 'cal-left', text: 'Full' }));
-      else if (d.reason !== 'Past' && d.reason !== 'Weekend') btn.append(el('span', { class: 'cal-left cal-holiday', text: d.reason.length > 14 ? 'Holiday' : d.reason }));
+      else if (d.reason !== 'Past' && d.reason !== 'Weekend') {
+        // only a real holiday gets the red holiday label; days past the 3-month window, office closures and
+        // the like just read "Closed" (the full reason is in the tooltip and the screen-reader label)
+        const holiday = (config.holidays || []).some((h) => h.date === d.date);
+        btn.append(holiday
+          ? el('span', { class: 'cal-left cal-holiday', text: d.reason.length > 14 ? 'Holiday' : d.reason })
+          : el('span', { class: 'cal-left', text: 'Closed' }));
+      }
       btn.addEventListener('click', () => {
         selected = d.date;
         grid.querySelectorAll('.cal-day').forEach((b) => { b.classList.remove('is-selected'); b.setAttribute('aria-pressed', 'false'); });

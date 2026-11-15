@@ -808,19 +808,13 @@ em { font-style: normal; }
 @media print {
   .site-header, .footer, .nav-row, .no-print, .stepper, .page-title img, .skip-link { display: none !important; }
   body { background: #fff; }
-  @page { size: A4; margin: 12mm 15mm; }
+  @page { size: A4; margin: 0; }   /* no browser date, title or URL along the edges */
   body > :not(#print-sheet) { display: none !important; }
-  #print-sheet { display: block !important; max-width: 180mm; margin: 0 auto; font-size: 9.5pt; line-height: 1.35; color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #print-sheet { display: block !important; max-width: 210mm; margin: 0 auto; padding: 14mm 15mm; -webkit-box-decoration-break: clone; box-decoration-break: clone; font-size: 9.5pt; line-height: 1.35; color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   #print-sheet * { animation: none !important; transition: none !important; }
   .print-masthead { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0 0 5mm; margin-bottom: 5mm; border-bottom: 3px solid var(--gold); }
   .print-masthead .brand { font-size: 18pt; }
-  .print-document-type { max-width: 45%; color: var(--gov-800); font-size: 8pt; font-weight: 800; letter-spacing: .06em; text-align: right; text-transform: uppercase; }
-  .print-ticket { break-inside: avoid; }
-  .print-ticket .ticket-main { padding: 3mm 5mm; }
-  .print-ticket .ref { font-size: 17pt; }
-  .print-ticket .ticket-stub { width: 13mm; }
-  .print-ticket .ticket-status { right: 16mm; top: 3mm; }
-  .print-ticket .ticket-status.print-ticket-cancelled { color: var(--red); background: var(--red-50); border-color: var(--red); }
+  .print-document-type { max-width: 65%; color: var(--gov-800); font-size: 8pt; font-weight: 800; letter-spacing: .06em; text-align: right; text-transform: uppercase; }
   .print-summary { margin: 5mm 0; grid-template-columns: 34mm 1fr; }
   .print-summary dt, .print-summary dd { padding: 1.5mm 2.5mm; font-size: 8.7pt; }
   .print-payment { break-inside: avoid; padding: 4mm 5mm; gap: 2.5mm; }
@@ -839,10 +833,18 @@ em { font-style: normal; }
   .print-doc-list li, .print-inspection-list li { padding: 1.4mm 2mm; background: var(--bg); border-radius: var(--r-sm); font-size: 8pt; break-inside: avoid; }
   .print-doc-list li { counter-increment: print-doc; display: grid; grid-template-columns: 5mm 1fr; gap: 1mm; }
   .print-doc-list li::before { content: counter(print-doc); color: var(--blue); font-weight: 800; }
-  .print-checkin { margin: 4mm 0 0; padding: 2.5mm 3mm; break-inside: avoid; }
-  .print-checkin .qr { width: 27mm; flex: 0 0 27mm; padding: 1mm; }
-  .print-checkin h3 { margin: 0 0 1mm; font-size: 9pt; }
-  .print-checkin p { margin: 0 0 1mm; font-size: 8pt; }
+  .print-top { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 4mm; align-items: stretch; break-inside: avoid; }
+  .print-ref { border: 1.5px solid var(--navy); border-radius: 4mm; padding: 4mm 5mm; background: var(--navy-soft); display: flex; flex-direction: column; justify-content: center; }
+  .print-ref-head { display: flex; justify-content: space-between; align-items: center; gap: 3mm; }
+  .print-ref .label { font-size: 8.5pt; font-weight: 600; color: var(--ink-soft); }
+  .print-status { font-size: 8pt; font-weight: 700; color: var(--ok); background: var(--ok-bg); border-radius: 99px; padding: .6mm 2.5mm; }
+  .print-ref.is-cancelled .print-status { color: var(--bad); background: var(--bad-bg); }
+  .print-ref .ref { font-family: var(--mono); font-size: 18pt; font-weight: 600; color: var(--navy); letter-spacing: .04em; margin: 1.5mm 0; }
+  .print-ref-sub { font-size: 8.5pt; color: var(--ink-soft); }
+  .print-checkin { margin: 0; padding: 3mm; break-inside: avoid; }
+  #print-sheet .print-checkin .qr { width: 27mm; flex: 0 0 27mm; padding: 1mm; }
+  #print-sheet .print-checkin h3 { margin: 0 0 1mm; font-size: 9pt; }
+  #print-sheet .print-checkin p { margin: 0 0 1mm; font-size: 8pt; }
 }
 
 
