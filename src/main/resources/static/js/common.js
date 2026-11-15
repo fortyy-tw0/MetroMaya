@@ -359,7 +359,6 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
   if (!links.length || !document.querySelector('.hero-band')) return;
   // which nav link each part of the home page belongs to
   const owner = { why: '#why', estimate: '#estimate', industries: '#industries', how: '#how', offices: '#offices' };
-  const home = links.find((a) => a.getAttribute('href') === '/');
   const sections = Object.keys(owner).map((id) => document.getElementById(id)).filter(Boolean);
   function update() {
     // the middle of the screen below the header: exactly where the jump links land a section
@@ -368,9 +367,10 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
     const line = headH + (window.innerHeight - headH) / 2;
     let current = null;
     sections.forEach((sec) => { const r = sec.getBoundingClientRect(); if (r.top <= line && r.bottom > line) current = owner[sec.id]; });
-    links.forEach((a) => {
-      const heroVisible = document.querySelector('.hero-band').getBoundingClientRect().bottom > line;
-      const on = current ? a.getAttribute('href') === current : (a === home && heroVisible);
+    const heroVisible = document.querySelector('.hero-band').getBoundingClientRect().bottom > line;
+    // the header tabs and their copies in the phone menu, which is built later, so look them up each time
+    document.querySelectorAll('.nav-links a, .mobile-menu-links a').forEach((a) => {
+      const on = current ? a.getAttribute('href') === current : (a.getAttribute('href') === '/' && heroVisible);
       a.classList.toggle('is-active', on);
       if (on) a.setAttribute('aria-current', current ? 'location' : 'page'); else a.removeAttribute('aria-current');
     });
