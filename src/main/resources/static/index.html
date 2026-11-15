@@ -8,79 +8,42 @@
   <link rel="icon" href="data:,">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Lexend:wght@500;600&family=JetBrains+Mono:wght@500;600&display=swap">
   <link rel="preload" as="image" href="/img/maya-fly-frames.webp" type="image/webp">
   <link rel="stylesheet" href="/css/style.css">
-  <script>document.documentElement.classList.add('js');try{var s=JSON.parse(localStorage.getItem('metromaya.a11y')||'{}');if(s.fs)document.documentElement.dataset.fs=s.fs;if(s.hc)document.documentElement.dataset.contrast='high';if(s.mp)document.documentElement.dataset.motion='paused';}catch(e){}</script>
+  <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
-  <!-- DIRECTION CONTRACT (impeccable)
-  THESIS: A Philippine LGU e-service counter put online: GOV.PH conventions (notice strip, accessibility tools, emblem masthead, blue nav bar, sturdy forms, institutional footer), refusing the startup-landing default of a giant slogan hero, floating rounded cards and a mascot centrepiece. Clearly unofficial: no seals or agency logos.
-  OWN-WORLD: White and cool-gray ground; masthead/nav blue #0A2552/#0B2E6B; action blue #0B4FB3; gold #F4C430 only as rule line, focus ring and sample tag; red for errors. Public Sans with tabular figures; 4-10px corners; 2px-bordered inputs; schedules, sheets and directories instead of card grids; guilloche security print on the hero edge and the permit stub.
-  STORY: An applicant understands this books a business permit visit at their city hall, sees fees and documents first, verifies identity, and books; an agency evaluator sees an adoptable public service.
-  FIRST VIEWPORT: Notice strip with text size and contrast; masthead with Maya emblem; blue nav. Left: place line, H1 "Book your business permit appointment online", slogan with gold wavy underline, lead, Book a slot / Estimate my fees, three facts. Right: Maya peeking over the Online services panel (four services).
-  FORM: Canon (GOV.PH / eGovPH). seed: none (pinned): the user asked to "make this look like a government type website" and confirmed "GOV.PH / eGovPH" as the bar.
-  FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
-  -->
-  <a class="skip-link" href="#main">Skip to main content</a>
-  <div class="gov-strip">
-    <div class="wrap gov-strip-inner">
-      <p class="gov-notice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span><b>Prototype e-service.</b> MetroMaya is not an official government website.</span></p>
-      <button type="button" class="a11y-toggle" aria-expanded="false" aria-controls="a11y-tools">Accessibility</button>
-      <div class="a11y" id="a11y-tools" role="group" aria-label="Accessibility options">
-        <span class="a11y-label">Text size</span>
-        <button type="button" class="a11y-btn" data-fs="0" aria-pressed="true" aria-label="Normal text size">A</button>
-        <button type="button" class="a11y-btn a11y-lg" data-fs="1" aria-pressed="false" aria-label="Larger text">A</button>
-        <button type="button" class="a11y-btn a11y-xl" data-fs="2" aria-pressed="false" aria-label="Largest text">A</button>
-        <button type="button" class="a11y-btn a11y-contrast" data-contrast aria-pressed="false">High contrast</button>
-        <button type="button" class="a11y-btn a11y-motion" data-motion aria-pressed="false">Pause animations</button>
-      </div>
-    </div>
-  </div>
   <header class="site-header">
-    <div class="wrap masthead">
-      <a class="brand" href="/" aria-label="MetroMaya home">
-        <span class="brand-mark" aria-hidden="true"></span>
-        <span class="brand-text"><span class="brand-name">MetroMaya</span><span class="brand-sub">Business Permit Appointments · Metro Manila</span></span>
-      </a>
-      <div class="nav-actions">
-        <a class="link" href="/manage.html">Track a booking</a>
-        <a class="btn btn-primary btn-small" href="/book.html">Book a slot</a>
-      </div>
-    </div>
-    <nav class="nav-bar" aria-label="Main">
-      <div class="wrap nav-links">
+    <div class="nav">
+      <a class="brand" href="/" aria-label="MetroMaya home">MetroMaya<b>.</b></a>
+      <nav class="nav-links" aria-label="Main">
         <a href="/" aria-current="page">Home</a>
         <a href="#why">What is MetroMaya</a>
         <a href="#how">How It Works</a>
         <a href="#industries">Fees</a>
         <a href="#estimate">Fees Estimator</a>
         <a href="#offices">Offices</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="link" href="/manage.html">Track a booking</a>
+        <a class="btn btn-outline btn-small" href="/book.html">Book a slot</a>
       </div>
-    </nav>
+    </div>
   </header>
 
-  <main id="main">
+  <main>
     <!-- Hero: full-width white band, slogan in the middle, Maya peeking over a card -->
     <section class="hero-band" aria-labelledby="hero-title">
-      <div class="wrap hero-grid">
-        <div class="hero-copy">
-          <h1 id="hero-title">Book your business permit appointment online</h1>
-          <p class="tagline">Skip the line, <span class="mark">get on business.</span></p>
-          <p class="lead">See your fees, inspections and documents first, verify who you are, and get a confirmed time at your city hall’s business permits office. One prepared visit is enough.</p>
-          <div class="hero-actions">
-            <a class="btn btn-primary btn-lg" href="/book.html">Book a slot</a>
-            <a class="btn btn-outline btn-lg" href="#estimate">Estimate my fees</a>
-          </div>
-          <ul class="hero-facts">
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>All 16 Metro Manila cities and Pateros</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Weekdays, 8 AM to 5 PM</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Book up to 3 months ahead</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Identity checked with eGovPH or a valid ID</li>
-          </ul>
+      <div class="wrap hero-inner">
+        <h1 id="hero-title">Skip the line, <span class="mark">get on business.</span></h1>
+        <p class="lead">Book your permit appointment online. See your fees and documents before you go, then walk in at your time.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="/book.html">Book a slot</a>
+          <a class="btn btn-outline" href="#estimate">Estimate my fees</a>
         </div>
+      </div>
 
-        <div class="hero-services">
       <div class="perch" id="perch">
         <div class="perch-clip">
           <div class="maya-fly" id="maya" role="img" aria-label="Maya, a sparrow in a navy mail-carrier cap, flapping her wings as she peeks over the card">
@@ -119,14 +82,19 @@
             <img class="mf-beak" id="maya-beak" src="/img/maya-fly-beak.png" alt="" width="450" height="206" fetchpriority="high">
           </div>
         </div>
-        <div class="perch-card services" role="navigation" aria-label="Online services">
-          <h2 class="services-title">Online services</h2>
-          <a class="svc" href="/book.html?service=new-permit"><span class="svc-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 11v6M9 14h6"/></svg></span><span><b>New business permit</b><small>Apply for a permit to open a new business</small></span><svg class="svc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-          <a class="svc" href="/book.html?service=renewal"><span class="svc-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 9"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15"/><path d="M4 20v-5h5"/></svg></span><span><b>Annual renewal</b><small>Renew the permit of an existing business</small></span><svg class="svc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-          <a class="svc" href="/book.html?service=inspection"><span class="svc-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/><path d="M8.5 11l1.8 1.8 3.2-3.3"/></svg></span><span><b>Inspection visit</b><small>Schedule an inspection of your business</small></span><svg class="svc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-          <a class="svc" href="/manage.html"><span class="svc-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></span><span><b>Track a booking</b><small>Look up, move or cancel with your reference number</small></span><svg class="svc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        </div>
-        </div>
+        <div class="perch-card">
+          <div class="fact">
+            <span class="icon-chip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>
+            <div><b>Three services</b><span>New permit, renewal or inspection</span></div>
+          </div>
+          <div class="fact">
+            <span class="icon-chip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+            <div><b>Weekdays, 8 AM to 5 PM</b><span>Book up to 3 months ahead</span></div>
+          </div>
+          <div class="fact">
+            <span class="icon-chip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
+            <div><b>No account needed</b><span>Just your reference number</span></div>
+          </div>
         </div>
       </div>
     </section>
@@ -136,6 +104,7 @@
       <div class="wrap">
         <div class="section-head">
           <div>
+            <span class="eyebrow">What is MetroMaya</span>
             <h2 id="why-title">One trip to city hall, not three</h2>
           </div>
           <p>MetroMaya puts the slow parts of a business permit online. You know the fees, the documents and your time slot before you leave, and Maya keeps you company along the way.</p>
@@ -161,27 +130,28 @@
     </section>
 
     <!-- How it works -->
-    <section class="band steps-band" id="how" aria-labelledby="how-title">
+    <section class="band" id="how" aria-labelledby="how-title">
       <div class="wrap">
         <div class="band-head">
+          <span class="eyebrow">How It Works</span>
           <h2 id="how-title">Four steps to a confirmed slot</h2>
           <p>Booking takes about three minutes. You get a reference number straight away.</p>
         </div>
         <ol class="sequence">
           <li>
-            <h3>Choose a service</h3>
+            <h4>Choose a service</h4>
             <p>New permit, annual renewal, or an inspection visit.</p>
           </li>
           <li>
-            <h3>Describe your business</h3>
+            <h4>Describe your business</h4>
             <p>Your type of business and number of employees set your fees and documents.</p>
           </li>
           <li>
-            <h3>Pick an office, date and time</h3>
+            <h4>Pick an office, date and time</h4>
             <p>Weekdays (except regular holidays), up to 3 months ahead, at a desk that serves your business.</p>
           </li>
           <li>
-            <h3>Bring your documents</h3>
+            <h4>Bring your documents</h4>
             <p>Your confirmation lists exactly what to bring and what you will pay.</p>
           </li>
         </ol>
@@ -193,12 +163,13 @@
       <div class="wrap">
         <div class="section-head">
           <div>
+            <span class="eyebrow">What you pay</span>
             <h2 id="ind-title">Fees depend on what you run</h2>
           </div>
           <p>Your type of business sets the base fee and the inspections. Pick your city and business size to scale the fees and see any extra checks.</p>
         </div>
         <div class="fees-wrap">
-          <div class="schedule"><div class="schedule-head"><span>Type of business</span><span>Base permit fee <span class="sample-tag">Sample rates</span></span></div><div class="rows" id="industry-rows"></div></div>
+          <div class="rows" id="industry-rows"></div>
           <div>
             <label class="control fees-city" for="fees-city-select">City (Metro Manila)
               <select id="fees-city-select"></select>
@@ -215,6 +186,7 @@
     <section class="section section-white" id="estimate" aria-labelledby="est-title">
       <div class="wrap estimate-wrap wrap-wide">
         <div class="estimate-intro">
+          <span class="eyebrow">Fees Estimator</span>
           <h2 id="est-title">How much will my permit cost?</h2>
           <p>Choose a service and describe the business. The estimate updates as you type.</p>
           <p class="estimate-note">Sample rates for a course project, not any city's official fees.</p>
@@ -227,7 +199,6 @@
         </div>
 
         <div class="estimator">
-          <div class="sheet-head"><span>Fee estimate</span><span class="sample-tag">Sample rates</span></div>
           <div class="est-tabs" id="est-tabs" role="tablist" aria-label="Service"></div>
           <div class="est-controls">
             <label class="control">Type of business
@@ -245,14 +216,14 @@
 
           <div class="est-panels">
             <div class="box">
-              <h3>Fee breakdown</h3>
+              <h4>Fee breakdown</h4>
               <div id="est-fee"></div>
             </div>
             <div class="box">
-              <h3>Inspections</h3>
+              <h4>Inspections</h4>
               <ul class="insp-list" id="est-insp"></ul>
               <div class="docs">
-                <h4 class="docs-title">Documents to bring</h4>
+                <h5 class="docs-title">Documents to bring</h5>
                 <ul class="doc-list" id="est-docs"></ul>
               </div>
             </div>
@@ -269,6 +240,7 @@
     <section class="section" id="offices" aria-labelledby="off-title">
       <div class="wrap offices-wrap">
         <div class="split-head">
+          <span class="eyebrow">Offices</span>
           <h2 id="off-title">Where to go</h2>
           <p>A business permit passes through four desks at your city hall: permits and licensing, the treasurer, fire protection and health. <a href="#estimate" id="office-city-change">Change your city</a></p>
           <ul class="hours">
@@ -285,8 +257,8 @@
     <!-- Closing call to action -->
     <section class="cta" aria-labelledby="cta-title">
       <div>
-        <h2 id="cta-title">Ready for one prepared visit?</h2>
-        <p>Booking takes about three minutes. You get a reference number straight away, and Maya lists exactly what to bring.</p>
+        <h2 id="cta-title">Ready to book your slot?</h2>
+        <p>Pick a service and get your reference number in minutes.</p>
         <a class="btn btn-primary" href="/book.html">Book a slot</a>
       </div>
       <div class="cta-maya" aria-hidden="true">
@@ -304,41 +276,30 @@
   <footer class="footer">
     <div class="wrap">
       <div class="footer-grid">
-        <div class="footer-about">
-          <a class="brand brand-footer" href="/" aria-label="MetroMaya home">
-            <span class="brand-mark" aria-hidden="true"></span>
-            <span class="brand-text"><span class="brand-name">MetroMaya</span><span class="brand-sub">Business Permit Appointments · Metro Manila</span></span>
-          </a>
-          <p class="footer-note">Skip the line, get on business. See your fees, inspections and documents, then book one prepared visit to your city hall.</p>
+        <div>
+          <a class="brand" href="/" aria-label="MetroMaya home">MetroMaya<b>.</b></a>
+          <p class="footer-note">Book business permit appointments with Maya, your permit guide.</p>
         </div>
         <div>
-          <h2 class="footer-h">Services</h2>
+          <h4>Services</h4>
           <ul>
-            <li><a href="/book.html?service=new-permit">New business permit</a></li>
+            <li><a href="/book.html?service=new-permit">New permit</a></li>
             <li><a href="/book.html?service=renewal">Annual renewal</a></li>
             <li><a href="/book.html?service=inspection">Inspection visit</a></li>
-            <li><a href="/manage.html">Track a booking</a></li>
           </ul>
         </div>
         <div>
-          <h2 class="footer-h">Help</h2>
+          <h4>Help</h4>
           <ul>
-            <li><a href="#estimate">Fees Estimator</a></li>
-            <li><a href="#industries">Fees</a></li>
+            <li><a href="#estimate">Estimate fees</a></li>
+            <li><a href="/manage.html">Track a booking</a></li>
             <li><a href="#offices">Offices</a></li>
-            <li><a href="#how">How It Works</a></li>
           </ul>
-        </div>
-        <div>
-          <h2 class="footer-h">About this prototype</h2>
-          <p>Built as an Object-Oriented Programming course project. Barangays come from the PSA's PSGC list and ZIP codes from the PHLPost directory. City hall addresses are real.</p>
-          <p>Not affiliated with or endorsed by any government agency or local government unit.</p>
-          <p><a href="/privacy.html">Privacy notice</a></p>
         </div>
       </div>
       <div class="footer-base">
-        <span>MetroMaya prototype · Not an official government website</span>
-        <span>Fees shown are sample rates for a course project, not official LGU fees.</span>
+        <span>MetroMaya, an OOP course project</span>
+        <span>Fees shown are samples, not official rates.</span>
       </div>
     </div>
   </footer>

@@ -266,56 +266,9 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
 (function () {
   const header = document.querySelector('.site-header');
   if (!header) return;
-  const root = document.documentElement;
-  // on phones the header scrolls away with the page, so nothing sits over the content
-  const measure = () => root.style.setProperty('--header-h', (getComputedStyle(header).position === 'sticky' ? header.offsetHeight : 0) + 'px');
-  const update = () => { header.classList.toggle('scrolled', window.scrollY > 40); };
+  const update = () => header.classList.toggle('scrolled', window.scrollY > 8);
   window.addEventListener('scroll', update, { passive: true });
-  window.addEventListener('resize', measure);
-  header.addEventListener('transitionend', measure);
   update();
-  measure();
-})();
-
-// Notice strip: text size (A / A / A), high contrast and pausing animations, remembered on this device.
-(function () {
-  const root = document.documentElement;
-  const sizeBtns = Array.prototype.slice.call(document.querySelectorAll('.a11y-btn[data-fs]'));
-  const contrastBtn = document.querySelector('.a11y-btn[data-contrast]');
-  const motionBtn = document.querySelector('.a11y-btn[data-motion]');
-  // phones: the tools fold behind one Accessibility button
-  const toggle = document.querySelector('.a11y-toggle');
-  if (toggle) toggle.addEventListener('click', () => {
-    const open = toggle.getAttribute('aria-expanded') !== 'true';
-    toggle.setAttribute('aria-expanded', String(open));
-    toggle.closest('.gov-strip').classList.toggle('a11y-open', open);
-  });
-  if (!sizeBtns.length && !contrastBtn) return;
-  function save() {
-    try {
-      localStorage.setItem('metromaya.a11y', JSON.stringify({ fs: root.dataset.fs || '', hc: root.dataset.contrast === 'high', mp: root.dataset.motion === 'paused' }));
-    } catch (e) { /* storage unavailable: settings last for this page only */ }
-  }
-  function paint() {
-    const fs = root.dataset.fs || '0';
-    sizeBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.fs === fs)));
-    if (contrastBtn) contrastBtn.setAttribute('aria-pressed', String(root.dataset.contrast === 'high'));
-    if (motionBtn) motionBtn.setAttribute('aria-pressed', String(root.dataset.motion === 'paused'));
-  }
-  sizeBtns.forEach((b) => b.addEventListener('click', () => {
-    if (b.dataset.fs === '0') delete root.dataset.fs; else root.dataset.fs = b.dataset.fs;
-    paint(); save(); window.dispatchEvent(new Event('resize'));
-  }));
-  if (contrastBtn) contrastBtn.addEventListener('click', () => {
-    if (root.dataset.contrast === 'high') delete root.dataset.contrast; else root.dataset.contrast = 'high';
-    paint(); save();
-  });
-  // WCAG 2.2.2: Maya's flapping runs for longer than 5 seconds, so it can be paused
-  if (motionBtn) motionBtn.addEventListener('click', () => {
-    if (root.dataset.motion === 'paused') delete root.dataset.motion; else root.dataset.motion = 'paused';
-    paint(); save();
-  });
-  paint();
 })();
 
 // ---- motion: sections appear as the visitor scrolls to them ----
@@ -342,7 +295,7 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
       if (e.isIntersecting) e.target.classList.add('in');
       else if (e.boundingClientRect.top > 0) e.target.classList.remove('in');
     });
-  }, { threshold: 0.01, rootMargin: '0px 0px -12% 0px' });  // a sliver is enough: panels taller than a phone screen still arrive
+  }, { threshold: 0.18, rootMargin: '0px 0px -10% 0px' });
 
   function scan(root) {
     RULES.forEach(([sel, mode]) => {
@@ -686,10 +639,7 @@ function printBooking(a) {
 
   sheet.append(
     el('div', { class: 'print-masthead' },
-      el('div', { class: 'brand' },
-        el('span', { class: 'brand-mark', 'aria-hidden': 'true' }),
-        el('span', { class: 'brand-text' }, el('span', { class: 'brand-name', text: 'MetroMaya' }),
-          el('span', { class: 'brand-sub', text: 'Business Permit Appointments · Metro Manila' }))),
+      el('span', { class: 'brand' }, 'MetroMaya', el('b', { text: '.' })),
       el('span', { class: 'print-document-type', text: paid ? 'Prototype confirmation + demo receipt · Not official' : 'Prototype booking confirmation · Not official' })),
     el('div', { class: 'ticket print-ticket' },
       el('div', { class: 'ticket-main' },

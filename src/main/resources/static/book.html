@@ -7,52 +7,32 @@
   <link rel="icon" href="data:,">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Lexend:wght@500;600&family=JetBrains+Mono:wght@500;600&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha384-c6Rcwz4e4CITMbu/NBmnNS8yN2sC3cUElMEMfP3vqqKFp7GOYaaBBCqmaWBjmkjb" crossorigin="anonymous">
   <link rel="stylesheet" href="/css/style.css">
-  <script>document.documentElement.classList.add('js');try{var s=JSON.parse(localStorage.getItem('metromaya.a11y')||'{}');if(s.fs)document.documentElement.dataset.fs=s.fs;if(s.hc)document.documentElement.dataset.contrast='high';if(s.mp)document.documentElement.dataset.motion='paused';}catch(e){}</script>
+  <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
-  <div class="gov-strip">
-    <div class="wrap gov-strip-inner">
-      <p class="gov-notice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span><b>Prototype e-service.</b> MetroMaya is not an official government website.</span></p>
-      <button type="button" class="a11y-toggle" aria-expanded="false" aria-controls="a11y-tools">Accessibility</button>
-      <div class="a11y" id="a11y-tools" role="group" aria-label="Accessibility options">
-        <span class="a11y-label">Text size</span>
-        <button type="button" class="a11y-btn" data-fs="0" aria-pressed="true" aria-label="Normal text size">A</button>
-        <button type="button" class="a11y-btn a11y-lg" data-fs="1" aria-pressed="false" aria-label="Larger text">A</button>
-        <button type="button" class="a11y-btn a11y-xl" data-fs="2" aria-pressed="false" aria-label="Largest text">A</button>
-        <button type="button" class="a11y-btn a11y-contrast" data-contrast aria-pressed="false">High contrast</button>
-        <button type="button" class="a11y-btn a11y-motion" data-motion aria-pressed="false">Pause animations</button>
-      </div>
-    </div>
-  </div>
   <header class="site-header page-header">
-    <div class="wrap masthead">
-      <a class="brand" href="/" aria-label="MetroMaya home">
-        <span class="brand-mark" aria-hidden="true"></span>
-        <span class="brand-text"><span class="brand-name">MetroMaya</span><span class="brand-sub">Business Permit Appointments · Metro Manila</span></span>
-      </a>
-      <div class="nav-actions">
-        <a class="link" href="/manage.html">Track a booking</a>
-        <a class="btn btn-primary btn-small" href="/book.html">Book a slot</a>
-      </div>
-    </div>
-    <nav class="nav-bar" aria-label="Main">
-      <div class="wrap nav-links">
+    <div class="nav">
+      <a class="brand" href="/" aria-label="MetroMaya home">MetroMaya<b>.</b></a>
+      <nav class="nav-links" aria-label="Main">
         <a href="/">Home</a>
         <a href="/book.html" aria-current="page">Book a slot</a>
         <a href="/manage.html">Track a booking</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn btn-outline btn-small" href="/manage.html">Track a booking</a>
       </div>
-    </nav>
+    </div>
   </header>
 
   <main id="main" class="page">
     <div class="page-narrow">
-      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Book a slot</li></ol></nav>
       <div class="page-title">
         <div>
+          <span class="eyebrow">Booking</span>
           <h1>Book a slot</h1>
           <p>Takes about three minutes. You get a reference number at the end.</p>
         </div>
@@ -167,11 +147,11 @@
           <h2>Check and confirm</h2>
           <dl class="summary" id="review-summary"></dl>
           <div class="review-cols">
-            <div class="box"><h3>Fee breakdown</h3><div id="review-fee"></div></div>
+            <div class="box"><h4>Fee breakdown</h4><div id="review-fee"></div></div>
             <div class="box">
-              <h3>Inspections</h3>
+              <h4>Inspections</h4>
               <ul class="insp-list" id="review-insp"></ul>
-              <div class="docs"><h4 class="docs-title">Documents to bring</h4><ul class="doc-list" id="review-docs"></ul></div>
+              <div class="docs"><h5 class="docs-title">Documents to bring</h5><ul class="doc-list" id="review-docs"></ul></div>
             </div>
           </div>
           <div class="alert alert-error" id="submit-alert" hidden role="alert"></div>
@@ -198,11 +178,11 @@
           <dl class="summary" id="done-summary"></dl>
           <div id="done-checkin"></div>
           <div class="review-cols">
-            <div class="box"><h3>Fee breakdown</h3><div id="done-fee"></div></div>
+            <div class="box"><h4>Fee breakdown</h4><div id="done-fee"></div></div>
             <div class="box">
-              <h3>Inspections</h3>
+              <h4>Inspections</h4>
               <ul class="insp-list" id="done-insp"></ul>
-              <div class="docs"><h4 class="docs-title">Documents to bring</h4><ul class="doc-list" id="done-docs"></ul></div>
+              <div class="docs"><h5 class="docs-title">Documents to bring</h5><ul class="doc-list" id="done-docs"></ul></div>
             </div>
           </div>
           <section class="pay-box" id="done-pay" aria-label="Payment"></section>
@@ -228,41 +208,31 @@
   <footer class="footer">
     <div class="wrap">
       <div class="footer-grid">
-        <div class="footer-about">
-          <a class="brand brand-footer" href="/" aria-label="MetroMaya home">
-            <span class="brand-mark" aria-hidden="true"></span>
-            <span class="brand-text"><span class="brand-name">MetroMaya</span><span class="brand-sub">Business Permit Appointments · Metro Manila</span></span>
-          </a>
-          <p class="footer-note">Skip the line, get on business. See your fees, inspections and documents, then book one prepared visit to your city hall.</p>
+        <div>
+          <a class="brand" href="/" aria-label="MetroMaya home">MetroMaya<b>.</b></a>
+          <p class="footer-note">Book business permit appointments with Maya, your permit guide.</p>
         </div>
         <div>
-          <h2 class="footer-h">Services</h2>
+          <h4>Services</h4>
           <ul>
-            <li><a href="/book.html?service=new-permit">New business permit</a></li>
+            <li><a href="/book.html?service=new-permit">New permit</a></li>
             <li><a href="/book.html?service=renewal">Annual renewal</a></li>
             <li><a href="/book.html?service=inspection">Inspection visit</a></li>
-            <li><a href="/manage.html">Track a booking</a></li>
           </ul>
         </div>
         <div>
-          <h2 class="footer-h">Help</h2>
+          <h4>Help</h4>
           <ul>
-            <li><a href="/#estimate">Fees Estimator</a></li>
-            <li><a href="/#industries">Fees</a></li>
+            <li><a href="/#estimate">Estimate fees</a></li>
+            <li><a href="/manage.html">Track a booking</a></li>
             <li><a href="/#offices">Offices</a></li>
-            <li><a href="/#how">How It Works</a></li>
+            <li><a href="/privacy.html">Privacy notice</a></li>
           </ul>
-        </div>
-        <div>
-          <h2 class="footer-h">About this prototype</h2>
-          <p>Built as an Object-Oriented Programming course project. Barangays come from the PSA's PSGC list and ZIP codes from the PHLPost directory. City hall addresses are real.</p>
-          <p>Not affiliated with or endorsed by any government agency or local government unit.</p>
-          <p><a href="/privacy.html">Privacy notice</a></p>
         </div>
       </div>
       <div class="footer-base">
-        <span>MetroMaya prototype · Not an official government website</span>
-        <span>Fees shown are sample rates for a course project, not official LGU fees.</span>
+        <span>MetroMaya, an OOP course project</span>
+        <span>Fees shown are samples, not official rates.</span>
       </div>
     </div>
   </footer>

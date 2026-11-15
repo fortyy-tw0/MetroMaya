@@ -104,7 +104,7 @@
     const where = el('span', { class: 'city-rate' });
     const chips = el('div', { class: 'chips' });
     $('industry-rows').append(el('div', { class: 'row' },
-      el('div', null, el('h3', { text: i.name }), el('p', { text: i.description })),
+      el('div', null, el('h4', { text: i.name }), el('p', { text: i.description })),
       el('div', { class: 'price' }, amount, basis, where),
       chips));
     return { i, amount, basis, where, chips };
@@ -134,7 +134,7 @@
     if (!extras.length) extras.push('No extra inspections or documents');
     const card = el('article', { class: 'size-card', role: 'radio', tabindex: '-1', 'aria-checked': 'false' },
       el('span', { class: 'size-pick', 'aria-hidden': 'true', text: 'Selected' }),
-      el('h3', { text: s.label }),
+      el('h4', { text: s.label }),
       el('p', { class: 'range', text: s.range }),
       el('p', { class: 'mult' }, '×' + s.feeMultiplier.toFixed(2), el('small', { text: 'on the base permit fee' })),
       el('ul', null, extras.map((x) => el('li', { text: x }))));
@@ -200,7 +200,7 @@
     clear($('office-rows')).append(
       el('div', { class: 'row office-hall' },
         el('div', null,
-          el('h3', { text: city.hall }),
+          el('h4', { text: city.hall }),
           el('p', { text: address }),
           city.note ? el('p', { class: 'hint', text: city.note }) : null,
           el('a', { class: 'directions', href: maps, target: '_blank', rel: 'noopener', text: 'Get directions to ' + city.hall + ' \u2192' })),
@@ -208,7 +208,7 @@
       ...desks(city).map((d) => el('div', { class: 'row desk' },
         deskIcon(d.icon),
         el('div', null,
-          el('h3', { text: d.name }),
+          el('h4', { text: d.name }),
           el('p', { text: d.what })))));
   }
 
