@@ -889,12 +889,11 @@ em { font-style: normal; }
 .steps-flow li::before { content: "Step " counter(s); display: block; width: auto; height: auto; margin: 1rem 0 .55rem; background: none; border-radius: 0;
   color: var(--gold); font-family: var(--display); font-size: .82rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
 .steps-flow .step-icon { display: grid; place-items: center; width: 76px; height: 76px; margin: 0 auto; border-radius: 50%; color: #fff;
-  background: rgba(255, 255, 255, .07); box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .22); transition: transform .3s ease, box-shadow .3s ease; order: -1; }
+  background: rgba(255, 255, 255, .07); box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .22); order: -1; }
 .steps-flow .step-icon svg { width: 36px; height: 36px; }
 .steps-flow li { display: flex; flex-direction: column; align-items: center; }
 .steps-flow h4 { margin: 0 0 .4em; font-size: 1.08rem; }
 .steps-flow p { max-width: 24ch; margin-inline: auto; }
-@media (hover: hover) { .steps-flow li:hover .step-icon { transform: translateY(-4px); box-shadow: inset 0 0 0 1.5px var(--gold); } }
 /* the arrow sits in the gap level with the icons and travels from one step towards the next */
 .steps-flow li:not(:last-child)::after {
   content: ""; position: absolute; top: 38px; left: calc(100% + .75rem); width: calc(6rem - 1.5rem); height: 28px; margin-top: -14px;
