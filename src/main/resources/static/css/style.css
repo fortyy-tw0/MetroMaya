@@ -149,7 +149,7 @@ em { font-style: normal; }
 .icon-chip svg { width: 18px; height: 18px; }
 
 /* Maya peeks out from behind the card: a clip box ends exactly at the card's top edge. */
-.perch { --mw: min(600px, 92vw, 58vh); position: relative; width: min(880px, 100% - 2rem); margin: clamp(1rem, 3vh, 2rem) auto clamp(1.25rem, 4vh, 2.5rem); z-index: 2; }
+.perch { --mw: min(600px, 92vw, 58vh); position: relative; width: min(1000px, 100% - 2rem); margin: clamp(1rem, 3vh, 2rem) auto clamp(1.25rem, 4vh, 2.5rem); z-index: 2; }
 .perch-clip { width: var(--mw); aspect-ratio: 450 / 206; margin: 0 auto; overflow: visible; clip-path: inset(-40% -25% 0 -25%); position: relative; z-index: 1; }
 /* Maya flies: a 16-frame flap rendered from the drawing itself (body untouched, wings bend),
    with drawn eyes on top whose pupils follow the pointer. */
@@ -167,10 +167,10 @@ em { font-style: normal; }
 .perch-card {
   position: relative; z-index: 2; background: #fff; border: 1px solid var(--line); border-radius: 22px;
   box-shadow: 0 1px 2px rgba(62, 36, 22, .05), 0 16px 40px rgba(62, 36, 22, .10);
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem;
-  padding: 1.6rem 1.75rem 1.4rem;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem 2.25rem;
+  padding: 1.75rem 2.25rem 1.6rem;
 }
-.fact { display: flex; gap: .75rem; align-items: flex-start; text-align: left; min-width: 0; }
+.fact { display: flex; gap: .9rem; align-items: flex-start; text-align: left; min-width: 0; }
 .fact b { display: block; font-family: var(--display); font-weight: 600; font-size: 1rem; line-height: 1.3; }
 .fact > div > span { display: block; color: var(--muted); font-size: .88rem; line-height: 1.4; }
 @media (max-width: 760px) {
@@ -860,3 +860,18 @@ em { font-style: normal; }
 .notice-strip b { color: #fff; font-weight: 700; }
 .stepper[hidden] { display: none; }
 @media print { .notice-strip { display: none !important; } }
+
+/* verify step: the stepper is hidden (and takes no space), so Maya rests on the card exactly as she rests on the stepper */
+/* consent: the tick box lines up with the paragraph above, the text runs beside it */
+.consent { padding: 0; border: 0; background: none; gap: .65rem; }
+.consent:has(input:checked) { background: none; }
+.consent input { width: 18px; height: 18px; margin: .2rem 0 0; accent-color: var(--navy); }
+/* "Or type where you're coming from": same field style and font as the rest of the forms */
+.route-from-row input { font: inherit; color: var(--ink); padding: .78rem .95rem; border: 1.5px solid var(--line-strong); border-radius: 12px; background: #fff; min-width: 0; }
+.route-from-row input::placeholder { color: var(--muted); }
+.route-from-row input:focus { border-color: var(--navy); outline: 0; box-shadow: 0 0 0 3px rgba(44, 58, 114, .14); }
+/* office instructions: only as big as what it says */
+.office-checklist { width: fit-content; max-width: 100%; padding: .85rem 1.1rem; }
+.office-checklist h3 { font-family: var(--sans); font-size: .98rem; font-weight: 700; letter-spacing: 0; margin: 0 0 .25rem; }
+.office-checklist p { margin: 0; font-size: .92rem; }
+.office-checklist p + p, .office-checklist ul { margin-top: .4rem; }
