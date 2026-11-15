@@ -1017,3 +1017,7 @@ em { font-style: normal; }
   .menu-open .menu-toggle { background: #fff; border-color: rgba(107, 84, 70, .4); color: var(--ink); box-shadow: 0 4px 12px -6px rgba(62, 36, 22, .3); }
   .menu-toggle svg { width: 20px; height: 20px; }
 }
+/* small screens: menu button on the far left (where people expect it), MetroMaya on the far right */
+@media (max-width: 900px) {
+  .site-header:not(.staff-header) .nav { flex-direction: row-reverse; }
+}
