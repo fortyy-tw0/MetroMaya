@@ -282,6 +282,7 @@ async function loadSlots(container, alertNode, officeId, date, selectedTime, onP
     ['.feature, .sequence li, .size-card, .rows > .row', 'stagger'],
     ['.estimator, .office-card, .card, .fees-wrap .sizes-title', ''],
     ['.band', 'reveal-zoom'],
+    ['.divider', 'reveal-draw'],
     ['.band-art', 'reveal-left'],
     ['.cta', 'reveal-zoom'],
     ['.footer-grid > *', 'stagger'],

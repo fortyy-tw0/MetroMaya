@@ -842,6 +842,10 @@ em { font-style: normal; }
   .print-ref .ref { font-family: var(--mono); font-size: 18pt; font-weight: 600; color: var(--navy); letter-spacing: .04em; margin: 1.5mm 0; }
   .print-ref-sub { font-size: 8.5pt; color: var(--ink-soft); }
   .print-checkin { margin: 0; padding: 3mm; break-inside: avoid; }
+  #print-sheet .print-summary { gap: 0 6mm; margin: 4mm 0; }
+  #print-sheet .print-payment { background: #fff; border-width: 1.5px; border-radius: 4mm; padding: 3.5mm 5mm; gap: 2mm; margin-bottom: 4mm; }
+  #print-sheet .print-payment .receipt-amount { font-size: 15pt; }
+  #print-sheet .print-payment .demo-tag { font-size: 7pt; padding: .3mm 2mm; }
   #print-sheet .print-checkin .qr { width: 27mm; flex: 0 0 27mm; padding: 1mm; }
   #print-sheet .print-checkin h3 { margin: 0 0 1mm; font-size: 9pt; }
   #print-sheet .print-checkin p { margin: 0 0 1mm; font-size: 8pt; }
@@ -877,3 +881,31 @@ em { font-style: normal; }
 .office-checklist h3 { font-family: var(--sans); font-size: .98rem; font-weight: 700; letter-spacing: 0; margin: 0 0 .25rem; }
 .office-checklist p { margin: 0; font-size: .92rem; }
 .office-checklist p + p, .office-checklist ul { margin-top: .4rem; }
+
+/* ---------- How It Works: arrows lead from one step to the next ---------- */
+.band .sequence { gap: 2.5rem; }
+.band .sequence li { position: relative; }
+.band .sequence li:not(:last-child)::after {
+  content: ""; position: absolute; top: 50%; right: calc(-1.25rem - 15px); width: 30px; height: 30px; margin-top: -15px; z-index: 1;
+  border-radius: 50%; background: var(--gold) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231B2248' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h13M13 6l6 6-6 6'/%3E%3C/svg%3E") center / 16px no-repeat;
+  box-shadow: 0 0 0 5px var(--navy);
+  animation: step-nudge 2.4s ease-in-out infinite;
+}
+@keyframes step-nudge { 0%, 60%, 100% { translate: 0 0; } 30% { translate: 4px 0; } }
+/* stacked steps: the arrows turn to point down */
+@media (max-width: 1000px) {
+  .band .sequence { grid-template-columns: 1fr; gap: 2.5rem; max-width: 34rem; margin-inline: auto; }
+  .band .sequence li:not(:last-child)::after { top: auto; right: auto; left: 50%; bottom: calc(-1.25rem - 15px); margin: 0 0 0 -15px; rotate: 90deg; animation-name: step-nudge-down; }
+  @keyframes step-nudge-down { 0%, 60%, 100% { translate: 0 0; } 30% { translate: 0 4px; } }
+}
+@media (max-width: 560px) { .band .sequence { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .band .sequence li:not(:last-child)::after { animation: none !important; } }
+
+/* ---------- dividers around How It Works: a fine rule with Maya's gold dot in the middle ---------- */
+.band { margin: 3rem auto; }
+.divider { position: relative; width: min(1120px, 100% - 2.5rem); height: 12px; margin: 0 auto; }
+.divider::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: linear-gradient(90deg, transparent, var(--line-strong) 18%, var(--line-strong) 82%, transparent); }
+.divider span { position: absolute; left: 50%; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 6px var(--cream); }
+.js-reveal .divider.reveal-draw { opacity: 0; transform: scaleX(.15); transition: opacity .7s cubic-bezier(.2, .7, .2, 1), transform .9s cubic-bezier(.2, .7, .2, 1); }
+.js-reveal .divider.reveal-draw.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .js-reveal .divider.reveal-draw { transform: none !important; transition: opacity .45s ease !important; } }
