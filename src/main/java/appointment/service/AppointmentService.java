@@ -189,7 +189,7 @@ public class AppointmentService {
 
         Appointment appointment = new Appointment(newReference(date), applicant, business, service, office,
                 date, time, quoteForOffice(service, business, office.getId()), Instant.now(clock));
-        String managementToken = newSecret(32);
+        String managementToken = newAccessCode();
         appointment.setManagementTokenHash(hashToken(managementToken));
         appointment.setManagementTokenCiphertext(linkVault.encrypt(managementToken));
         appointment.setCheckInCode(newSecret(24));
@@ -205,8 +205,8 @@ public class AppointmentService {
     /** A booking reference is public and never authorizes an applicant-facing lookup or change. */
     public Appointment findManaged(String referenceNo, String managementToken) {
         String error = "Booking not found or private access code is invalid.";
-        if (managementToken == null || !managementToken.matches("[A-Za-z0-9_-]{43}"))
-            throw new NotFoundException(error);
+        managementToken = normaliseAccessCode(managementToken);
+        if (managementToken == null) throw new NotFoundException(error);
         Appointment a = repository.findByReference(referenceNo).orElseThrow(() -> new NotFoundException(error));
         String expected = a.getManagementTokenHash();
         if (expected == null || !MessageDigest.isEqual(expected.getBytes(StandardCharsets.US_ASCII),
@@ -224,7 +224,7 @@ public class AppointmentService {
     /** Staff-assisted recovery for existing bookings and lost private codes. Revokes the old code. */
     public synchronized BookingResult resetManagement(String referenceNo) {
         Appointment a = find(referenceNo);
-        String managementToken = newSecret(32);
+        String managementToken = newAccessCode();
         a.setManagementTokenHash(hashToken(managementToken));
         a.setManagementTokenCiphertext(linkVault.encrypt(managementToken));
         if (a.getCheckInCode() == null) a.setCheckInCode(newSecret(24));
@@ -448,7 +448,7 @@ public class AppointmentService {
                 Appointment a = new Appointment(newReference(date), applicant, business,
                         catalog.getService("new-permit"), office, date, time,
                         quoteForOffice(catalog.getService("new-permit"), business, officeId), Instant.now(clock));
-                String access = newSecret(32);
+                String access = newAccessCode();
                 a.setManagementTokenHash(hashToken(access));
                 a.setCheckInCode(newSecret(24));
                 a.setDemoRecord(true);
@@ -486,6 +486,36 @@ public class AppointmentService {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) sb.append(REF_ALPHABET.charAt(random.nextInt(REF_ALPHABET.length())));
         return sb.toString();
+    }
+
+    /** Letters and digits that can't be mistaken for each other when copied by hand (no 0/O, 1/I/L). */
+    private static final String CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+
+    /**
+     * A private access code short enough to note down, e.g. "7KQ4-M2XP": 8 random characters from 31, about
+     * 40 bits. It only works together with its booking reference, so guessing it is out of reach.
+     */
+    private String newAccessCode() {
+        StringBuilder code = new StringBuilder(9);
+        for (int i = 0; i < 8; i++) {
+            if (i == 4) code.append('-');
+            code.append(CODE_ALPHABET.charAt(random.nextInt(CODE_ALPHABET.length())));
+        }
+        return code.toString();
+    }
+
+    /**
+     * The code as it was issued, or null if it can't be one. Short codes are forgiving: any case, with or without
+     * the dash or spaces. Long codes from bookings made before short codes keep working exactly as issued.
+     */
+    static String normaliseAccessCode(String code) {
+        if (code == null) return null;
+        String trimmed = code.trim();
+        if (trimmed.matches("[A-Za-z0-9_-]{43}")) return trimmed;
+        String compact = trimmed.toUpperCase(java.util.Locale.ROOT).replaceAll("[\\s-]", "");
+        if (compact.length() != 8) return null;
+        for (char c : compact.toCharArray()) if (CODE_ALPHABET.indexOf(c) < 0) return null;
+        return compact.substring(0, 4) + "-" + compact.substring(4);
     }
 
     private String newSecret(int bytes) {
