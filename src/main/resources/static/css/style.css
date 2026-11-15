@@ -973,3 +973,44 @@ em { font-style: normal; }
   .result-actions { width: 100%; }
   .result-actions .btn { flex: 1 1 0; }
 }
+
+/* ---------- menu button and drop-down menu (900px and narrower, where the tabs are hidden) ---------- */
+.menu-toggle { display: none; place-items: center; width: 44px; height: 44px; border: 1.5px solid rgba(107, 84, 70, .4); border-radius: 12px; background: transparent; color: var(--ink); cursor: pointer; transition: background-color .2s ease, border-color .2s ease; }
+.menu-toggle svg path { transition: transform .25s ease, opacity .2s ease; transform-origin: 12px 12px; }
+.menu-open .menu-toggle { background: #fff; border-color: var(--ink); }
+.menu-open .menu-toggle .mt-1 { transform: translateY(5px) rotate(45deg); }
+.menu-open .menu-toggle .mt-2 { opacity: 0; }
+.menu-open .menu-toggle .mt-3 { transform: translateY(-5px) rotate(-45deg); }
+.mobile-menu { position: absolute; left: 0; right: 0; top: 100%; background: var(--cream); border-bottom: 1px solid var(--line-strong); box-shadow: 0 18px 30px -18px rgba(62, 36, 22, .35);
+  opacity: 0; transform: translateY(-6px); transition: opacity .2s ease, transform .2s ease; max-height: calc(100svh - 72px); overflow-y: auto; }
+.mobile-menu.open { opacity: 1; transform: none; }
+.mobile-menu[hidden] { display: none; }
+.mobile-menu-links { display: grid; gap: .25rem; padding: .75rem 0 1rem; }
+.mobile-menu-links a { display: block; padding: .8rem 1rem; border-radius: 12px; border: 2px solid transparent; color: var(--ink-soft); font-weight: 500; text-decoration: none; }
+.mobile-menu-links a[aria-current="page"], .mobile-menu-links a.is-active { color: var(--ink); font-weight: 600; background: #fff; border-color: var(--ink); }
+.mobile-menu-links a:hover { background: #fff; color: var(--ink); }
+.mobile-menu-links .mobile-menu-cta { margin-top: .35rem; text-align: center; background: var(--navy); color: #fff; font-weight: 600; }
+.mobile-menu-links .mobile-menu-cta:hover { background: var(--navy-deep); color: #fff; }
+@media (max-width: 900px) {
+  .menu-toggle { display: grid; }
+  .page-header .nav-actions { display: flex; }
+}
+@media (max-width: 400px) { .nav-actions .btn-small { padding-inline: .8rem; } .nav { gap: .6rem; } }
+@media (prefers-reduced-motion: reduce) { .mobile-menu, .menu-toggle svg path { transition: none; } }
+/* very narrow phones: on Book a slot / Track a booking the repeated tab button gives way to the menu, which has it */
+@media (max-width: 420px) { .page-header .nav-actions .btn { display: none; } }
+/* phones: the notice strip stays readable but takes less room */
+@media (max-width: 600px) {
+  .notice-strip { font-size: .8rem; }
+  .notice-strip p { display: block; padding: .5rem 0; line-height: 1.45; }
+  .notice-strip svg { display: inline-block; width: 14px; height: 14px; vertical-align: -2px; margin-right: .3rem; }
+  .hero-band { min-height: auto; }
+}
+/* narrow phones: the page title keeps its words on one line next to a smaller Maya */
+@media (max-width: 420px) {
+  .page-title { gap: .75rem; }
+  .page-title h1 { font-size: 2rem; }
+  .page-title img { width: 104px; margin-bottom: -1.1rem; }
+}
+/* tablets: the strip's icon stays beside its text instead of on a line of its own */
+@media (min-width: 601px) { .notice-strip p { flex-wrap: nowrap; } .notice-strip span { text-align: left; } }

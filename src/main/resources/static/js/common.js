@@ -788,3 +788,45 @@ function dayStatusText(iso, d) {
   const day = new Date(y, m - 1, n).toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric' });
   return day + ' · ' + d.remaining + ' of ' + d.capacity + ' places left. Pick a time:';
 }
+
+// ---- phones and small tablets: the tabs fold into a menu button next to "Book a slot" ----
+// The menu lists every tab plus Track a booking, so nothing in the header is out of reach on a small screen.
+(function () {
+  const header = document.querySelector('.site-header');
+  const nav = header && header.querySelector('.nav');
+  const links = nav && nav.querySelector('.nav-links');
+  if (!links) return;
+  let actions = nav.querySelector('.nav-actions');
+  if (!actions) { actions = el('div', { class: 'nav-actions' }); nav.append(actions); }
+
+  const panel = el('nav', { id: 'mobile-menu', class: 'mobile-menu', 'aria-label': 'Menu', hidden: true });
+  const list = el('div', { class: 'wrap mobile-menu-links' });
+  links.querySelectorAll('a').forEach((a) => {
+    const copy = a.cloneNode(true);
+    copy.removeAttribute('id');
+    list.append(copy);
+  });
+  const has = (href) => Array.prototype.some.call(list.querySelectorAll('a'), (a) => a.getAttribute('href') === href);
+  if (!has('/manage.html')) list.append(el('a', { href: '/manage.html', text: 'Track a booking' }));
+  if (!has('/book.html') && !actions.querySelector('a[href="/book.html"]')) list.append(el('a', { href: '/book.html', class: 'mobile-menu-cta', text: 'Book a slot' }));
+  panel.append(list);
+  header.append(panel);
+
+  const btn = el('button', { type: 'button', class: 'menu-toggle', 'aria-expanded': 'false', 'aria-controls': 'mobile-menu', 'aria-label': 'Open menu' });
+  btn.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">'
+    + '<path class="mt-1" d="M4 7h16"/><path class="mt-2" d="M4 12h16"/><path class="mt-3" d="M4 17h16"/></svg>';
+  actions.append(btn);
+
+  const setOpen = (open) => {
+    btn.setAttribute('aria-expanded', String(open));
+    btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    header.classList.toggle('menu-open', open);
+    if (open) { panel.hidden = false; requestAnimationFrame(() => panel.classList.add('open')); }
+    else { panel.classList.remove('open'); setTimeout(() => { if (!panel.classList.contains('open')) panel.hidden = true; }, 220); }
+  };
+  btn.addEventListener('click', () => setOpen(btn.getAttribute('aria-expanded') !== 'true'));
+  panel.addEventListener('click', (e) => { if (e.target.closest('a')) setOpen(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && btn.getAttribute('aria-expanded') === 'true') { setOpen(false); btn.focus(); } });
+  document.addEventListener('click', (e) => { if (!header.contains(e.target) && btn.getAttribute('aria-expanded') === 'true') setOpen(false); });
+  window.addEventListener('resize', () => { if (window.innerWidth > 900 && btn.getAttribute('aria-expanded') === 'true') setOpen(false); });
+})();
