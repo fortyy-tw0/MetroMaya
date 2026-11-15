@@ -1,6 +1,7 @@
 (function () {
   const $ = (id) => document.getElementById(id);
   let current = null;       // the booking currently shown
+  const resultPrint = document.getElementById('result-print');   // shown with the check-in code, at the top
   let currentToken = null;  // never part of the printed confirmation or public QR
   let config = null;        // today's date and booking window
   let newDate = '';
@@ -26,17 +27,17 @@
     addRow(dl, 'Date', formatDate(a.date));
     addRow(dl, 'Time', formatTime(a.time));
     addRow(dl, 'Owner', a.ownerName);
-    renderCheckInCode($('result-checkin'), a);
+    renderCheckInCode($('result-checkin'), a, resultPrint);
     // fees follow the city named in the business address (the booking form always puts it there)
     const city = detectCity(a.businessAddress);
     const quote = city ? scaleQuote(a.quote, city.rate) : a.quote;
     renderFee($('result-fee'), quote.fee);
     renderInspections($('result-insp'), quote.inspections);
     renderDocs($('result-docs'), a.quote.requirements);
-    $('result-print').textContent = printActionLabel(a);
+    resultPrint.textContent = printActionLabel(a);
     renderPayment($('result-pay'), a, (updated) => {
       current = updated;
-      $('result-print').textContent = printActionLabel(updated);
+      resultPrint.textContent = printActionLabel(updated);
     }, currentToken);
 
     $('actions').hidden = a.status !== 'CONFIRMED' || !!a.acceptedAt;
@@ -44,7 +45,7 @@
     hideAlert($('result-alert'));
   }
 
-  $('result-print').addEventListener('click', () => { if (current) printBooking(current); });
+  resultPrint.addEventListener('click', () => { if (current) printBooking(current); });
 
   async function lookup(ref, token) {
     hideAlert($('lookup-alert'));

@@ -10,6 +10,7 @@
   const $ = (id) => document.getElementById(id);
   const panels = PANEL_IDS.map($);
   const donePanel = $('panel-done');
+  const donePrint = $('done-print');   // moved next to the check-in code when the booking is shown
 
   const serviceById = (id) => state.services.find((s) => s.id === id);
   const officeById = (id) => state.offices.find((o) => o.id === id);
@@ -626,21 +627,21 @@
     addRow(dl, 'Office', a.officeName + ', ' + a.officeAddress);
     addRow(dl, 'Date', formatDate(a.date));
     addRow(dl, 'Time', formatTime(a.time));
-    renderCheckInCode($('done-checkin'), a);
+    renderCheckInCode($('done-checkin'), a, donePrint);
     const doneQuote = state.city ? scaleQuote(a.quote, state.city.rate) : a.quote;
     renderFee($('done-fee'), doneQuote.fee);
     renderInspections($('done-insp'), doneQuote.inspections);
     renderDocs($('done-docs'), a.quote.requirements);
-    $('done-print').textContent = printActionLabel(a);
+    donePrint.textContent = printActionLabel(a);
     renderPayment($('done-pay'), a, (updated) => {
       doneAppointment = updated;
-      $('done-print').textContent = printActionLabel(updated);
+      donePrint.textContent = printActionLabel(updated);
     }, managementToken);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   let doneAppointment = null;
   let doneManagementToken = null;
-  $('done-print').addEventListener('click', () => { if (doneAppointment) printBooking(doneAppointment); });
+  donePrint.addEventListener('click', () => { if (doneAppointment) printBooking(doneAppointment); });
   $('copy-manage-link').addEventListener('click', async () => {
     if (!doneAppointment || !doneManagementToken) return;
     try {

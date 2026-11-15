@@ -509,11 +509,7 @@ function renderPayment(box, a, onUpdate, managementToken) {
         el('div', null, el('p', { class: 'receipt-kind', text: 'Acknowledgement receipt' }), el('p', { class: 'receipt-amount', text: peso(p.amount) })),
         el('span', { class: 'receipt-paid', text: 'Paid' })),
       demoTag, dl, fee,
-      el('div', { class: 'receipt-checkin' }, checkInQr(a),
-        el('p', { text: 'Show this code at the office. Staff scan it to check this booking and the live payment record.' })),
-      el('p', { class: 'hint receipt-note', text: 'Demo receipt from a prototype. No money moved, and this is not an official receipt. In production the city treasurer’s office would issue the official receipt.' }),
-      el('div', { class: 'receipt-actions no-print' },
-        el('button', { type: 'button', class: 'btn btn-outline btn-small', onclick: () => printBooking(a), text: 'Print confirmation and receipt' }))));
+      el('p', { class: 'hint receipt-note', text: 'Demo receipt from a prototype. No money moved, and this is not an official receipt. In production the city treasurer’s office would issue the official receipt.' })));
     return;
   }
   if (a.status !== 'CONFIRMED') return;
@@ -603,7 +599,8 @@ function checkInQr(a) {
   return box;
 }
 
-function renderCheckInCode(box, a) {
+// `action` (optional): the print button, shown with the code so both sit at the top of the booking
+function renderCheckInCode(box, a, action) {
   clear(box);
   box.append(el('div', { class: 'checkin-code' },
     checkInQr(a),
@@ -611,7 +608,8 @@ function renderCheckInCode(box, a) {
       el('h3', { text: 'Office check-in code' }),
       el('p', { text: 'Show this QR code or your reference number at the office. Staff scan it to verify the booking and current payment status.' }),
       el('p', { class: 'checkin-ref', text: a.referenceNo }),
-      el('p', { class: 'hint', text: a.acceptedAt ? 'Accepted at the office.' : 'Awaiting office check-in.' }))));
+      el('p', { class: 'hint', text: a.acceptedAt ? 'Accepted at the office.' : 'Awaiting office check-in.' }),
+      action || null)));
 }
 
 function printRow(list, label, value) {
