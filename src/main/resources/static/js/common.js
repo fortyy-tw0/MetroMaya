@@ -604,9 +604,9 @@ function renderCheckInCode(box, a, action) {
   box.append(el('div', { class: 'checkin-code' },
     checkInQr(a),
     el('div', null,
+      el('p', { class: 'checkin-ref', text: a.referenceNo }),
       el('h3', { text: 'Office check-in code' }),
       el('p', { text: 'Show this QR code or your reference number at the office. Staff scan it to verify the booking and current payment status.' }),
-      el('p', { class: 'checkin-ref', text: a.referenceNo }),
       el('p', { class: 'hint', text: a.acceptedAt ? 'Accepted at the office.' : 'Awaiting office check-in.' }),
       action || null)));
 }

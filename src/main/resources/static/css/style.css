@@ -947,3 +947,7 @@ em { font-style: normal; }
 .band { width: 100%; border-radius: 0; margin: 0; }
 @media (max-width: 900px) { .band { border-radius: 0; } }
 .js-reveal .band.reveal.reveal-zoom { transform: none; }
+
+/* check-in code: reference first, text kept to a readable width so the QR beside it stays large (about 200px) */
+.checkin-code:not(.print-checkin) { justify-content: start; grid-template-columns: auto minmax(0, 34rem); }
+.checkin-code:not(.print-checkin) .checkin-ref { margin: 0 0 .35rem; color: var(--ink-soft); letter-spacing: .03em; }
