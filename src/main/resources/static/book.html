@@ -14,6 +14,7 @@
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
+  <div class="notice-strip"><div class="wrap"><p><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span><b>Prototype e-service.</b> MetroMaya is not an official government website.</span></p></div></div>
   <header class="site-header page-header">
     <div class="nav">
       <a class="brand" href="/" aria-label="MetroMaya home">MetroMaya<b>.</b></a>
@@ -39,7 +40,7 @@
         <img src="/img/maya-hello.png" alt="" width="407" height="374">
       </div>
 
-      <ol class="stepper" id="stepper" aria-label="Booking steps"></ol>
+      <ol class="stepper" id="stepper" aria-label="Booking steps" hidden></ol>
 
       <div class="card">
         <!-- 0 Verify (only when the server has eGov settings): shown before the wizard -->
@@ -68,7 +69,7 @@
         </section>
 
         <!-- 1 Service -->
-        <section class="panel" id="panel-service">
+        <section class="panel" id="panel-service" hidden>
           <h2>What do you need?</h2>
           <div class="choices" id="service-choices"></div>
           <div class="nav-row"><span></span><button class="btn btn-primary" data-next disabled>Continue</button></div>

@@ -773,6 +773,8 @@
     }
   } catch (e) {
     clear($('service-choices')).append(el('p', { class: 'alert alert-error', text: e.message }));
+    $('panel-service').hidden = false;
+    $('stepper').hidden = false;
     renderStepper();
   }
 })();
