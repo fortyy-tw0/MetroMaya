@@ -909,3 +909,23 @@ em { font-style: normal; }
 .js-reveal .divider.reveal-draw { opacity: 0; transform: scaleX(.15); transition: opacity .7s cubic-bezier(.2, .7, .2, 1), transform .9s cubic-bezier(.2, .7, .2, 1); }
 .js-reveal .divider.reveal-draw.in { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .js-reveal .divider.reveal-draw { transform: none !important; transition: opacity .45s ease !important; } }
+
+/* ---------- step bar: finished steps (and steps already reached) can be clicked to jump straight there ---------- */
+
+.stepper li > button { display: inline; font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
+.stepper li.can-jump { cursor: pointer; position: relative; transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.stepper li.can-jump > button::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }   /* the whole tab is the button */
+.stepper li.can-jump:has(button:focus-visible) { outline: 3px solid var(--gold); outline-offset: 2px; }
+.stepper li.can-jump > button:focus-visible { outline: none; }
+.stepper li.reached { color: var(--ink-soft); }
+@media (hover: hover) {
+  .stepper li.can-jump:hover { border-color: var(--ink); transform: translateY(-2px); box-shadow: 0 6px 14px -8px rgba(62, 36, 22, .35); }
+}
+
+/* ---------- office instructions: plain text above the map, no box ---------- */
+.office-checklist { border: 0; background: none; padding: 0; border-radius: 0; width: auto; margin-top: 1rem; }
+
+/* ---------- calendar: holidays are tinted red, so it's clear the day is closed for a holiday ---------- */
+.cal-day.is-holiday { background: var(--bad-bg); color: #C98A82; }
+.cal-day.is-holiday:not(.is-past)::after { background: var(--bad); opacity: .55; }
+.cal-holiday-key { width: 11px; height: 11px; border-radius: 3px; background: var(--bad-bg); box-shadow: inset 0 0 0 1.5px #E4A79F; }

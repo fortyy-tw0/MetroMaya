@@ -714,6 +714,7 @@ function mountCalendar(container, opts) {
     el('span', null, el('i', { class: 'cal-dot lvl-many' }), 'Many places'),
     el('span', null, el('i', { class: 'cal-dot lvl-few' }), 'Few left'),
     el('span', null, el('i', { class: 'cal-dot lvl-full' }), 'Fully booked'),
+    el('span', null, el('i', { class: 'cal-holiday-key', 'aria-hidden': 'true' }), 'Holiday'),
     el('span', null, el('i', { class: 'cal-lock-key', 'aria-hidden': 'true' }), 'Closed'));
   clear(container).append(el('div', { class: 'cal' },
     el('div', { class: 'cal-head' }, prev, title, next), weekdays, grid, legend));
@@ -765,6 +766,7 @@ function mountCalendar(container, opts) {
         // only a real holiday gets the red holiday label; days past the 3-month window, office closures and
         // the like just read "Closed" (the full reason is in the tooltip and the screen-reader label)
         const holiday = (config.holidays || []).some((h) => h.date === d.date);
+        if (holiday) btn.classList.add('is-holiday');
         btn.append(holiday
           ? el('span', { class: 'cal-left cal-holiday', text: d.reason.length > 14 ? 'Holiday' : d.reason })
           : el('span', { class: 'cal-left', text: 'Closed' }));

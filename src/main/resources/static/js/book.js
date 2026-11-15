@@ -17,11 +17,39 @@
 
   // ---------- navigation ----------
 
+  // The step bar doubles as navigation: any finished step can be reopened, and a step already reached can be
+  // jumped forward to as long as everything before it is still filled in (so no Back, Back, Back).
+  let pendingJump = null;
+
+  function canEnter(i) {
+    if (i >= 1 && !state.serviceId) return false;
+    if (i >= 2 && (!state.form || !state.quote)) return false;
+    if (i >= 3 && !state.officeId) return false;
+    if (i >= 4 && (!state.date || !state.time)) return false;
+    return true;
+  }
+
+  function jumpTo(i) {
+    if (i === state.step) return;
+    if (i < state.step) { showStep(i); return; }
+    // leaving the business form forward: check and save it first, then carry on to the chosen step
+    if (state.step === 1) { pendingJump = i; $('business-form').requestSubmit(); return; }
+    if (canEnter(i)) showStep(i);
+  }
+
   function renderStepper() {
+    state.reached = Math.max(state.reached || 0, state.step);
     clear($('stepper'));
     STEP_LABELS.forEach((label, i) => {
-      const cls = i < state.step ? 'done' : i === state.step ? 'current' : '';
-      $('stepper').append(el('li', { class: cls, 'aria-current': i === state.step ? 'step' : false, text: label }));
+      const cls = i < state.step ? 'done' : i === state.step ? 'current' : i <= state.reached ? 'reached' : '';
+      const open = i !== state.step && (i < state.step || (i <= state.reached && (state.step === 1 ? canEnter(Math.min(i, 1)) : canEnter(i))));
+      const li = el('li', { class: cls + (open ? ' can-jump' : ''), 'aria-current': i === state.step ? 'step' : false });
+      if (open) {
+        li.append(el('button', { type: 'button', text: label, 'aria-label': 'Go to step ' + (i + 1) + ': ' + label, onclick: () => jumpTo(i) }));
+      } else {
+        li.append(el('span', { text: label }));
+      }
+      $('stepper').append(li);
     });
     // on a phone the bar scrolls sideways: keep the current step in view
     const cur = $('stepper').querySelector('.current');
@@ -230,6 +258,8 @@
   $('business-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const alertNode = $('business-alert');
+    const jump = pendingJump;   // set when the step bar was used to leave this form
+    pendingJump = null;
     const form = Object.fromEntries(new FormData(e.target).entries());
     Object.keys(form).forEach((k) => { form[k] = String(form[k]).trim(); });
     const city = cityById(form.cityId || '');
@@ -257,14 +287,15 @@
     try {
       const qs = new URLSearchParams({ serviceId: state.serviceId, industryId: form.industryId, employees: form.employees });
       const { quote } = await api.get('/api/quote?' + qs.toString());
-      if (!state.form || state.form.industryId !== form.industryId || state.form.employees !== form.employees) {
+      if (!state.form || state.form.industryId !== form.industryId || state.form.employees !== form.employees
+          || !state.city || state.city.id !== city.id) {
         state.officeId = null; state.date = ''; state.time = '';
       }
       state.form = form;
       state.city = city;
       state.quote = scaleQuote(quote, city.rate);
       hideAlert(alertNode);
-      showStep(2);
+      showStep(jump && jump > 2 && canEnter(jump) ? jump : 2);
     } catch (err) {
       showAlert(alertNode, err.message, 'error');
     }
