@@ -963,3 +963,13 @@ em { font-style: normal; }
 #result-checkin .checkin-code > .badge { position: absolute; top: 1rem; right: 1rem; }
 @media (max-width: 720px) { #result-checkin .checkin-code > .badge { position: static; justify-self: start; grid-row: 1; } }
 #reschedule-box { scroll-margin-top: 96px; }
+
+/* check-in slip on phones: QR centred on top, the status just below it, then the text */
+@media (max-width: 600px) {
+  .checkin-code:not(.print-checkin) { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; gap: .9rem; }
+  .checkin-code:not(.print-checkin) > .checkin-qr { grid-row: 1; width: 180px; height: 180px; }
+  #result-checkin .checkin-code > .badge { position: static; grid-row: 2; justify-self: center; }
+  .checkin-code:not(.print-checkin) > div { grid-row: 3; }
+  .result-actions { width: 100%; }
+  .result-actions .btn { flex: 1 1 0; }
+}
