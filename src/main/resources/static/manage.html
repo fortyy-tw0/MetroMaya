@@ -57,10 +57,14 @@
       </div>
 
       <div class="card" id="result" style="margin-top: 1.5rem;" hidden>
-        <div style="display:flex; justify-content:space-between; gap:1rem; align-items:center; flex-wrap:wrap;">
-          <h2 style="margin:0; font-family: var(--mono); font-weight:600; letter-spacing:.02em; overflow-wrap:anywhere;" id="result-ref"></h2>
-          <span class="badge" id="result-status"></span>
+        <div class="result-head">
+          <h2 id="result-ref"></h2>
+          <div class="result-actions no-print" id="head-actions">
+            <button class="btn btn-outline" id="reschedule-toggle">Move to another time</button>
+            <button class="btn btn-danger" id="cancel-btn">Cancel booking</button>
+          </div>
         </div>
+        <span class="badge" id="result-status"></span>
         <div id="result-checkin"><button class="btn btn-outline btn-small no-print" id="result-print" type="button">Print booking confirmation</button></div>
         <dl class="summary" id="result-summary"></dl>
         <div class="review-cols">
@@ -75,11 +79,6 @@
         <div class="alert alert-ok" id="result-alert" hidden role="status"></div>
 
         <div id="actions" class="no-print">
-          <div class="nav-row" style="justify-content:flex-start;">
-            <button class="btn btn-outline" id="reschedule-toggle">Move to another time</button>
-            <button class="btn btn-danger" id="cancel-btn">Cancel booking</button>
-          </div>
-
           <div id="reschedule-box" hidden style="margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid var(--line);">
             <h3>Choose a new date and time</h3>
             <div class="cal-mount" id="new-cal" aria-label="Choose a new date"></div>

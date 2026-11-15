@@ -2,6 +2,7 @@
   const $ = (id) => document.getElementById(id);
   let current = null;       // the booking currently shown
   const resultPrint = document.getElementById('result-print');   // shown with the check-in code, at the top
+  const resultStatus = document.getElementById('result-status');   // shown in the check-in slip's corner
   let currentToken = null;  // never part of the printed confirmation or public QR
   let config = null;        // today's date and booking window
   let newDate = '';
@@ -15,7 +16,7 @@
     current = a;
     $('result').hidden = false;
     $('result-ref').textContent = a.referenceNo;
-    const badge = $('result-status');
+    const badge = resultStatus;
     badge.textContent = a.status === 'CANCELLED' ? 'Cancelled' : a.acceptedAt ? 'Accepted at office' : 'Confirmed';
     badge.className = 'badge badge-' + a.status;
 
@@ -28,6 +29,7 @@
     addRow(dl, 'Time', formatTime(a.time));
     addRow(dl, 'Owner', a.ownerName);
     renderCheckInCode($('result-checkin'), a, resultPrint);
+    $('result-checkin').querySelector('.checkin-code').append(resultStatus);   // status sits in the slip's corner
     // fees follow the city named in the business address (the booking form always puts it there)
     const city = detectCity(a.businessAddress);
     const quote = city ? scaleQuote(a.quote, city.rate) : a.quote;
@@ -41,6 +43,7 @@
     }, currentToken);
 
     $('actions').hidden = a.status !== 'CONFIRMED' || !!a.acceptedAt;
+    $('head-actions').hidden = $('actions').hidden;
     $('reschedule-box').hidden = true;
     hideAlert($('result-alert'));
   }
@@ -102,6 +105,7 @@
     mountCalendar($('new-cal'), { officeId: current.officeId, config, onSelect: pickNewDate });
     clear($('new-slots'));
     hideAlert($('new-slot-alert'));
+    box.scrollIntoView({ behavior: 'smooth', block: 'start' });   // the button is at the top, the calendar further down
     $('reschedule-confirm').disabled = true;
   });
 

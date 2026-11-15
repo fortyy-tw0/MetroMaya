@@ -953,3 +953,13 @@ em { font-style: normal; }
 /* the QR drawing must not decide the box's size (its SVG would otherwise stretch it): it fills the square instead */
 .checkin-code:not(.print-checkin) > .checkin-qr { position: relative; overflow: hidden; }
 .checkin-code:not(.print-checkin) > .checkin-qr svg { position: absolute; inset: 8px; width: calc(100% - 16px); height: calc(100% - 16px); }
+
+/* Track a booking: reference with its actions on one line; the status sits in the check-in slip's corner */
+.result-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.result-head h2 { margin: 0; font-family: var(--mono); font-weight: 600; letter-spacing: .02em; overflow-wrap: anywhere; }
+.result-actions { display: flex; gap: .75rem; flex-wrap: wrap; }
+.result-actions[hidden] { display: none; }
+#result-checkin .checkin-code { position: relative; margin-top: 0; }
+#result-checkin .checkin-code > .badge { position: absolute; top: 1rem; right: 1rem; }
+@media (max-width: 720px) { #result-checkin .checkin-code > .badge { position: static; justify-self: start; grid-row: 1; } }
+#reschedule-box { scroll-margin-top: 96px; }
