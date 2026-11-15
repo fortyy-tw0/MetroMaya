@@ -882,30 +882,42 @@ em { font-style: normal; }
 .office-checklist p { margin: 0; font-size: .92rem; }
 .office-checklist p + p, .office-checklist ul { margin-top: .4rem; }
 
-/* ---------- How It Works: arrows lead from one step to the next ---------- */
-.band .sequence { gap: 2.5rem; }
-.band .sequence li { position: relative; }
-.band .sequence li:not(:last-child)::after {
-  content: ""; position: absolute; top: 50%; right: calc(-1.25rem - 15px); width: 30px; height: 30px; margin-top: -15px; z-index: 1;
-  border-radius: 50%; background: var(--gold) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231B2248' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h13M13 6l6 6-6 6'/%3E%3C/svg%3E") center / 16px no-repeat;
-  box-shadow: 0 0 0 5px var(--navy);
-  animation: step-nudge 2.4s ease-in-out infinite;
+/* ---------- How It Works: four open steps (icon, STEP n, title, text) joined by long arrows ---------- */
+.band .sequence.steps-flow { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2rem 6rem; }
+.steps-flow li { position: relative; background: none; border: 0; border-radius: 0; padding: 0; text-align: center; }
+.steps-flow li:hover { transform: none; background: none; }
+.steps-flow li::before { content: "Step " counter(s); display: block; width: auto; height: auto; margin: 1rem 0 .55rem; background: none; border-radius: 0;
+  color: var(--gold); font-family: var(--display); font-size: .82rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
+.steps-flow .step-icon { display: grid; place-items: center; width: 76px; height: 76px; margin: 0 auto; border-radius: 50%; color: #fff;
+  background: rgba(255, 255, 255, .07); box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .22); transition: transform .3s ease, box-shadow .3s ease; order: -1; }
+.steps-flow .step-icon svg { width: 36px; height: 36px; }
+.steps-flow li { display: flex; flex-direction: column; align-items: center; }
+.steps-flow h4 { margin: 0 0 .4em; font-size: 1.08rem; }
+.steps-flow p { max-width: 24ch; margin-inline: auto; }
+@media (hover: hover) { .steps-flow li:hover .step-icon { transform: translateY(-4px); box-shadow: inset 0 0 0 1.5px var(--gold); } }
+/* the arrow sits in the gap level with the icons and travels from one step towards the next */
+.steps-flow li:not(:last-child)::after {
+  content: ""; position: absolute; top: 38px; left: calc(100% + .75rem); width: calc(6rem - 1.5rem); height: 28px; margin-top: -14px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 72 28' fill='none' stroke='%23EDB24A' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 14h64M56 4l11 10-11 10'/%3E%3C/svg%3E") center / contain no-repeat;
+  animation: step-travel 2.2s cubic-bezier(.45, 0, .2, 1) infinite;
 }
-@keyframes step-nudge { 0%, 60%, 100% { translate: 0 0; } 30% { translate: 4px 0; } }
-/* stacked steps: the arrows turn to point down */
+@keyframes step-travel {
+  0% { opacity: 0; transform: translateX(-10px); }
+  25%, 70% { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(10px); }
+}
+/* stacked steps (tablets and phones): the arrows point down from one step to the next */
 @media (max-width: 1000px) {
-  .band .sequence { grid-template-columns: 1fr; gap: 2.5rem; max-width: 34rem; margin-inline: auto; }
-  .band .sequence li:not(:last-child)::after { top: auto; right: auto; left: 50%; bottom: calc(-1.25rem - 15px); margin: 0 0 0 -15px; rotate: 90deg; animation-name: step-nudge-down; }
-  @keyframes step-nudge-down { 0%, 60%, 100% { translate: 0 0; } 30% { translate: 0 4px; } }
+  .band .sequence.steps-flow { grid-template-columns: 1fr; gap: 4.5rem; max-width: 26rem; margin-inline: auto; }
+  .steps-flow li:not(:last-child)::after { top: auto; left: 50%; bottom: -50px; width: 56px; margin: 0 0 0 -28px; rotate: 90deg; }
 }
-@media (max-width: 560px) { .band .sequence { grid-template-columns: 1fr; } }
-@media (prefers-reduced-motion: reduce) { .band .sequence li:not(:last-child)::after { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .steps-flow li:not(:last-child)::after { animation: none !important; opacity: 1; } }
 
 /* ---------- dividers around How It Works: a fine rule with Maya's gold dot in the middle ---------- */
 .band { margin: 3rem auto; }
 .divider { position: relative; width: min(1120px, 100% - 2.5rem); height: 12px; margin: 0 auto; }
-.divider::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: linear-gradient(90deg, transparent, var(--line-strong) 18%, var(--line-strong) 82%, transparent); }
-.divider span { position: absolute; left: 50%; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 6px var(--cream); }
+.divider::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--line-strong); }
+.divider span { display: none; position: absolute; left: 50%; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 6px var(--cream); }
 .js-reveal .divider.reveal-draw { opacity: 0; transform: scaleX(.15); transition: opacity .7s cubic-bezier(.2, .7, .2, 1), transform .9s cubic-bezier(.2, .7, .2, 1); }
 .js-reveal .divider.reveal-draw.in { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .js-reveal .divider.reveal-draw { transform: none !important; transition: opacity .45s ease !important; } }
@@ -930,3 +942,8 @@ em { font-style: normal; }
 .cal-day.is-holiday:not(.is-past)::after { background: var(--bad); opacity: .55; }
 .cal-holiday-key { width: 11px; height: 11px; border-radius: 3px; background: var(--bad-bg); box-shadow: inset 0 0 0 1.5px #E4A79F; }
 .checkin-code .btn { margin-top: .6rem; }
+
+/* the step bar scrolls sideways on phones, which also clips vertically: give the hover lift room inside it */
+.stepper { padding: 4px 4px 10px; margin: -4px -4px calc(1.25rem - 10px); }
+/* a divider between "Wrong city?…" and the office instructions */
+.office-checklist { border-top: 1px solid var(--line); padding-top: 1rem; margin-top: 1rem; }
