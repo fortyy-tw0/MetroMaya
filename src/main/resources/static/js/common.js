@@ -836,3 +836,30 @@ function dayStatusText(iso, d) {
   document.addEventListener('click', (e) => { if (!header.contains(e.target) && btn.getAttribute('aria-expanded') === 'true') setOpen(false); });
   window.addEventListener('resize', () => { if (window.innerWidth > 900 && btn.getAttribute('aria-expanded') === 'true') setOpen(false); });
 })();
+
+// ---- dark mode: a moon / sun button in the header; the choice is remembered in this browser ----
+(function () {
+  const nav = document.querySelector('.site-header .nav');
+  if (!nav) return;
+  const root = document.documentElement;
+  const MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>';
+  const SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>';
+  const btn = el('button', { type: 'button', class: 'theme-toggle' });
+  const paint = () => {
+    const dark = root.dataset.theme === 'dark';
+    btn.innerHTML = dark ? SUN : MOON;
+    btn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+    btn.setAttribute('aria-pressed', String(dark));
+    btn.title = dark ? 'Light mode' : 'Dark mode';
+  };
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (root.dataset.theme === 'dark') delete root.dataset.theme; else root.dataset.theme = 'dark';
+    try { localStorage.setItem('metromaya.theme', root.dataset.theme === 'dark' ? 'dark' : 'light'); } catch (err) { /* not remembered */ }
+    paint();
+  });
+  paint();
+  let actions = nav.querySelector('.nav-actions');
+  if (!actions) { actions = el('div', { class: 'nav-actions' }); nav.append(actions); }
+  actions.prepend(btn);
+})();

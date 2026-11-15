@@ -16,7 +16,7 @@
 .staff-office-select select, .staff-inline-form input { min-height: 43px; }
 .staff-tabs { display: flex; gap: .5rem; overflow-x: auto; padding: .35rem .25rem .9rem; border-bottom: 1px solid var(--line-strong); margin-block-end: 1.6rem; }
 .staff-tab { flex: none; border: 2px solid transparent; border-radius: 12px; background: transparent; color: var(--ink-soft); font: inherit; font-weight: 600; padding: .55rem 1rem; cursor: pointer; transition: transform .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease, color .2s ease; }
-.staff-tab:hover, .staff-tab[aria-current="page"] { background: #fff; border-color: var(--ink); color: var(--ink); transform: translateY(-2px); box-shadow: 0 6px 14px -8px rgba(62, 36, 22, .35); }
+.staff-tab:hover, .staff-tab[aria-current="page"] { background: var(--surface); border-color: var(--ink); color: var(--ink); transform: translateY(-2px); box-shadow: 0 6px 14px -8px rgba(62, 36, 22, .35); }
 .staff-panel { min-width: 0; }
 .staff-panel-head { display: flex; justify-content: space-between; align-items: end; gap: 1rem 2rem; flex-wrap: wrap; margin-block-end: 1.5rem; }
 .staff-panel-head h2 { margin-block-end: .25rem; }
@@ -24,16 +24,16 @@
 .staff-inline-form { display: flex; align-items: end; gap: .65rem; flex-wrap: wrap; }
 .staff-inline-form label { width: 100%; font-size: .85rem; }
 .staff-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .85rem; margin-block: 1.2rem 1.5rem; }
-.staff-metric { display: grid; gap: .2rem; align-content: start; background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 1.1rem 1.25rem; }
+.staff-metric { display: grid; gap: .2rem; align-content: start; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 1.1rem 1.25rem; }
 .staff-metric-label { color: var(--ink-2); font-size: .84rem; font-weight: 700; }
 .staff-metric strong { color: var(--gov-800); font-size: clamp(1.5rem, 3vw, 2.2rem); line-height: 1.15; font-variant-numeric: tabular-nums; }
 .staff-metric small { color: var(--muted); font-size: .78rem; }
-.staff-table-wrap { overflow-x: auto; background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); }
+.staff-table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); }
 .staff-table { width: 100%; min-width: 850px; border-collapse: collapse; text-align: start; }
 .staff-table th, .staff-table td { padding: .9rem 1rem; border-bottom: 1px solid var(--line); vertical-align: top; text-align: start; }
 .staff-table thead { background: var(--blue-50); color: var(--gov-800); font-size: .8rem; }
 .staff-table tbody tr:last-child > * { border-bottom: 0; }
-.staff-table tbody tr:nth-child(even) { background: #FDFBF7; }
+.staff-table tbody tr:nth-child(even) { background: var(--row-alt); }
 .staff-table td strong { display: block; color: var(--ink); font-weight: 700; }
 .staff-table td small { display: block; color: var(--muted); }
 .staff-ref-button { display: block; padding: .2rem 0; border: 0; background: none; color: var(--blue); font: 600 .83rem var(--mono); cursor: pointer; text-align: start; text-decoration: underline; text-underline-offset: 3px; }
@@ -63,7 +63,7 @@
 .staff-camera { margin-block-start: 1rem; }
 .staff-camera video { width: min(100%, 420px); aspect-ratio: 4 / 3; object-fit: cover; background: var(--gov-950); border-radius: var(--r); }
 .staff-camera p { margin-block: .5rem 0; font-size: .85rem; color: var(--muted); }
-.staff-chart-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 1.3rem; margin-block-end: 1.5rem; }
+.staff-chart-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 1.3rem; margin-block-end: 1.5rem; }
 .staff-chart-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: center; flex-wrap: wrap; }
 .staff-chart-heading h3 { margin: 0; }
 .staff-legend { display: flex; gap: 1rem; font-size: .8rem; color: var(--ink-2); }
