@@ -126,7 +126,7 @@ em { font-style: normal; }
 .hero-band {
   background: #fff; border-bottom: 1px solid var(--line); position: relative;
   /* The slogan fills the whole first screen, below the 72px header. */
-  min-height: calc(100vh - 102px); min-height: calc(100svh - 102px);   /* header 72px + notice strip */
+  min-height: calc(100vh - 112px); min-height: calc(100svh - 112px);   /* header 72px + notice strip */
   display: flex; flex-direction: column; padding-top: clamp(1.5rem, 4vh, 3rem);
 }
 .hero-inner { flex: 1; justify-content: center; text-align: center; display: flex; flex-direction: column; align-items: center; }
@@ -947,3 +947,14 @@ em { font-style: normal; }
 .stepper { padding: 4px 4px 10px; margin: -4px -4px calc(1.25rem - 10px); }
 /* a divider between "Wrong city?…" and the office instructions */
 .office-checklist { border-top: 1px solid var(--line); padding-top: 1rem; margin-top: 1rem; }
+
+/* check-in code: the QR is exactly as tall as the text beside it (heading to button) */
+.checkin-code:not(.print-checkin) { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: stretch; gap: 1.25rem; }
+.checkin-code:not(.print-checkin) > .checkin-qr { flex: none; width: auto; height: 100%; aspect-ratio: 1; min-height: 0; }
+@media (max-width: 520px) { .checkin-code:not(.print-checkin) { grid-template-columns: 1fr; } .checkin-code:not(.print-checkin) > .checkin-qr { width: 160px; height: auto; } }
+
+/* notice strip, easier to read: larger text, warm background, a clear label */
+.notice-strip { background: var(--gold-soft); color: var(--ink); border-bottom: 1px solid #EBD9AE; font-size: .92rem; }
+.notice-strip p { padding: .6rem 0; gap: .55rem; flex-wrap: wrap; }
+.notice-strip svg { width: 18px; height: 18px; color: #B07A1E; }
+.notice-strip b { color: var(--ink); font-weight: 700; }
