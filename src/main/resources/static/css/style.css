@@ -899,28 +899,12 @@ em { font-style: normal; }
 .steps-flow li:not(:last-child)::after {
   content: ""; position: absolute; top: 38px; left: calc(100% + .75rem); width: calc(6rem - 1.5rem); height: 28px; margin-top: -14px;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 72 28' fill='none' stroke='%23EDB24A' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 14h64M56 4l11 10-11 10'/%3E%3C/svg%3E") center / contain no-repeat;
-  animation: step-travel 2.2s cubic-bezier(.45, 0, .2, 1) infinite;
-}
-@keyframes step-travel {
-  0% { opacity: 0; transform: translateX(-10px); }
-  25%, 70% { opacity: 1; transform: translateX(0); }
-  100% { opacity: 0; transform: translateX(10px); }
 }
 /* stacked steps (tablets and phones): the arrows point down from one step to the next */
 @media (max-width: 1000px) {
   .band .sequence.steps-flow { grid-template-columns: 1fr; gap: 4.5rem; max-width: 26rem; margin-inline: auto; }
   .steps-flow li:not(:last-child)::after { top: auto; left: 50%; bottom: -50px; width: 56px; margin: 0 0 0 -28px; rotate: 90deg; }
 }
-@media (prefers-reduced-motion: reduce) { .steps-flow li:not(:last-child)::after { animation: none !important; opacity: 1; } }
-
-/* ---------- dividers around How It Works: a fine rule with Maya's gold dot in the middle ---------- */
-.band { margin: 3rem auto; }
-.divider { position: relative; width: min(1120px, 100% - 2.5rem); height: 12px; margin: 0 auto; }
-.divider::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--line-strong); }
-.divider span { display: none; position: absolute; left: 50%; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 6px var(--cream); }
-.js-reveal .divider.reveal-draw { opacity: 0; transform: scaleX(.15); transition: opacity .7s cubic-bezier(.2, .7, .2, 1), transform .9s cubic-bezier(.2, .7, .2, 1); }
-.js-reveal .divider.reveal-draw.in { opacity: 1; transform: none; }
-@media (prefers-reduced-motion: reduce) { .js-reveal .divider.reveal-draw { transform: none !important; transition: opacity .45s ease !important; } }
 
 /* ---------- step bar: finished steps (and steps already reached) can be clicked to jump straight there ---------- */
 
@@ -958,3 +942,8 @@ em { font-style: normal; }
 .notice-strip p { padding: .6rem 0; gap: .55rem; flex-wrap: wrap; }
 .notice-strip svg { width: 18px; height: 18px; color: #B07A1E; }
 .notice-strip b { color: var(--ink); font-weight: 700; }
+
+/* How It Works runs the full width of the page, edge to edge */
+.band { width: 100%; border-radius: 0; margin: 0; }
+@media (max-width: 900px) { .band { border-radius: 0; } }
+.js-reveal .band.reveal.reveal-zoom { transform: none; }
