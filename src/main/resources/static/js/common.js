@@ -852,11 +852,31 @@ function dayStatusText(iso, d) {
     btn.setAttribute('aria-pressed', String(dark));
     btn.title = dark ? 'Light mode' : 'Dark mode';
   };
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
+  const swap = () => {
     if (root.dataset.theme === 'dark') delete root.dataset.theme; else root.dataset.theme = 'dark';
     try { localStorage.setItem('metromaya.theme', root.dataset.theme === 'dark' ? 'dark' : 'light'); } catch (err) { /* not remembered */ }
     paint();
+    btn.classList.remove('spin'); void btn.offsetWidth; btn.classList.add('spin');   // the moon/sun turns into place
+  };
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // The new theme spreads out from the button in a circle (View Transitions). Browsers without it, or with
+    // reduced motion, get a short colour fade instead.
+    if (!document.startViewTransition || reduced) {
+      root.classList.add('theme-fading');
+      swap();
+      setTimeout(() => root.classList.remove('theme-fading'), 450);
+      return;
+    }
+    const b = btn.getBoundingClientRect();
+    const x = b.left + b.width / 2, y = b.top + b.height / 2;
+    const r = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+    const t = document.startViewTransition(swap);
+    t.ready.then(() => {
+      root.animate({ clipPath: ['circle(0px at ' + x + 'px ' + y + 'px)', 'circle(' + r + 'px at ' + x + 'px ' + y + 'px)'] },
+        { duration: 600, easing: 'cubic-bezier(.4, 0, .2, 1)', pseudoElement: '::view-transition-new(root)' });
+    }).catch(() => { /* the swap already happened; nothing to animate */ });
   });
   paint();
   let actions = nav.querySelector('.nav-actions');

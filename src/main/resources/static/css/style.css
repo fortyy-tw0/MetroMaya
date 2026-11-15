@@ -1069,3 +1069,14 @@ em { font-style: normal; }
 :root[data-theme="dark"] .day-status { color: #A9B6F2; }
 :root[data-theme="dark"] .eyebrow { color: #A9B6F2; }
 :root[data-theme="dark"] .band .eyebrow, :root[data-theme="dark"] .steps-flow li::before { color: var(--gold); }
+
+/* ---------- switching light / dark: the new theme spreads from the button in a circle ---------- */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-new(root) { z-index: 2; }
+/* fallback (older browsers, reduced motion): colours fade instead of snapping */
+.theme-fading, .theme-fading *, .theme-fading *::before, .theme-fading *::after {
+  transition: background-color .4s ease, color .4s ease, border-color .4s ease, fill .4s ease, box-shadow .4s ease !important;
+}
+.theme-toggle.spin svg { animation: theme-spin .5s cubic-bezier(.2, .7, .2, 1); }
+@keyframes theme-spin { from { transform: rotate(-120deg) scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .theme-toggle.spin svg { animation: none; } }
