@@ -593,7 +593,7 @@
     btn.textContent = 'Booking…';
     hideAlert($('submit-alert'));
     try {
-      const { appointment, managementToken } = await api.post('/api/appointments', {
+      const { appointment, managementToken, emailSent } = await api.post('/api/appointments', {
         serviceId: state.serviceId,
         officeId: state.officeId,
         date: state.date,
@@ -601,7 +601,7 @@
         ...state.form,
         ...(state.verifyPass ? { verifyPass: state.verifyPass } : {}),
       });
-      showDone(appointment, managementToken);
+      showDone(appointment, managementToken, emailSent);
     } catch (e) {
       showAlert($('submit-alert'), e.message, 'error');
       // an expired pass: verify again, then come straight back to Review
@@ -612,7 +612,9 @@
     }
   });
 
-  function showDone(a, managementToken) {
+  function showDone(a, managementToken, emailSent) {
+    $('done-emailed').hidden = !emailSent;
+    if (emailSent) $('done-emailed').textContent = 'We also emailed your reference number and private access code to ' + a.email + '. Check your inbox (or spam folder).';
     doneAppointment = a;
     doneManagementToken = managementToken;
     panels.forEach((p) => { p.hidden = true; });

@@ -950,3 +950,6 @@ em { font-style: normal; }
 /* check-in code: reference first, text kept to a readable width so the QR beside it stays large (about 200px) */
 .checkin-code:not(.print-checkin) { justify-content: start; grid-template-columns: auto minmax(0, 34rem); }
 .checkin-code:not(.print-checkin) .checkin-ref { margin: 0 0 .35rem; color: var(--ink-soft); letter-spacing: .03em; }
+/* the QR drawing must not decide the box's size (its SVG would otherwise stretch it): it fills the square instead */
+.checkin-code:not(.print-checkin) > .checkin-qr { position: relative; overflow: hidden; }
+.checkin-code:not(.print-checkin) > .checkin-qr svg { position: absolute; inset: 8px; width: calc(100% - 16px); height: calc(100% - 16px); }

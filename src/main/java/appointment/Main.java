@@ -72,7 +72,9 @@ public class Main {
         NotificationService notifications = new NotificationService(service, notificationRepository(), linkVault, clock,
                 env("RESEND_API_KEY"), env("RESEND_FROM_EMAIL"), env("PUBLIC_BASE_URL"), env("RESEND_API_URL"));
         if (!staff.configured()) System.out.println("Staff login is off until STAFF_ADMIN_PASSWORD and a 32-character STAFF_SESSION_SECRET are set.");
-        if (!notifications.configured()) System.out.println("Booking email is off until Resend, PUBLIC_BASE_URL and MANAGEMENT_LINK_KEY are configured.");
+        if (notifications.configured()) System.out.println("Booking emails are on (confirmations, reminders and office changes).");
+        else if (notifications.canSendConfirmation()) System.out.println("Booking confirmation emails are on; reminders also need MANAGEMENT_LINK_KEY.");
+        else System.out.println("Booking email is off until RESEND_API_KEY, RESEND_FROM_EMAIL and PUBLIC_BASE_URL are set.");
         new WebServer(port, service, egov, ids, passes, staff, notifications).start();
         System.out.println("Appointment system running on http://localhost:" + port);
     }

@@ -177,8 +177,9 @@ class ApiHandler implements HttpHandler {
         if (head.equals("appointments")) {
             if (method.equals("POST") && parts.length == 1) {
                 AppointmentService.BookingResult created = book(readForm(exchange));
-                notifications.confirmation(created);
-                respond(exchange, 201, bookingResultJson(created));
+                Map<String, Object> body = bookingResultJson(created);
+                body.put("emailSent", notifications.confirmation(created));
+                respond(exchange, 201, body);
                 return;
             }
             if (method.equals("GET") && parts.length == 2) {
