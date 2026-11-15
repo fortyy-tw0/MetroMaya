@@ -808,23 +808,29 @@ function dayStatusText(iso, d) {
   });
   const has = (href) => Array.prototype.some.call(list.querySelectorAll('a'), (a) => a.getAttribute('href') === href);
   if (!has('/manage.html')) list.append(el('a', { href: '/manage.html', text: 'Track a booking' }));
-  if (!has('/book.html') && !actions.querySelector('a[href="/book.html"]')) list.append(el('a', { href: '/book.html', class: 'mobile-menu-cta', text: 'Book a slot' }));
+  if (!has('/book.html')) list.append(el('a', { href: '/book.html', class: 'mobile-menu-cta', text: 'Book a slot' }));
   panel.append(list);
   header.append(panel);
 
   const btn = el('button', { type: 'button', class: 'menu-toggle', 'aria-expanded': 'false', 'aria-controls': 'mobile-menu', 'aria-label': 'Open menu' });
-  btn.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">'
-    + '<path class="mt-1" d="M4 7h16"/><path class="mt-2" d="M4 12h16"/><path class="mt-3" d="M4 17h16"/></svg>';
+  // two drawings rather than animated bars, so the icon looks the same in every browser (Safari included)
+  const ICON_MENU = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+  const ICON_CLOSE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  btn.innerHTML = ICON_MENU;
   actions.append(btn);
 
   const setOpen = (open) => {
     btn.setAttribute('aria-expanded', String(open));
     btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
     header.classList.toggle('menu-open', open);
+    btn.innerHTML = open ? ICON_CLOSE : ICON_MENU;
     if (open) { panel.hidden = false; requestAnimationFrame(() => panel.classList.add('open')); }
     else { panel.classList.remove('open'); setTimeout(() => { if (!panel.classList.contains('open')) panel.hidden = true; }, 220); }
   };
-  btn.addEventListener('click', () => setOpen(btn.getAttribute('aria-expanded') !== 'true'));
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();   // the icon is redrawn on click, so the "tap outside closes it" check must not see this tap
+    setOpen(btn.getAttribute('aria-expanded') !== 'true');
+  });
   panel.addEventListener('click', (e) => { if (e.target.closest('a')) setOpen(false); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && btn.getAttribute('aria-expanded') === 'true') { setOpen(false); btn.focus(); } });
   document.addEventListener('click', (e) => { if (!header.contains(e.target) && btn.getAttribute('aria-expanded') === 'true') setOpen(false); });

@@ -976,11 +976,7 @@ em { font-style: normal; }
 
 /* ---------- menu button and drop-down menu (900px and narrower, where the tabs are hidden) ---------- */
 .menu-toggle { display: none; place-items: center; width: 44px; height: 44px; border: 1.5px solid rgba(107, 84, 70, .4); border-radius: 12px; background: transparent; color: var(--ink); cursor: pointer; transition: background-color .2s ease, border-color .2s ease; }
-.menu-toggle svg path { transition: transform .25s ease, opacity .2s ease; transform-origin: 12px 12px; }
 .menu-open .menu-toggle { background: #fff; border-color: var(--ink); }
-.menu-open .menu-toggle .mt-1 { transform: translateY(5px) rotate(45deg); }
-.menu-open .menu-toggle .mt-2 { opacity: 0; }
-.menu-open .menu-toggle .mt-3 { transform: translateY(-5px) rotate(-45deg); }
 .mobile-menu { position: absolute; left: 0; right: 0; top: 100%; background: var(--cream); border-bottom: 1px solid var(--line-strong); box-shadow: 0 18px 30px -18px rgba(62, 36, 22, .35);
   opacity: 0; transform: translateY(-6px); transition: opacity .2s ease, transform .2s ease; max-height: calc(100svh - 72px); overflow-y: auto; }
 .mobile-menu.open { opacity: 1; transform: none; }
@@ -996,7 +992,7 @@ em { font-style: normal; }
   .page-header .nav-actions { display: flex; }
 }
 @media (max-width: 400px) { .nav-actions .btn-small { padding-inline: .8rem; } .nav { gap: .6rem; } }
-@media (prefers-reduced-motion: reduce) { .mobile-menu, .menu-toggle svg path { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .mobile-menu { transition: none; } }
 /* very narrow phones: on Book a slot / Track a booking the repeated tab button gives way to the menu, which has it */
 @media (max-width: 420px) { .page-header .nav-actions .btn { display: none; } }
 /* phones: the notice strip stays readable but takes less room */
@@ -1014,3 +1010,10 @@ em { font-style: normal; }
 }
 /* tablets: the strip's icon stays beside its text instead of on a line of its own */
 @media (min-width: 601px) { .notice-strip p { flex-wrap: nowrap; } .notice-strip span { text-align: left; } }
+/* small screens: the header is just the logo and the menu button; Book a slot and Track a booking live in the menu */
+@media (max-width: 900px) {
+  .nav-actions .btn, .page-header .nav-actions .btn { display: none; }
+  .menu-toggle { width: 42px; height: 42px; border: 1.5px solid rgba(107, 84, 70, .4); border-radius: 12px; background: transparent; color: var(--ink-soft); }
+  .menu-open .menu-toggle { background: #fff; border-color: rgba(107, 84, 70, .4); color: var(--ink); box-shadow: 0 4px 12px -6px rgba(62, 36, 22, .3); }
+  .menu-toggle svg { width: 20px; height: 20px; }
+}
