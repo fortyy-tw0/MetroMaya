@@ -30,7 +30,7 @@
   }
 
   // ---------- estimator ----------
-  const state = { serviceId: services[0].id, industryId: industries[0].id, employees: 12 };
+  const state = { serviceId: services[0].id, industryId: industries[0].id, employees: '' };   // no employee count until the visitor enters one
 
   const tabs = $('est-tabs');
   function renderTabs() {
@@ -66,6 +66,13 @@
   async function refresh() {
     const ticket = ++latest;
     $('est-book').href = '/book.html?service=' + encodeURIComponent(state.serviceId);
+    if (!/^[1-9]\d*$/.test(String(state.employees))) {   // blank (or not a whole number of 1 or more): ask for it
+      clear($('est-tiles')).append(el('p', { class: 'est-empty', text: 'Enter the number of employees to see your estimate.' }));
+      clear($('est-fee')).append(el('p', { class: 'hint', text: 'The fee breakdown appears once you enter the number of employees.' }));
+      clear($('est-insp'));
+      clear($('est-docs'));
+      return;
+    }
     const qs = new URLSearchParams({ serviceId: state.serviceId, industryId: state.industryId, employees: state.employees });
     try {
       const { quote: raw } = await api.get('/api/quote?' + qs.toString());

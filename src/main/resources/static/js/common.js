@@ -883,5 +883,14 @@ function dayStatusText(iso, d) {
   const brand = nav.querySelector('.brand');
   const group = el('div', { class: 'brand-group' });
   brand.replaceWith(group);
-  group.append(brand, btn);
+  group.append(brand);
+  // phones and tablets: right beside the logo; desktop: floating in the lower-left corner of the window
+  // (it has to live outside the header there, since the header's blur would pin it to the header)
+  const desktop = window.matchMedia('(min-width: 901px)');
+  const place = () => {
+    if (desktop.matches) { btn.classList.add('theme-float'); document.body.append(btn); }
+    else { btn.classList.remove('theme-float'); group.append(btn); }
+  };
+  place();
+  if (desktop.addEventListener) desktop.addEventListener('change', place); else desktop.addListener(place);
 })();

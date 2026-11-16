@@ -1090,3 +1090,11 @@ em { font-style: normal; }
 #industries .section-head { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: 3rem; }
 @media (max-width: 960px) { #industries .section-head { grid-template-columns: 1fr; } }
 .office-empty h4 { margin-bottom: .3rem; }
+
+/* desktop: the dark mode button floats in the lower-left corner */
+.theme-toggle.theme-float { position: fixed; left: 24px; bottom: 24px; z-index: 45; width: 52px; height: 52px; border-radius: 50%;
+  background: var(--surface); border: 1.5px solid var(--line-strong); color: var(--ink); box-shadow: 0 10px 24px -10px rgba(62, 36, 22, .45); }
+.theme-toggle.theme-float svg { width: 22px; height: 22px; }
+.theme-toggle.theme-float:hover { transform: translateY(-3px); border-color: var(--ink); }
+@media print { .theme-toggle { display: none !important; } }
+.est-empty { grid-column: 1 / -1; margin: 0; padding: 1.1rem 1.2rem; border: 1.5px dashed var(--line-strong); border-radius: 16px; color: var(--ink-soft); font-weight: 600; }
