@@ -1104,3 +1104,6 @@ em { font-style: normal; }
 :root[data-theme="dark"] .receipt-kind, :root[data-theme="dark"] .receipt-rows dt { color: var(--ink-soft); }
 :root[data-theme="dark"] .receipt-rows dd, :root[data-theme="dark"] .receipt .fee-row, :root[data-theme="dark"] .receipt .fee-total { color: var(--ink); }
 :root[data-theme="dark"] .cal-day.is-closed { color: #7D7166; }
+
+/* dark mode: the receipt keeps its fine wave pattern, drawn in cream so it shows on the dark card */
+:root[data-theme="dark"] .receipt { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='36' viewBox='0 0 120 36'%3E%3Cg fill='none' stroke='%23F2E8DC' stroke-width='.7' opacity='.07'%3E%3Cpath d='M0 18c15-15 45-15 60 0s45 15 60 0'/%3E%3Cpath d='M0 18c15 15 45 15 60 0s45-15 60 0'/%3E%3C/g%3E%3C/svg%3E") 0 0 / 120px 36px, var(--surface); }
