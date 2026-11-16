@@ -1080,3 +1080,13 @@ em { font-style: normal; }
 .theme-toggle.spin svg { animation: theme-spin .5s cubic-bezier(.2, .7, .2, 1); }
 @keyframes theme-spin { from { transform: rotate(-120deg) scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .theme-toggle.spin svg { animation: none; } }
+
+/* the logo and the dark mode button travel together */
+.brand-group { display: flex; align-items: center; gap: .75rem; flex: none; }
+.page-header .brand-group { justify-self: start; }
+@media (max-width: 900px) { .site-header:not(.staff-header) .brand-group { flex-direction: row-reverse; } }
+
+/* Fees: the intro text starts where the city picker below it starts */
+#industries .section-head { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: 3rem; }
+@media (max-width: 960px) { #industries .section-head { grid-template-columns: 1fr; } }
+.office-empty h4 { margin-bottom: .3rem; }

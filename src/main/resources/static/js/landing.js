@@ -15,9 +15,10 @@
   // Metro Manila LGUs. Halls and barangays from Wikipedia's list of city and municipal halls in Metro Manila.
   // `rate` is a SAMPLE multiplier standing in for each city's revenue code; it is not an official rate.
   const CITIES = NCR_CITIES; // shared list lives in common.js
-  let city = CITIES.find((c) => c.id === 'manila');
-  try { const saved = localStorage.getItem('metromaya.city'); city = CITIES.find((c) => c.id === saved) || city; } catch (e) { /* no storage */ }
-  const scale = (n) => Math.round(n * city.rate * 100) / 100;
+  // no city until the visitor picks one: fees show the base rates, and Offices asks for a city
+  let city = null;
+  const rate = () => (city ? city.rate : 1);
+  const scale = (n) => Math.round(n * rate() * 100) / 100;
 
   let config, services, industries, offices;
   try {
@@ -69,11 +70,11 @@
     try {
       const { quote: raw } = await api.get('/api/quote?' + qs.toString());
       if (ticket !== latest) return; // a newer request is already on its way
-      const quote = scaleQuote(raw, city.rate);
+      const quote = scaleQuote(raw, rate());
       const n = quote.inspections.length;
       clear($('est-tiles')).append(
         tile('Business size', quote.size.label, quote.size.range),
-        tile('Estimated total', peso(quote.fee.total), 'in ' + city.name + ' · ' + quote.fee.lines.length + ' fee items', true),
+        tile('Estimated total', peso(quote.fee.total), (city ? 'in ' + city.name : 'base rates · pick a city') + ' · ' + quote.fee.lines.length + ' fee items', true),
         tile('Inspections', String(n), n ? quote.inspections.map((i) => shortInspection(i.label)).join(', ') : 'None for this service'),
         tile('Time needed', minutesText(quote.estimatedMinutes), state.serviceId === 'inspection' ? 'on site' : 'at the counter'));
       renderFee($('est-fee'), quote.fee);
@@ -113,7 +114,7 @@
     industryRefs.forEach(({ i, amount, basis, where, chips }) => {
       amount.textContent = pesoShort(scale(i.baseFee * size.feeMultiplier));
       basis.textContent = 'base permit fee, ' + size.label.toLowerCase() + ' business';
-      where.textContent = 'in ' + city.name;
+      where.textContent = city ? 'in ' + city.name : 'before city rates';
       // the industry's own inspections, plus any this size adds (no repeats)
       const own = new Set(i.inspections);
       const added = size.extraInspections.filter((label) => !own.has(label));
@@ -192,6 +193,13 @@
     return span;
   }
   function renderOffice() {
+    if (!city) {
+      clear($('office-rows')).append(el('div', { class: 'row office-hall office-empty' },
+        el('div', null,
+          el('h4', { text: 'Choose your city' }),
+          el('p', { text: 'Pick your city in Fees or the Fees Estimator to see its city hall, directions and the four desks a business permit passes through.' }))));
+      return;
+    }
     const place = cityPlace(city);
     // the street address comes from the backend's office for this city (the same one bookings use)
     const office = (offices || []).find((o) => o.id === city.id);
@@ -215,12 +223,12 @@
   // ---------- city pickers: one in Fees, one in the estimator; they always agree ----------
   const citySelects = [$('fees-city-select'), $('city-select')].filter(Boolean);
   citySelects.forEach((sel) => {
+    sel.append(el('option', { value: '', text: 'Choose your city', disabled: true, selected: true }));
     CITIES.forEach((c) => sel.append(el('option', { value: c.id, text: c.municipality ? c.name + ' (municipality)' : cityPlace(c) })));
-    sel.value = city.id;
+    sel.value = '';
     sel.addEventListener('change', () => {
       city = CITIES.find((c) => c.id === sel.value) || city;
-      citySelects.forEach((other) => { other.value = city.id; });
-      try { localStorage.setItem('metromaya.city', city.id); } catch (e) { /* no storage */ }
+      citySelects.forEach((other) => { other.value = city ? city.id : ''; });
       renderIndustries(); renderOffice(); refresh();
     });
   });

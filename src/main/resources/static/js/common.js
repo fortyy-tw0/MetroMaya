@@ -879,7 +879,9 @@ function dayStatusText(iso, d) {
     }).catch(() => { /* the swap already happened; nothing to animate */ });
   });
   paint();
-  let actions = nav.querySelector('.nav-actions');
-  if (!actions) { actions = el('div', { class: 'nav-actions' }); nav.append(actions); }
-  actions.prepend(btn);
+  // the button sits right beside the MetroMaya logo
+  const brand = nav.querySelector('.brand');
+  const group = el('div', { class: 'brand-group' });
+  brand.replaceWith(group);
+  group.append(brand, btn);
 })();
