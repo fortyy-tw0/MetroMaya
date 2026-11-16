@@ -715,7 +715,7 @@ em { font-style: normal; }
 
 .receipt { border: 2px solid var(--gov-800); border-radius: var(--r-lg); padding: 1.1rem 1.25rem; display: grid; gap: .8rem;
   background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='36' viewBox='0 0 120 36'%3E%3Cg fill='none' stroke='%232C3A72' stroke-width='.7' opacity='.10'%3E%3Cpath d='M0 18c15-15 45-15 60 0s45 15 60 0'/%3E%3Cpath d='M0 18c15 15 45 15 60 0s45-15 60 0'/%3E%3C/g%3E%3C/svg%3E") 0 0 / 120px 36px, var(--white); }
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='36' viewBox='0 0 120 36'%3E%3Cg fill='none' stroke='%232C3A72' stroke-width='.7' opacity='.10'%3E%3Cpath d='M0 18c15-15 45-15 60 0s45 15 60 0'/%3E%3Cpath d='M0 18c15 15 45 15 60 0s45-15 60 0'/%3E%3C/g%3E%3C/svg%3E") 0 0 / 120px 36px, var(--surface); }
 .receipt-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
 .receipt-kind { margin: 0; font-size: .8rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
 .receipt-amount { margin: .1rem 0 0; font-size: 1.9rem; font-weight: 800; color: var(--gov-800); font-variant-numeric: tabular-nums; }
@@ -1098,3 +1098,9 @@ em { font-style: normal; }
 .theme-toggle.theme-float:hover { transform: translateY(-3px); border-color: var(--ink); }
 @media print { .theme-toggle { display: none !important; } }
 .est-empty { grid-column: 1 / -1; margin: 0; padding: 1.1rem 1.2rem; border: 1.5px dashed var(--line-strong); border-radius: 16px; color: var(--ink-soft); font-weight: 600; }
+/* dark mode: gold labels on gold-tinted chips and tags stay readable */
+:root[data-theme="dark"] .chip-quiet, :root[data-theme="dark"] .demo-tag, :root[data-theme="dark"] .cal-day.lvl-few .cal-left { color: var(--gold); }
+:root[data-theme="dark"] .demo-tag { border-color: #6B5320; }
+:root[data-theme="dark"] .receipt-kind, :root[data-theme="dark"] .receipt-rows dt { color: var(--ink-soft); }
+:root[data-theme="dark"] .receipt-rows dd, :root[data-theme="dark"] .receipt .fee-row, :root[data-theme="dark"] .receipt .fee-total { color: var(--ink); }
+:root[data-theme="dark"] .cal-day.is-closed { color: #7D7166; }
