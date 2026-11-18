@@ -116,7 +116,7 @@ def main():
             }, bearer=head_login["token"])
             assert status == 200 and closed["emailsSent"] == 1, closed
             subjects = [message["subject"] for message in FakeEmail.messages]
-            assert "MetroMaya booking confirmation" in subjects
+            assert any(s.startswith("Your MetroMaya booking BPL-") for s in subjects)
             assert "MetroMaya appointment time changed" in subjects
             assert "MetroMaya office closure affects your booking" in subjects
             print("Notification checks passed")

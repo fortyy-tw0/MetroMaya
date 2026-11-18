@@ -150,11 +150,40 @@ public class NotificationService {
     private boolean deliver(String eventKey, Appointment a, String subject, String message, String html,
                             boolean confirmationOnly) {
         if (!(confirmationOnly ? canSendConfirmation() : configured()) || a.isDemoRecord()) return false;
+        return send(eventKey, a.getApplicant().getEmail(), subject, message, html);
+    }
+
+    /**
+     * Waitlist: a place opened on a day that was fully booked. Goes to everyone waiting for that day; whoever
+     * books first gets it. Needs only what the confirmation email needs.
+     */
+    public boolean placeOpened(Office office, LocalDate date, String email, String entryId) {
+        if (!canSendConfirmation()) return false;
+        String day = date.format(DateTimeFormatter.ofPattern("EEEE, MMMM d", java.util.Locale.ENGLISH));
+        String link = publicBaseUrl + "/book.html";
+        String text = "Good news: a place just opened on " + day + " at " + office.getName() + ".\n\n"
+                + "You asked us to tell you. Places go to whoever books first, so book soon:\n" + link + "\n\n"
+                + "We only send this once for that day.\n\n"
+                + "MetroMaya is a student prototype, not a government website. Fees are sample rates.";
+        String html = "<div style=\"font-family:Arial,Helvetica,sans-serif;color:#3E2416;max-width:560px;margin:0 auto;line-height:1.5\">"
+                + "<p style=\"font-size:22px;font-weight:bold;margin:0 0 4px\">MetroMaya<span style=\"color:#EDB24A\">.</span></p>"
+                + "<p style=\"margin:0 0 14px\">Good news: a place just opened on <strong>" + esc(day) + "</strong> at "
+                + esc(office.getName()) + ".</p>"
+                + "<p style=\"margin:0 0 16px\">Places go to whoever books first, so book soon.</p>"
+                + "<p style=\"margin:0 0 16px\"><a href=\"" + esc(link) + "\" style=\"display:inline-block;background:#2C3A72;color:#fff;"
+                + "text-decoration:none;padding:11px 20px;border-radius:10px;font-weight:bold\">Book a slot</a></p>"
+                + "<p style=\"font-size:13px;color:#6B5446;margin:0 0 6px\">You joined the waitlist for this day. We only send this once.</p>"
+                + "<p style=\"font-size:12px;color:#8C7A6E;margin:18px 0 0\">MetroMaya is a student prototype, not a government website. Fees are sample rates and no real payments are made.</p>"
+                + "</div>";
+        return send("waitlist:" + entryId, email, "A place opened on " + day, text, html);
+    }
+
+    private boolean send(String eventKey, String to, String subject, String message, String html) {
         try {
             if (events.hasSent(eventKey)) return false;
             Map<String, Object> body = new java.util.LinkedHashMap<>();
             body.put("from", from);
-            body.put("to", java.util.List.of(a.getApplicant().getEmail()));
+            body.put("to", java.util.List.of(to));
             body.put("subject", subject);
             body.put("text", message);
             if (html != null) body.put("html", html);

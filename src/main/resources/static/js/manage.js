@@ -12,9 +12,18 @@
     dl.append(el('dt', { text: label }), el('dd', { text: value }));
   }
 
-  function render(a) {
+  // `savedAt`: shown from the copy saved on this device (no signal, or picked from the saved list) - read only
+  function render(a, savedAt) {
     current = a;
+    const saved = !!savedAt;
+    if (!saved) { savedBookings.save(a); renderSaved(); }
     $('result').hidden = false;
+    $('result-offline').hidden = !saved;
+    if (saved) {
+      $('result-offline').textContent = (navigator.onLine === false ? 'You’re offline. ' : '')
+        + 'This is the copy saved on this device on ' + savedAtText(savedAt)
+        + '. Show the QR code at the office as usual; to see changes, move, cancel or pay, enter your access code above.';
+    }
     $('result-ref').textContent = a.referenceNo;
     const badge = resultStatus;
     badge.textContent = a.status === 'CANCELLED' ? 'Cancelled' : a.acceptedAt ? 'Accepted at office' : 'Confirmed';
@@ -37,12 +46,17 @@
     renderInspections($('result-insp'), quote.inspections);
     renderDocs($('result-docs'), a.quote.requirements);
     resultPrint.textContent = printActionLabel(a);
-    renderPayment($('result-pay'), a, (updated) => {
-      current = updated;
-      resultPrint.textContent = printActionLabel(updated);
-    }, currentToken);
+    const paid = a.payment && a.payment.status === 'PAID';
+    $('result-pay').hidden = saved && !paid;   // paying needs the server; a finished receipt still shows
+    if (!$('result-pay').hidden) {
+      renderPayment($('result-pay'), a, (updated) => {
+        current = updated;
+        savedBookings.save(updated);
+        resultPrint.textContent = printActionLabel(updated);
+      }, currentToken);
+    }
 
-    $('actions').hidden = a.status !== 'CONFIRMED' || !!a.acceptedAt;
+    $('actions').hidden = saved || a.status !== 'CONFIRMED' || !!a.acceptedAt;
     $('head-actions').hidden = $('actions').hidden;
     $('reschedule-box').hidden = true;
     hideAlert($('result-alert'));
@@ -60,8 +74,38 @@
       currentToken = token;
       render(appointment);
     } catch (e) {
+      // no signal: fall back to the copy saved on this device, if there is one
+      const copy = e.offline && savedBookings.find(ref);
+      if (copy) { render(copy.appointment, copy.savedAt); return; }
       showAlert($('lookup-alert'), e.message, 'error');
     }
+  }
+
+  // ---------- saved on this device ----------
+
+  function renderSaved() {
+    const items = savedBookings.list();
+    $('saved-card').hidden = !items.length;
+    const list = clear($('saved-list'));
+    items.forEach(({ appointment: a, savedAt }) => {
+      const open = el('button', { type: 'button', class: 'saved-open', onclick: () => {
+        hideAlert($('lookup-alert'));
+        currentToken = null;
+        $('ref').value = a.referenceNo;
+        render(a, savedAt);
+        $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } },
+        el('span', { class: 'saved-ref', text: a.referenceNo }),
+        el('span', { class: 'saved-when', text: formatDate(a.date) + ', ' + formatTime(a.time) + (a.status === 'CANCELLED' ? ' (cancelled)' : '') }),
+        el('span', { class: 'saved-office', text: a.officeName }));
+      const remove = el('button', { type: 'button', class: 'saved-remove', 'aria-label': 'Remove ' + a.referenceNo + ' from this device', title: 'Remove from this device', onclick: () => {
+        savedBookings.remove(a.referenceNo);
+        if (current && current.referenceNo === a.referenceNo && !$('result-offline').hidden) $('result').hidden = true;
+        renderSaved();
+      } });
+      remove.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+      list.append(el('li', null, open, remove));
+    });
   }
 
   $('lookup-form').addEventListener('submit', (e) => {
@@ -144,6 +188,7 @@
 
   // ---------- start ----------
 
+  renderSaved();
   const ref = new URLSearchParams(location.search).get('ref');
   if (ref) {
     $('ref').value = ref;

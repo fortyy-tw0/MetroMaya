@@ -6,7 +6,9 @@ async function request(path, options) {
   try {
     res = await fetch(path, options);
   } catch (e) {
-    throw new Error('Could not reach the server. Check your connection and try again.');
+    const err = new Error('Could not reach the server. Check your connection and try again.');
+    err.offline = true;
+    throw err;
   }
   let data = null;
   try { data = await res.json(); } catch (e) { /* non-JSON body */ }
@@ -693,7 +695,7 @@ function printBooking(a) {
 // are locked, open days show how many places are left across their slots, and picking a day calls
 // onSelect(iso, day). Availability comes from /api/availability, one request per month.
 function mountCalendar(container, opts) {
-  const { officeId, config, onSelect } = opts;
+  const { officeId, config, onSelect, onFull } = opts;   // onFull (optional): a fully booked day can be picked to join its waitlist
   let selected = opts.selected || '';
   const ym = (iso) => iso.slice(0, 7);
   let month = ym(selected || config.today);
@@ -754,11 +756,14 @@ function mountCalendar(container, opts) {
         class: 'cal-day' + (d.open ? ' lvl-' + lvl : ' is-closed') + (d.date === config.today ? ' is-today' : '') + (d.date === selected ? ' is-selected' : '') + (d.reason === 'Past' ? ' is-past' : ''),
         'aria-pressed': d.date === selected ? 'true' : 'false',
         'aria-label': long + ', ' + status,
-        disabled: !d.open || lvl === 'full',
-        title: d.open ? (lvl === 'full' ? 'Fully booked' : d.remaining + ' of ' + d.capacity + ' places left') : (d.reason === 'Past' ? '' : 'Closed: ' + d.reason),
+        disabled: !d.open || (lvl === 'full' && !onFull),
+        title: d.open ? (lvl === 'full' ? (onFull ? 'Fully booked: get an email if a place opens' : 'Fully booked') : d.remaining + ' of ' + d.capacity + ' places left') : (d.reason === 'Past' ? '' : 'Closed: ' + d.reason),
       }, el('span', { class: 'cal-num', text: String(n) }));
       if (d.open && lvl !== 'full') btn.append(el('span', { class: 'cal-left', text: d.remaining + ' left' }), el('i', { class: 'cal-dot lvl-' + lvl, 'aria-hidden': 'true' }));
-      else if (d.open) btn.append(el('span', { class: 'cal-left', text: 'Full' }));
+      else if (d.open) {
+        btn.append(el('span', { class: 'cal-left', text: 'Full' }));
+        if (onFull) btn.classList.add('can-wait');
+      }
       else if (d.reason !== 'Past' && d.reason !== 'Weekend') {
         // only a real holiday gets the red holiday label; days past the 3-month window, office closures and
         // the like just read "Closed" (the full reason is in the tooltip and the screen-reader label)
@@ -773,7 +778,7 @@ function mountCalendar(container, opts) {
         grid.querySelectorAll('.cal-day').forEach((b) => { b.classList.remove('is-selected'); b.setAttribute('aria-pressed', 'false'); });
         btn.classList.add('is-selected');
         btn.setAttribute('aria-pressed', 'true');
-        onSelect(d.date, d);
+        if (d.open && lvl === 'full') onFull(d.date, d); else onSelect(d.date, d);
       });
       grid.append(btn);
     });
@@ -845,8 +850,11 @@ function dayStatusText(iso, d) {
   const MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>';
   const SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>';
   const btn = el('button', { type: 'button', class: 'theme-toggle' });
+  const system = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  const meta = document.querySelector('meta[name="theme-color"]');
   const paint = () => {
     const dark = root.dataset.theme === 'dark';
+    if (meta) meta.content = dark ? '#15120E' : '#FBF7F0';   // the phone's status bar matches the page
     btn.innerHTML = dark ? SUN : MOON;
     btn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
     btn.setAttribute('aria-pressed', String(dark));
@@ -854,7 +862,12 @@ function dayStatusText(iso, d) {
   };
   const swap = () => {
     if (root.dataset.theme === 'dark') delete root.dataset.theme; else root.dataset.theme = 'dark';
-    try { localStorage.setItem('metromaya.theme', root.dataset.theme === 'dark' ? 'dark' : 'light'); } catch (err) { /* not remembered */ }
+    // a choice that matches the device's own setting isn't stored, so the site goes on following the device
+    const dark = root.dataset.theme === 'dark';
+    try {
+      if (system && dark === system.matches) localStorage.removeItem('metromaya.theme');
+      else localStorage.setItem('metromaya.theme', dark ? 'dark' : 'light');
+    } catch (err) { /* not remembered */ }
     paint();
     btn.classList.remove('spin'); void btn.offsetWidth; btn.classList.add('spin');   // the moon/sun turns into place
   };
@@ -879,6 +892,17 @@ function dayStatusText(iso, d) {
     }).catch(() => { /* the swap already happened; nothing to animate */ });
   });
   paint();
+  // no choice made here: follow the device when its light/dark setting changes (e.g. at sunset)
+  const follow = () => {
+    let saved = null;
+    try { saved = localStorage.getItem('metromaya.theme'); } catch (err) { /* follow the device */ }
+    if (saved || (root.dataset.theme === 'dark') === system.matches) return;
+    root.classList.add('theme-fading');
+    if (system.matches) root.dataset.theme = 'dark'; else delete root.dataset.theme;
+    paint();
+    setTimeout(() => root.classList.remove('theme-fading'), 450);
+  };
+  if (system) { if (system.addEventListener) system.addEventListener('change', follow); else system.addListener(follow); }
   // the button sits right beside the MetroMaya logo
   const brand = nav.querySelector('.brand');
   const group = el('div', { class: 'brand-group' });
@@ -893,4 +917,70 @@ function dayStatusText(iso, d) {
   };
   place();
   if (desktop.addEventListener) desktop.addEventListener('change', place); else desktop.addListener(place);
+})();
+
+// ---- bookings saved on this device ----
+// Each booking opened here (or just made) is kept in this browser, so Track a booking can still show its
+// details and check-in QR when the signal at the office is weak. The private access code is never saved.
+const savedBookings = {
+  KEY: 'metromaya.bookings',
+  list() {
+    try {
+      const v = JSON.parse(localStorage.getItem(this.KEY) || '[]');
+      if (!Array.isArray(v)) return [];
+      // a week after the appointment it's no use offline any more
+      const cutoff = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
+      return v.filter((x) => x && x.appointment && x.appointment.referenceNo && x.appointment.date >= cutoff);
+    } catch (e) { return []; }
+  },
+  write(list) { try { localStorage.setItem(this.KEY, JSON.stringify(list.slice(0, 5))); } catch (e) { /* not saved */ } },
+  save(a) {
+    if (!a || !a.referenceNo) return;
+    this.write([{ savedAt: new Date().toISOString(), appointment: a }]
+      .concat(this.list().filter((x) => x.appointment.referenceNo !== a.referenceNo)));
+  },
+  find(ref) {
+    const want = String(ref || '').trim().toUpperCase();
+    return this.list().find((x) => x.appointment.referenceNo.toUpperCase() === want) || null;
+  },
+  remove(ref) { this.write(this.list().filter((x) => x.appointment.referenceNo !== ref)); },
+};
+
+// "Saved 18 Nov, 3:05 PM"
+function savedAtText(iso) {
+  const d = new Date(iso);
+  return isNaN(d) ? '' : d.toLocaleString('en-PH', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+}
+
+// ---- installable app: the service worker keeps pages opening offline; "Install app" where the browser offers it ----
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  const local = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  if (location.protocol !== 'https:' && !local) return;
+  window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => { /* works without it */ }); });
+
+  let prompt = null;
+  const buttons = [];
+  const show = () => buttons.forEach((b) => { b.hidden = !prompt; });
+  const make = (cls) => {
+    const b = el('button', { type: 'button', class: cls, hidden: true, text: 'Install the app' });
+    b.addEventListener('click', async () => {
+      if (!prompt) return;
+      const p = prompt;
+      prompt = null;
+      show();
+      p.prompt();
+      try { await p.userChoice; } catch (e) { /* dismissed */ }
+    });
+    buttons.push(b);
+    return b;
+  };
+  // in the mobile menu and in the footer's Help list
+  const menu = document.querySelector('.mobile-menu-links');
+  if (menu) menu.insertBefore(make('mobile-menu-install'), menu.querySelector('.mobile-menu-cta'));
+  const help = Array.prototype.find.call(document.querySelectorAll('.footer h4'), (h) => h.textContent.trim() === 'Help');
+  const list = help && help.parentElement.querySelector('ul');
+  if (list) list.append(el('li', null, make('footer-install')));
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); prompt = e; show(); });
+  window.addEventListener('appinstalled', () => { prompt = null; show(); });
 })();

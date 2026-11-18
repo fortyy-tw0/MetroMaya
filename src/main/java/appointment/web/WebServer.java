@@ -6,6 +6,7 @@ import appointment.service.IdScanner;
 import appointment.service.VerificationPass;
 import appointment.service.StaffAuthService;
 import appointment.service.NotificationService;
+import appointment.service.WaitlistService;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
@@ -23,11 +24,11 @@ public class WebServer {
 
     public WebServer(int port, AppointmentService appointments, EgovVerifier egov, IdScanner idScanner,
                      VerificationPass passes, StaffAuthService staff,
-                     NotificationService notifications) throws IOException {
+                     NotificationService notifications, WaitlistService waitlist) throws IOException {
         this.notifications = notifications;
         server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/", new StaticHandler());
-        server.createContext("/api/", new ApiHandler(appointments, egov, idScanner, passes, staff, notifications));
+        server.createContext("/api/", new ApiHandler(appointments, egov, idScanner, passes, staff, notifications, waitlist));
         server.setExecutor(Executors.newFixedThreadPool(16));
     }
 

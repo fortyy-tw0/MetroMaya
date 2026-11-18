@@ -1,0 +1,20 @@
+{
+  "name": "MetroMaya: business permit appointments",
+  "short_name": "MetroMaya",
+  "description": "Book, track and check in for a business permit appointment in Metro Manila. A student prototype: fees are sample rates.",
+  "id": "/",
+  "start_url": "/?source=app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FBF7F0",
+  "theme_color": "#FBF7F0",
+  "icons": [
+    { "src": "/img/app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/img/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/img/app-icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Book a slot", "url": "/book.html", "icons": [{ "src": "/img/app-icon-192.png", "sizes": "192x192" }] },
+    { "name": "Track a booking", "url": "/manage.html", "icons": [{ "src": "/img/app-icon-192.png", "sizes": "192x192" }] }
+  ]
+}

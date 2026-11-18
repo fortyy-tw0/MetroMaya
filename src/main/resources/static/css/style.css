@@ -1107,3 +1107,60 @@ em { font-style: normal; }
 
 /* dark mode: the receipt keeps its fine wave pattern, drawn in cream so it shows on the dark card */
 :root[data-theme="dark"] .receipt { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='36' viewBox='0 0 120 36'%3E%3Cg fill='none' stroke='%23F2E8DC' stroke-width='.7' opacity='.07'%3E%3Cpath d='M0 18c15-15 45-15 60 0s45 15 60 0'/%3E%3Cpath d='M0 18c15 15 45 15 60 0s45-15 60 0'/%3E%3C/g%3E%3C/svg%3E") 0 0 / 120px 36px, var(--surface); }
+
+/* ---- screen-reader-only labels ---- */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* ---- booking page: "Welcome back" when saved answers are filled in again ---- */
+.draft-note { display: flex; align-items: center; flex-wrap: wrap; gap: .35rem .7rem; margin: 0 0 1.25rem; padding: .75rem 1rem; border-radius: 14px; background: var(--gold-soft); color: var(--ink); font-size: .95rem; }
+.draft-note[hidden] { display: none; }
+.draft-note svg { width: 20px; height: 20px; flex: none; color: #A8741A; }
+.draft-note span { flex: 1 1 16rem; }
+.draft-reset { font: inherit; font-weight: 700; color: var(--navy); background: none; border: 0; padding: .2rem 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.draft-reset:hover { color: var(--navy-deep); }
+:root[data-theme="dark"] .draft-note svg { color: var(--gold); }
+:root[data-theme="dark"] .draft-reset { color: var(--gold); }
+
+/* ---- waitlist on a fully booked day ---- */
+.cal-day.lvl-full.can-wait { cursor: pointer; }
+@media (hover: hover) { .cal-day.lvl-full.can-wait:not(.is-selected):hover { background: var(--red-50); box-shadow: inset 0 0 0 2px var(--red); } }
+.cal-day.lvl-full.is-selected { background: var(--red); box-shadow: inset 0 0 0 2px var(--ink); }
+.cal-day.lvl-full.is-selected .cal-left { color: #fff; }
+.waitlist { margin: 1rem 0; padding: 1.1rem 1.25rem; border: 1px solid var(--line-strong); border-radius: 16px; background: var(--surface); }
+.waitlist[hidden] { display: none; }
+.waitlist h3 { font-size: 1.05rem; margin: 0 0 .35rem; }
+.waitlist p { margin: 0 0 .8rem; color: var(--ink-soft); }
+.waitlist-form { display: flex; flex-wrap: wrap; gap: .6rem; }
+.waitlist-form[hidden] { display: none; }
+.waitlist-form input { flex: 1 1 15rem; min-width: 0; font: inherit; color: var(--ink); padding: .72rem .95rem; border: 1.5px solid var(--line-strong); border-radius: 12px; background: var(--surface); }
+.waitlist-form input:focus { border-color: var(--navy); outline: 0; box-shadow: 0 0 0 3px rgba(44, 58, 114, .14); }
+.waitlist-status { margin: .8rem 0 0 !important; font-weight: 600; }
+.waitlist-status[hidden] { display: none; }
+.waitlist-status.is-ok { color: var(--ok); }
+.waitlist-status.is-error { color: var(--bad); }
+:root[data-theme="dark"] .waitlist-form input { background-color: #1B1713; }
+
+/* ---- Track a booking: bookings saved on this device ---- */
+.saved-card { margin-top: 1.5rem; }
+.saved-title { font-size: 1.15rem; margin: 0 0 .25rem; }
+.saved-card > .hint { margin: 0 0 1rem; }
+.saved-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .6rem; }
+.saved-list li { display: flex; align-items: stretch; gap: .5rem; }
+.saved-open { flex: 1; min-width: 0; display: grid; gap: .1rem; text-align: left; font: inherit; color: var(--ink); background: var(--surface); border: 2px solid var(--line-strong); border-radius: 14px; padding: .7rem 1rem; cursor: pointer; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
+.saved-open:hover, .saved-open:focus-visible { border-color: var(--ink); transform: translateY(-2px); box-shadow: var(--shadow-sm); outline: none; }
+.saved-ref { font-family: var(--mono, 'JetBrains Mono', monospace); font-weight: 600; color: var(--navy); }
+.saved-when { font-weight: 600; }
+.saved-office { font-size: .88rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.saved-remove { flex: none; width: 44px; display: grid; place-items: center; color: var(--muted); background: none; border: 2px solid transparent; border-radius: 12px; cursor: pointer; }
+.saved-remove:hover, .saved-remove:focus-visible { color: var(--bad); border-color: var(--line-strong); outline: none; }
+.offline-note { margin: 0 0 1rem; padding: .75rem 1rem; border-radius: 12px; background: var(--gold-soft); color: var(--ink); font-size: .93rem; font-weight: 600; }
+.offline-note[hidden] { display: none; }
+#result-pay[hidden] { display: none; }
+:root[data-theme="dark"] .saved-ref { color: var(--gold); }
+
+/* ---- "Install the app" (only shown when the browser offers it) ---- */
+.footer-install { font: inherit; color: var(--ink-soft); background: linear-gradient(var(--gold), var(--gold)) 0 100% / 0 2px no-repeat; border: 0; padding: 0 0 3px; cursor: pointer; transition: background-size .3s ease, color .2s ease; }
+.footer-install:hover, .footer-install:focus-visible { color: var(--ink); background-size: 100% 2px; outline: none; }
+.mobile-menu-install { display: block; width: 100%; text-align: left; font: inherit; font-weight: 500; color: var(--ink-soft); background: none; padding: .8rem 1rem; border-radius: 12px; border: 2px solid transparent; cursor: pointer; }
+.mobile-menu-install:hover { background: var(--surface); color: var(--ink); }
+.footer-install[hidden], .mobile-menu-install[hidden] { display: none; }

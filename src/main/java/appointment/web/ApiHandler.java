@@ -23,6 +23,7 @@ import appointment.service.NotFoundException;
 import appointment.service.SlotInfo;
 import appointment.service.StaffAuthService;
 import appointment.service.NotificationService;
+import appointment.service.WaitlistService;
 import appointment.util.Json;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -56,6 +57,7 @@ import java.util.Map;
  *   GET  /api/appointments/{ref}
  *   POST /api/appointments/{ref}/cancel
  *   POST /api/appointments/{ref}/reschedule (date, time)
+ *   POST /api/waitlist                       (officeId, date, email) "notify me if a place opens" on a full day
  *   POST /api/appointments/{ref}/pay        (channel) → starts a DEMO fee payment (no money moves)
  *   GET  /api/pay/{txn}                     demo checkout details (opened by scanning the payment QR)
  *   POST /api/pay/{txn}/complete            marks the demo payment paid and issues a demo receipt
@@ -72,15 +74,17 @@ class ApiHandler implements HttpHandler {
     private final VerificationPass passes;
     private final StaffAuthService staff;
     private final NotificationService notifications;
+    private final WaitlistService waitlist;
 
     ApiHandler(AppointmentService appointments, EgovVerifier egov, IdScanner idScanner, VerificationPass passes,
-               StaffAuthService staff, NotificationService notifications) {
+               StaffAuthService staff, NotificationService notifications, WaitlistService waitlist) {
         this.appointments = appointments;
         this.egov = egov;
         this.idScanner = idScanner;
         this.passes = passes;
         this.staff = staff;
         this.notifications = notifications;
+        this.waitlist = waitlist;
     }
 
     @Override
@@ -174,6 +178,13 @@ class ApiHandler implements HttpHandler {
             }
         }
 
+        if (head.equals("waitlist") && method.equals("POST") && parts.length == 1) {
+            Map<String, String> form = readForm(exchange);
+            waitlist.join(form.get("officeId"), LocalDate.parse(form.getOrDefault("date", "")), form.get("email"));
+            respond(exchange, 201, Map.of("waiting", true));
+            return;
+        }
+
         if (head.equals("appointments")) {
             if (method.equals("POST") && parts.length == 1) {
                 AppointmentService.BookingResult created = book(readForm(exchange));
@@ -187,7 +198,9 @@ class ApiHandler implements HttpHandler {
                 return;
             }
             if (method.equals("POST") && parts.length == 3 && parts[2].equals("cancel")) {
-                respond(exchange, 200, appointmentJson(appointments.cancel(parts[1], managementToken(exchange))));
+                Appointment cancelled = appointments.cancel(parts[1], managementToken(exchange));
+                respond(exchange, 200, appointmentJson(cancelled));
+                waitlist.placeOpened(cancelled.getOffice().getId(), cancelled.getDate());   // after the reply is sent
                 return;
             }
             if (method.equals("POST") && parts.length == 3 && parts[2].equals("pay")) {
@@ -197,10 +210,12 @@ class ApiHandler implements HttpHandler {
             }
             if (method.equals("POST") && parts.length == 3 && parts[2].equals("reschedule")) {
                 Map<String, String> form = readForm(exchange);
+                LocalDate before = appointments.findManaged(parts[1], managementToken(exchange)).getDate();
                 Appointment moved = appointments.reschedule(parts[1],
                         LocalDate.parse(form.getOrDefault("date", "")),
                         LocalTime.parse(form.getOrDefault("time", "")), managementToken(exchange));
                 respond(exchange, 200, appointmentJson(moved));
+                if (!before.equals(moved.getDate())) waitlist.placeOpened(moved.getOffice().getId(), before);
                 return;
             }
         }
@@ -331,12 +346,14 @@ class ApiHandler implements HttpHandler {
             if (method.equals("POST") && parts.length == 4 && parts[3].equals("move")) {
                 staff.requireRole(user, StaffAccount.Role.DISTRICT_HEAD);
                 Map<String, String> form = readForm(exchange);
+                LocalDate before = appointments.find(parts[2]).getDate();
                 Appointment moved = appointments.moveAtOffice(parts[2],
                         LocalDate.parse(form.getOrDefault("date", "")),
                         LocalTime.parse(form.getOrDefault("time", "")));
                 Map<String, Object> result = new LinkedHashMap<>(appointmentJson(moved));
                 result.put("emailSent", notifications.moved(moved));
                 respond(exchange, 200, result);
+                if (!before.equals(moved.getDate())) waitlist.placeOpened(moved.getOffice().getId(), before);
                 return;
             }
             if (method.equals("POST") && parts.length == 4 && parts[3].equals("reset-management")) {
@@ -478,6 +495,7 @@ class ApiHandler implements HttpHandler {
             sizes.add(m);
         }
         cfg.put("sizes", sizes);
+        cfg.put("waitlist", waitlist.enabled());
         if (passes != null) {
             // verification comes first on the booking page; the widget needs partnerCode and host (secrets stay here)
             Map<String, Object> verify = new LinkedHashMap<>();

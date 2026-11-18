@@ -19,7 +19,8 @@ class StaticHandler implements HttpHandler {
             "svg", "image/svg+xml",
             "png", "image/png",
             "webp", "image/webp",
-            "ico", "image/x-icon");
+            "ico", "image/x-icon",
+            "webmanifest", "application/manifest+json; charset=utf-8");
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {

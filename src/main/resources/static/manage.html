@@ -5,11 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Track a booking · MetroMaya</title>
   <link rel="icon" href="data:,">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+  <meta name="theme-color" content="#FBF7F0">
+  <meta name="apple-mobile-web-app-title" content="MetroMaya">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Lexend:wght@500;600&family=JetBrains+Mono:wght@500;600&display=swap">
   <link rel="stylesheet" href="/css/style.css">
-  <script>try{if(localStorage.getItem('metromaya.theme')==='dark')document.documentElement.dataset.theme='dark';}catch(e){}</script>
+  <script>(function(){var t=null;try{t=localStorage.getItem('metromaya.theme');}catch(e){}var dark=t==='dark'||(t!=='light'&&!!window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.documentElement.dataset.theme='dark';})();</script>
   <script>document.documentElement.classList.add('js');</script>
   <script>try{var access=new URLSearchParams(location.hash.slice(1)).get('access');if(access){history.replaceState(null,'',location.pathname+location.search);sessionStorage.setItem('metromaya.incomingAccess',access);}}catch(e){}</script>
 </head>
@@ -57,7 +61,14 @@
         <div class="alert alert-error" id="lookup-alert" hidden role="alert"></div>
       </div>
 
+      <div class="card saved-card no-print" id="saved-card" hidden>
+        <h2 class="saved-title">Saved on this device</h2>
+        <p class="hint">These open even without a signal, QR code included. To move, cancel or pay, enter the access code above.</p>
+        <ul class="saved-list" id="saved-list"></ul>
+      </div>
+
       <div class="card" id="result" style="margin-top: 1.5rem;" hidden>
+        <p class="offline-note no-print" id="result-offline" hidden role="status"></p>
         <div class="result-head">
           <h2 id="result-ref"></h2>
           <div class="result-actions no-print" id="head-actions">

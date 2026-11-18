@@ -5,12 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Book a slot · MetroMaya</title>
   <link rel="icon" href="data:,">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+  <meta name="theme-color" content="#FBF7F0">
+  <meta name="apple-mobile-web-app-title" content="MetroMaya">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Lexend:wght@500;600&family=JetBrains+Mono:wght@500;600&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha384-c6Rcwz4e4CITMbu/NBmnNS8yN2sC3cUElMEMfP3vqqKFp7GOYaaBBCqmaWBjmkjb" crossorigin="anonymous">
   <link rel="stylesheet" href="/css/style.css">
-  <script>try{if(localStorage.getItem('metromaya.theme')==='dark')document.documentElement.dataset.theme='dark';}catch(e){}</script>
+  <script>(function(){var t=null;try{t=localStorage.getItem('metromaya.theme');}catch(e){}var dark=t==='dark'||(t!=='light'&&!!window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.documentElement.dataset.theme='dark';})();</script>
   <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -42,6 +46,11 @@
       </div>
 
       <ol class="stepper" id="stepper" aria-label="Booking steps" hidden></ol>
+      <div class="draft-note no-print" id="draft-note" hidden role="status">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>
+        <span id="draft-text"></span>
+        <button type="button" class="draft-reset" id="draft-reset">Start over</button>
+      </div>
 
       <div class="card">
         <!-- 0 Verify (only when the server has eGov settings): shown before the wizard -->
@@ -139,6 +148,16 @@
           <p class="hint" id="date-hint">Weekdays only.</p>
           <div class="cal-mount" id="cal" aria-label="Choose a date"></div>
           <p class="day-status" id="day-status" role="status"></p>
+          <div class="waitlist no-print" id="waitlist" hidden>
+            <h3>This day is fully booked</h3>
+            <p>Want an email if a place opens on <strong id="wl-day"></strong>? Places go to whoever books first, and we only email you once.</p>
+            <form class="waitlist-form" id="waitlist-form" novalidate>
+              <label class="sr-only" for="wl-email">Email</label>
+              <input id="wl-email" type="email" autocomplete="email" placeholder="you@example.com" required>
+              <button class="btn btn-primary" type="submit">Notify me</button>
+            </form>
+            <p class="waitlist-status" id="wl-status" role="status" hidden></p>
+          </div>
           <div class="slots" id="slots" role="group" aria-label="Available times"></div>
           <div class="alert alert-error" id="slot-alert" hidden role="alert"></div>
           <div class="nav-row"><button class="btn btn-outline" data-back>Back</button><button class="btn btn-primary" data-next disabled>Continue</button></div>

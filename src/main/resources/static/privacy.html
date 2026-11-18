@@ -5,11 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Privacy notice · MetroMaya</title>
   <link rel="icon" href="data:,">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+  <meta name="theme-color" content="#FBF7F0">
+  <meta name="apple-mobile-web-app-title" content="MetroMaya">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Lexend:wght@500;600&family=JetBrains+Mono:wght@500;600&display=swap">
   <link rel="stylesheet" href="/css/style.css">
-  <script>try{if(localStorage.getItem('metromaya.theme')==='dark')document.documentElement.dataset.theme='dark';}catch(e){}</script>
+  <script>(function(){var t=null;try{t=localStorage.getItem('metromaya.theme');}catch(e){}var dark=t==='dark'||(t!=='light'&&!!window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.documentElement.dataset.theme='dark';})();</script>
   <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -57,6 +61,12 @@
 
         <h2 id="location">Your location on the Office step</h2>
         <p>If you press <b>Use my location</b>, your browser shares your position with this page only. To draw the route, the position is sent to the OpenStreetMap routing service (OSRM). If you type a starting place instead, that text is looked up with OpenStreetMap’s geocoder. If you open Google Maps, your position goes to Google. MetroMaya’s server never receives or stores your location.</p>
+
+        <h2 id="device">Saved on your device</h2>
+        <p>While you fill in the booking form, your answers (not your verified name or verification) are saved in your own browser so they come back if you close the page. They are deleted when you finish booking, press <b>Start over</b>, or after 14 days. Bookings you make or open on <a href="/manage.html">Track a booking</a> are also saved in your browser, without the private access code, so the details and check-in QR open with a weak signal. Remove them from that page at any time, or clear this site’s data in your browser. None of this is sent to our server.</p>
+
+        <h2 id="waitlist">Waitlist for fully booked days</h2>
+        <p>If you ask to be told when a place opens on a fully booked day, we store your email address with that office and date, send you one email when a place opens, and use it for nothing else.</p>
 
         <h2>Why we use it</h2>
         <p>To check that a real person is booking, to keep out spam and duplicate bookings, to book and manage your appointment, and to show you the fees, inspections and documents for your visit.</p>

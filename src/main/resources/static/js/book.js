@@ -12,6 +12,43 @@
   const donePanel = $('panel-done');
   const donePrint = $('done-print');   // moved next to the check-in code when the booking is shown
 
+  // ---------- saved progress ----------
+  // The answers so far are kept in this browser (localStorage) as the user goes, so closing the page halfway
+  // doesn't lose them. They come back on the next visit for up to 14 days, and are wiped once the booking is made
+  // or "Start over" is pressed. The verification pass and the verified name are never saved.
+  const DRAFT_KEY = 'metromaya.draft';
+  const DRAFT_DAYS = 14;
+  const DRAFT_FIELDS = ['businessName', 'addressLine1', 'cityId', 'barangay', 'zip', 'industryId', 'employees', 'email', 'phone'];
+  let draftOff = false;   // after booking: nothing more to save
+  let resume = null;      // office, date and time to put back once the business step is accepted again
+
+  function draftFields() {
+    return state.config && !state.config.verify ? DRAFT_FIELDS.concat('ownerName') : DRAFT_FIELDS;
+  }
+
+  function saveDraft() {
+    if (draftOff || !state.config) return;
+    const fields = {};
+    draftFields().forEach((k) => { const v = $(k).value.trim(); if (v) fields[k] = v; });
+    const draft = { v: 1, savedAt: Date.now(), serviceId: state.serviceId, fields,
+      officeId: state.officeId, date: state.date, time: state.time, step: state.step };
+    try {
+      if (!state.serviceId && !Object.keys(fields).length) localStorage.removeItem(DRAFT_KEY);
+      else localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch (e) { /* not saved */ }
+  }
+  const saveDraftSoon = debounce(saveDraft, 300);
+
+  function readDraft() {
+    try {
+      const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
+      if (!d || d.v !== 1 || Date.now() - d.savedAt > DRAFT_DAYS * 864e5) { localStorage.removeItem(DRAFT_KEY); return null; }
+      return d;
+    } catch (e) { return null; }
+  }
+
+  function clearDraft() { try { localStorage.removeItem(DRAFT_KEY); } catch (e) { /* nothing saved */ } }
+
   const serviceById = (id) => state.services.find((s) => s.id === id);
   const officeById = (id) => state.offices.find((o) => o.id === id);
   const industryById = (id) => state.industries.find((i) => i.id === id);
@@ -67,6 +104,7 @@
     if (n === 2) renderOffices();
     if (n === 3) setupWhen();
     if (n === 4) renderReview();
+    saveDraft();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -87,6 +125,7 @@
         if (state.serviceId !== s.id) { state.quote = null; state.officeId = null; state.date = ''; state.time = ''; }
         state.serviceId = s.id;
         panels[0].querySelector('[data-next]').disabled = false;
+        saveDraft();
       });
       box.append(el('label', { class: 'choice' }, input,
         el('div', null, el('strong', { text: s.name }), el('small', { text: s.description }))));
@@ -254,6 +293,8 @@
   }
 
   $('industryId').addEventListener('change', refreshLive);
+  $('business-form').addEventListener('input', saveDraftSoon);
+  $('business-form').addEventListener('change', saveDraftSoon);
   $('employees').addEventListener('input', debounce(refreshLive, 250));
 
   $('business-form').addEventListener('submit', async (e) => {
@@ -288,7 +329,14 @@
     try {
       const qs = new URLSearchParams({ serviceId: state.serviceId, industryId: form.industryId, employees: form.employees });
       const { quote } = await api.get('/api/quote?' + qs.toString());
-      if (!state.form || state.form.industryId !== form.industryId || state.form.employees !== form.employees
+      if (resume) {
+        // coming back to a saved booking: the office, day and time picked last time (the time is checked again)
+        const r = resume;
+        resume = null;
+        state.officeId = r.officeId === city.id ? r.officeId : null;
+        state.date = state.officeId && r.date && r.date >= state.config.today && r.date <= state.config.maxDate ? r.date : '';
+        state.time = state.date ? (r.time || '') : '';
+      } else if (!state.form || state.form.industryId !== form.industryId || state.form.employees !== form.employees
           || !state.city || state.city.id !== city.id) {
         state.officeId = null; state.date = ''; state.time = '';
       }
@@ -296,6 +344,7 @@
       state.city = city;
       state.quote = scaleQuote(quote, city.rate);
       hideAlert(alertNode);
+      if (state.officeId) loadOfficeChecklist();
       showStep(jump && jump > 2 && canEnter(jump) ? jump : 2);
     } catch (err) {
       showAlert(alertNode, err.message, 'error');
@@ -338,6 +387,7 @@
         if (state.officeId !== o.id) { state.date = ''; state.time = ''; }
         state.officeId = o.id;
         loadOfficeChecklist();
+        saveDraft();
       });
       const maps = directionsUrl(city, o);
       box.append(el('label', { class: 'choice' + (problem ? ' disabled' : '') }, input,
@@ -528,17 +578,22 @@
     $('date-hint').textContent = 'Pick a weekday up to ' + state.config.maxMonthsAhead + ' months ahead, then a time. '
       + 'Expect about ' + minutesText(state.quote.estimatedMinutes)
       + (state.serviceId === 'inspection' ? ' on site.' : ' at the counter.');
+    if (state.config.waitlist) $('date-hint').textContent += ' Fully booked days can email you if a place opens.';
     $('day-status').textContent = state.date ? '' : 'Choose a day on the calendar to see its open times.';
+    $('waitlist').hidden = true;
     // the whole month for this office; picking a day shows its times below
     mountCalendar($('cal'), {
       officeId: state.officeId, config: state.config, selected: state.date,
       onSelect: (iso, day) => {
         state.date = iso;
         state.time = '';
+        $('waitlist').hidden = true;
         $('day-status').textContent = dayStatusText(iso, day);
         panels[3].querySelector('[data-next]').disabled = true;
         refreshSlots();
+        saveDraft();
       },
+      onFull: state.config.waitlist ? showWaitlist : null,
     });
     panels[3].querySelector('[data-next]').disabled = !(state.date && state.time);
     refreshSlots();
@@ -558,8 +613,58 @@
     loadSlots($('slots'), alertNode, state.officeId, state.date, state.time, (time) => {
       state.time = time;
       next.disabled = false;
+      saveDraft();
     });
   }
+
+  // ---------- waitlist: "notify me if a place opens" on a fully booked day ----------
+
+  let waitDate = '';
+  function showWaitlist(iso) {
+    waitDate = iso;
+    state.date = '';
+    state.time = '';
+    clear($('slots'));
+    hideAlert($('slot-alert'));
+    panels[3].querySelector('[data-next]').disabled = true;
+    const [y, m, n] = iso.split('-').map(Number);
+    const day = new Date(y, m - 1, n).toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric' });
+    $('day-status').textContent = day + ' · fully booked.';
+    $('wl-day').textContent = day;
+    const email = $('wl-email');
+    if (!email.value && state.form) email.value = state.form.email;
+    $('wl-status').hidden = true;
+    $('waitlist-form').hidden = false;
+    $('waitlist').hidden = false;
+  }
+
+  $('waitlist-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const status = $('wl-status');
+    const email = $('wl-email').value.trim();
+    status.className = 'waitlist-status';
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      status.textContent = 'Enter a valid email address.';
+      status.classList.add('is-error');
+      status.hidden = false;
+      return;
+    }
+    const btn = e.target.querySelector('button');
+    btn.disabled = true;
+    try {
+      await api.post('/api/waitlist', { officeId: state.officeId, date: waitDate, email });
+      $('waitlist-form').hidden = true;
+      status.textContent = 'You’re on the list. We’ll email ' + email + ' if a place opens on ' + $('wl-day').textContent
+        + '. Meanwhile, you can pick another day above.';
+      status.classList.add('is-ok');
+    } catch (err) {
+      status.textContent = err.message;
+      status.classList.add('is-error');
+    } finally {
+      status.hidden = false;
+      btn.disabled = false;
+    }
+  });
 
   // ---------- step 5: review & submit ----------
 
@@ -613,6 +718,10 @@
   });
 
   function showDone(a, managementToken, emailSent) {
+    draftOff = true;
+    clearDraft();
+    savedBookings.save(a);   // Track a booking can show it (and its QR) even without a signal
+    $('draft-note').hidden = true;
     $('done-emailed').hidden = !emailSent;
     if (emailSent) $('done-emailed').textContent = 'We also emailed your reference number and private access code to ' + a.email + '. Check your inbox (or spam folder).';
     doneAppointment = a;
@@ -637,6 +746,7 @@
     donePrint.textContent = printActionLabel(a);
     renderPayment($('done-pay'), a, (updated) => {
       doneAppointment = updated;
+      savedBookings.save(updated);
       donePrint.textContent = printActionLabel(updated);
     }, managementToken);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -778,6 +888,43 @@
     }
   }
 
+  function restoreDraft(d, preselect) {
+    const f = d.fields || {};
+    const set = (k) => { if (f[k] != null && $(k)) $(k).value = f[k]; };
+    ['businessName', 'addressLine1', 'industryId', 'employees', 'email', 'phone'].forEach(set);
+    if (!state.config.verify) set('ownerName');
+    if (f.cityId && cityById(f.cityId)) {
+      citySelect.value = f.cityId;
+      lastDetected = f.cityId;
+      renderBarangays();
+      if (f.barangay && [...brgySelect.options].some((o) => o.value === f.barangay)) { brgySelect.value = f.barangay; suggestZip(); }
+    }
+    set('zip');
+    if (d.serviceId && serviceById(d.serviceId) && (!preselect || preselect === d.serviceId)) {
+      state.serviceId = d.serviceId;
+      if (d.step >= 2 && d.officeId) resume = { step: d.step, officeId: d.officeId, date: d.date, time: d.time };
+    }
+    $('draft-text').textContent = 'Welcome back! Your answers from ' + savedAtText(new Date(d.savedAt).toISOString())
+      + ' are filled in again.';
+    $('draft-note').hidden = false;
+  }
+
+  $('draft-reset').addEventListener('click', () => {
+    clearDraft();
+    resume = null;
+    const owner = $('ownerName').value;
+    $('business-form').reset();
+    if (state.config && state.config.verify) $('ownerName').value = owner;   // the verified name stays
+    lastDetected = null;
+    cityNote.hidden = true;
+    renderBarangays();
+    Object.assign(state, { serviceId: null, form: null, quote: null, city: null, officeId: null, officeChecklist: null,
+      date: '', time: '', reached: 0 });
+    renderServices();
+    $('draft-note').hidden = true;
+    showStep(0);
+  });
+
   // ---------- start ----------
 
   try {
@@ -796,9 +943,21 @@
     } catch (err) { /* storage unavailable */ }
 
     const preselect = new URLSearchParams(location.search).get('service');
+    const draft = readDraft();
+    if (draft) restoreDraft(draft, preselect);
     if (preselect && serviceById(preselect)) state.serviceId = preselect;
     renderServices();
-    const startWizard = () => { showStep(state.serviceId ? 1 : 0); refreshLive(); };
+    const startWizard = () => {
+      showStep(state.serviceId ? 1 : 0);
+      refreshLive();
+      // a saved booking that got past the business step: check the answers and carry on where it stopped
+      if (resume && state.serviceId && draftFields().every((k) => $(k).value.trim())) {
+        pendingJump = Math.min(resume.step, 3);
+        $('business-form').requestSubmit();
+      } else {
+        resume = null;
+      }
+    };
     if (config.verify) {
       setupVerify(config.verify);
       showVerify(startWizard);

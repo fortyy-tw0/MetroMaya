@@ -12,6 +12,9 @@ import appointment.repository.SupabaseOfficePolicyRepository;
 import appointment.repository.NotificationEventRepository;
 import appointment.repository.InMemoryNotificationEventRepository;
 import appointment.repository.SupabaseNotificationEventRepository;
+import appointment.repository.WaitlistRepository;
+import appointment.repository.InMemoryWaitlistRepository;
+import appointment.repository.SupabaseWaitlistRepository;
 import appointment.service.AppointmentService;
 import appointment.service.CatalogService;
 import appointment.service.EgovVerifier;
@@ -21,6 +24,7 @@ import appointment.service.VerificationPass;
 import appointment.service.StaffAuthService;
 import appointment.service.ManagementLinkVault;
 import appointment.service.NotificationService;
+import appointment.service.WaitlistService;
 import appointment.web.WebServer;
 
 import java.time.Clock;
@@ -75,7 +79,8 @@ public class Main {
         if (notifications.configured()) System.out.println("Booking emails are on (confirmations, reminders and office changes).");
         else if (notifications.canSendConfirmation()) System.out.println("Booking confirmation emails are on; reminders also need MANAGEMENT_LINK_KEY.");
         else System.out.println("Booking email is off until RESEND_API_KEY, RESEND_FROM_EMAIL and PUBLIC_BASE_URL are set.");
-        new WebServer(port, service, egov, ids, passes, staff, notifications).start();
+        WaitlistService waitlist = new WaitlistService(service, waitlistRepository(), notifications);
+        new WebServer(port, service, egov, ids, passes, staff, notifications, waitlist).start();
         System.out.println("Appointment system running on http://localhost:" + port);
     }
 
@@ -113,6 +118,14 @@ public class Main {
         if (key == null) key = env("SUPABASE_SECRET_KEY");
         return url != null && key != null ? new SupabaseNotificationEventRepository(url, key)
                 : new InMemoryNotificationEventRepository();
+    }
+
+    private static WaitlistRepository waitlistRepository() {
+        String url = env("SUPABASE_URL");
+        String key = env("SUPABASE_SERVICE_ROLE_KEY");
+        if (key == null) key = env("SUPABASE_SECRET_KEY");
+        return url != null && key != null ? new SupabaseWaitlistRepository(url, key)
+                : new InMemoryWaitlistRepository();
     }
 
     /** "Verify with eGovPH" (eGov SSO), when EGOV_BASE_URL, EGOV_PARTNER_CODE and EGOV_PARTNER_SECRET are set. */
