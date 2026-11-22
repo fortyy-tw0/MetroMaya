@@ -1164,3 +1164,8 @@ em { font-style: normal; }
 .mobile-menu-install { display: block; width: 100%; text-align: left; font: inherit; font-weight: 500; color: var(--ink-soft); background: none; padding: .8rem 1rem; border-radius: 12px; border: 2px solid transparent; cursor: pointer; }
 .mobile-menu-install:hover { background: var(--surface); color: var(--ink); }
 .footer-install[hidden], .mobile-menu-install[hidden] { display: none; }
+
+/* ---- the logo beside "MetroMaya" in the header ---- */
+.site-header .brand { display: inline-flex; align-items: center; }
+.brand-logo { width: 36px; height: 36px; flex: none; margin-right: .55rem; border-radius: 10px; box-shadow: 0 0 0 1px var(--line); }
+@media (max-width: 420px) { .brand-logo { width: 30px; height: 30px; border-radius: 8px; } }

@@ -146,7 +146,7 @@ tools/maya/      scripts + source PNGs that build the Maya assets (see §5)
 
 - **Fonts** (Google Fonts): Lexend for display text, Figtree for body text, JetBrains Mono for references.
 - **Style:** minimalist and easy to navigate.
-- **Header:** sticky, 72px tall, using the footer's brown/cream scheme. The logo is text only ("MetroMaya" with a gold dot). The old Maya logo mark was deleted.
+- **Header:** sticky, 72px tall, using the footer's brown/cream scheme. The logo is the official logo image (`.brand-logo`, 36px, 30px on phones) followed by "MetroMaya" with a gold dot. The footer keeps the text-only logo.
 - **Nav (six tabs, in page order; keep this capitalization):** Home, What is MetroMaya (`#why`), How It Works (`#how`), Fees (`#industries`), Fees Estimator (`#estimate`), Offices (`#offices`). Tab padding is `.55rem .9rem` so all six fit in the 1120px header.
   - Below 1200px the tabs tighten. Below 1080px "Track a booking" leaves the header (it's still in the footer). Below 900px the tabs hide.
   - The header's **Book a slot** button uses the same tab-lift hover as the tabs.
