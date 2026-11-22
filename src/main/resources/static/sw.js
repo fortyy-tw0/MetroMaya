@@ -2,11 +2,11 @@
 // this device, which live in localStorage) opening when the signal at the office is weak or gone.
 // Pages and files: network first, so a new deploy shows at once; if the network is slow (over 4 s) or down,
 // the last copy is used. The API is never cached here: bookings and fees always come live from the server.
-const CACHE = 'metromaya-v1';
+const CACHE = 'metromaya-v2';
 const SHELL = [
   '/', '/book.html', '/manage.html', '/privacy.html',
   '/css/style.css', '/js/common.js', '/js/landing.js', '/js/book.js', '/js/manage.js', '/js/ncr-places.js',
-  '/img/maya-hello.png', '/img/maya-hey-you.png', '/img/app-icon-192.png', '/manifest.webmanifest',
+  '/img/maya-hello.png', '/img/maya-hey-you.png', '/img/app-icon-192.png', '/img/favicon-32.png', '/favicon.ico', '/manifest.webmanifest',
 ];
 const CDN = [
   'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js',
